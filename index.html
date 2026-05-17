@@ -1,0 +1,2271 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLEC 投資組合全覽 2026–2031</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:wght@300;600;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1117;--surface:#171b24;--surface2:#1e2330;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#e8e4dc;--muted:#7a8095;--dim:#4a5068;
+  --green:#4ade9a;--green-bg:rgba(74,222,154,0.08);
+  --blue:#60a5f8;--blue-bg:rgba(96,165,248,0.08);
+  --amber:#f5c842;--amber-bg:rgba(245,200,66,0.08);
+  --purple:#c084fc;--purple-bg:rgba(192,132,252,0.08);
+  --red:#f87171;--red-bg:rgba(248,113,113,0.08);
+  --teal:#2dd4bf;
+  --core-c:#60a5f8;--sat-c:#c084fc;--cash-c:#4ade9a;--usflow-c:#f5c842;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;font-size:13px;line-height:1.6;min-height:100vh}
+.header{padding:22px 28px 16px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;border-bottom:1px solid var(--border)}
+.header-left h1{font-family:'Fraunces',serif;font-weight:700;font-size:23px;color:var(--text);letter-spacing:-.3px}
+.header-left .sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
+.kpi-row{display:flex;gap:8px;flex-wrap:wrap}
+.kpi{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:8px 14px;text-align:right;min-width:114px}
+.kpi-label{font-size:10px;color:var(--muted);letter-spacing:.05em;margin-bottom:1px}
+.kpi-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:500}
+.kpi-sub{font-size:10px;color:var(--dim);margin-top:1px}
+/* tabs */
+.tab-nav{display:flex;padding:0 28px;border-bottom:1px solid var(--border);background:var(--bg)}
+.tab-btn{font-family:'DM Mono',monospace;font-size:12px;padding:11px 18px;border:none;background:transparent;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap;letter-spacing:.03em}
+.tab-btn:hover{color:var(--muted)}
+.tab-btn.active{color:var(--text);border-bottom-color:var(--blue)}
+.tab-panel{display:none;padding:20px 28px}
+.tab-panel.active{display:block}
+/* scenario bar */
+.scenario-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.scen-label{font-size:11px;color:var(--dim);font-family:'DM Mono',monospace;letter-spacing:.04em}
+.scen-btn{font-family:'DM Mono',monospace;font-size:11px;padding:5px 14px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:.15s}
+.scen-btn:hover{background:var(--surface2);color:var(--text)}
+.scen-btn.active.bear{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
+.scen-btn.active.base{border-color:var(--green);color:var(--green);background:var(--green-bg)}
+.scen-btn.active.bull{border-color:var(--amber);color:var(--amber);background:var(--amber-bg)}
+.scen-note{font-size:10px;color:var(--dim);font-family:'DM Mono',monospace}
+/* scenario KPIs */
+.scen-kpi-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.skpi{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:8px 13px;min-width:108px;text-align:right}
+.skpi-lbl{font-size:10px;color:var(--muted);letter-spacing:.04em}
+.skpi-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;margin-top:1px}
+.skpi-sub{font-size:10px;color:var(--dim);margin-top:1px;font-family:'DM Mono',monospace}
+/* section title */
+.sec-title{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-title::before{content:'';display:block;width:3px;height:14px;border-radius:2px;background:var(--blue)}
+.sec-title.red::before{background:var(--red)}
+.sec-title.green::before{background:var(--green)}
+/* sum grid */
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin-bottom:22px}
+.sum-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 14px}
+.sum-yr{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px}
+.sum-asset{font-family:'DM Mono',monospace;font-size:16px;color:var(--text);font-weight:500}
+.sum-net{font-size:11px;color:var(--green);margin-top:2px;font-family:'DM Mono',monospace}
+.sum-debt-txt{font-size:10px;color:var(--dim);margin-top:1px;font-family:'DM Mono',monospace}
+.sum-card.hi{border-color:var(--green);background:rgba(74,222,154,.05)}
+.sum-card.hi .sum-asset{color:var(--green);font-size:18px}
+/* overview table */
+.table-wrap{overflow-x:auto;margin-bottom:24px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead tr{background:var(--surface);border-bottom:1px solid var(--border2)}
+th{padding:8px 11px;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;border-right:1px solid var(--border)}
+th:last-child{border-right:none}
+th.yr-head{text-align:right}
+.th-sub{background:var(--bg);text-align:center;font-size:9px;color:var(--dim);padding:3px;border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);transition:.12s}
+tbody tr:hover{background:var(--surface2)}
+tbody tr.hidden{display:none}
+td{padding:8px 11px;white-space:nowrap;border-right:1px solid var(--border);vertical-align:middle}
+td:last-child{border-right:none}
+td.num{text-align:right;font-family:'DM Mono',monospace;font-size:11px}
+td.yr{text-align:right;font-family:'DM Mono',monospace;padding:7px 11px}
+.yr-main{font-size:11px;color:var(--text);line-height:1.3}
+.yr-delta{font-size:10px;color:var(--green);line-height:1.2;margin-top:1px}
+.yr-delta.zero{color:var(--dim)}
+td.yr.best .yr-main{color:var(--green);font-weight:500}
+td.yr.best .yr-delta{color:var(--teal)}
+tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-weight:500;font-size:11px;border-top:1px solid var(--border2)}
+.bk{display:inline-block;font-size:9px;padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-weight:500;letter-spacing:.04em}
+.bk-core{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,248,.25)}
+.bk-sat{background:var(--purple-bg);color:var(--purple);border:1px solid rgba(192,132,252,.25)}
+.bk-cash{background:var(--green-bg);color:var(--green);border:1px solid rgba(74,222,154,.25)}
+.bk-usflow{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(245,200,66,.25)}
+.ticker{font-family:'DM Mono',monospace;font-weight:500;font-size:12px;color:var(--text)}
+.beta-wrap{display:flex;align-items:center;gap:5px}
+.beta-bar-bg{width:36px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.beta-bar-fill{height:100%;border-radius:2px}
+.beta-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);min-width:22px}
+.yld-high{color:var(--amber)}.yld-mid{color:var(--teal)}.yld-zero{color:var(--dim)}
+.rate-cell{display:flex;align-items:center;gap:3px;justify-content:center}
+.rate-input{width:58px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 4px;outline:none;transition:.15s}
+.rate-input:focus{border-color:var(--amber);background:var(--amber-bg)}
+.rate-input.changed{border-color:var(--amber)}
+.shares-input:focus{border-color:var(--blue)!important;background:var(--blue-bg)!important}
+.rate-lbl{font-size:10px;color:var(--dim)}
+.reset-btn{font-size:9px;padding:1px 5px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--dim);cursor:pointer;font-family:'DM Mono',monospace;display:block;width:100%;text-align:center;margin-top:2px;transition:.12s}
+.reset-btn:hover{background:var(--surface2);color:var(--muted)}
+.sug{font-size:11px;color:var(--muted);max-width:165px;white-space:normal;line-height:1.4}
+.tag{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;margin-right:3px;font-family:'DM Mono',monospace;font-weight:500}
+.tag-hold{background:rgba(74,222,154,.12);color:var(--green)}
+.tag-add{background:rgba(96,165,248,.12);color:var(--blue)}
+.tag-watch{background:rgba(245,200,66,.12);color:var(--amber)}
+.tag-trim{background:rgba(248,113,113,.12);color:var(--red)}
+/* bucket filter */
+.bucket-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.f-btn{font-family:'DM Mono',monospace;font-size:11px;padding:4px 11px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:.15s}
+.f-btn:hover{background:var(--surface2);color:var(--text)}
+.f-btn.active{background:var(--surface2);color:var(--text)}
+.f-btn.f-core.active{border-color:var(--core-c);color:var(--core-c)}
+.f-btn.f-sat.active{border-color:var(--sat-c);color:var(--sat-c)}
+.f-btn.f-cash.active{border-color:var(--cash-c);color:var(--cash-c)}
+.f-btn.f-usflow.active{border-color:var(--usflow-c);color:var(--usflow-c)}
+/* year tab */
+.yr-tab-btn{font-family:'DM Mono',monospace;font-size:11px;padding:4px 12px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:.15s;white-space:nowrap}
+.yr-tab-btn:hover{background:var(--surface2);color:var(--text)}
+.yr-tab-btn.active{background:var(--surface2);color:var(--green);border-color:var(--green)}
+.yr-tab-btn.is-bonus{border-color:rgba(245,200,66,.35)}
+.yr-tab-btn.active.is-bonus{color:var(--amber);border-color:var(--amber);background:var(--amber-bg)}
+/* dividend input */
+.div-input{width:72px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--green);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 4px;outline:none;transition:.15s}
+.div-input:focus{border-color:var(--green);background:var(--green-bg)}
+.div-input.filled{border-color:rgba(74,222,154,.5)}
+.stock-input{width:66px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 4px;outline:none;transition:.15s}
+.stock-input:focus{border-color:var(--amber);background:var(--amber-bg)}
+.stock-input.filled{border-color:rgba(245,200,66,.5)}
+/* cf summary */
+.cf-sum-card{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:10px 13px}
+.cf-sum-lbl{font-size:10px;color:var(--muted);margin-bottom:2px}
+.cf-sum-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:500}
+.cf-sum-sub{font-size:10px;color:var(--dim);margin-top:1px;font-family:'DM Mono',monospace}
+/* cashflow tab */
+.cf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:18px}
+.cf-card{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:11px 14px}
+.cf-lbl{font-size:10px;color:var(--muted);margin-bottom:3px}
+.cf-val{font-family:'DM Mono',monospace;font-size:16px;font-weight:500}
+.cf-sub{font-size:10px;color:var(--dim);margin-top:1px}
+.cf-bar-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.cf-bar{height:10px;border-radius:3px;margin-bottom:8px}
+.debt-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin-bottom:16px}
+.di{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:11px 14px}
+.di-lbl{font-size:10px;color:var(--muted);margin-bottom:3px}
+.di-val{font-family:'DM Mono',monospace;font-size:15px;color:var(--red)}
+.di-sub{font-size:10px;color:var(--dim);margin-top:2px;line-height:1.5}
+.debt-table-wrap{overflow-x:auto;margin-bottom:24px}
+.debt-table{min-width:660px}
+.debt-table td.num{color:var(--red)}
+.debt-table td.num.zero{color:var(--green)}
+.total-debt{color:var(--red)!important}
+.note-bar{padding:9px 13px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;font-size:11px;color:var(--dim);line-height:1.7;margin-top:6px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>CLEC 投資組合全覽</h1>
+    <div class="sub">2026–2031 逐年市值預測 ／ CLEC精神版（1,000萬全投市場）</div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">2026 總資產</div><div class="kpi-val" style="color:var(--blue)">NT$4,296萬</div><div class="kpi-sub">基準年</div></div>
+    <div class="kpi"><div class="kpi-label">2031 總資產</div><div class="kpi-val" style="color:var(--green)" id="kpi-2031">—</div><div class="kpi-sub" id="kpi-growth">計算中</div></div>
+    <div class="kpi"><div class="kpi-label">2031 淨資產</div><div class="kpi-val" style="color:var(--teal)" id="kpi-net">—</div><div class="kpi-sub">負債 NT$1,615萬</div></div>
+    <div class="kpi"><div class="kpi-label">年度現金流</div><div class="kpi-val" style="color:var(--amber)">NT$60.4萬</div><div class="kpi-sub">月均 NT$5,034</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap">
+    <button id="btn-update-price" onclick="openPricePanel()"
+      style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(96,165,248,.4);background:rgba(96,165,248,.08);color:var(--blue);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px">
+      <span style="font-size:13px">✎</span> 更新股價 / 配息
+    </button>
+    <button onclick="exportAllData()"
+      style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(74,222,154,.4);background:rgba(74,222,154,.08);color:var(--green);cursor:pointer;display:flex;align-items:center;gap:5px">
+      ↓ 匯出備份
+    </button>
+    <label style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(245,200,66,.4);background:rgba(245,200,66,.08);color:var(--amber);cursor:pointer;display:flex;align-items:center;gap:5px">
+      ↑ 匯入還原
+      <input type="file" accept=".json" onchange="importAllData(this)" style="display:none"/>
+    </label>
+    <span id="price-update-status" style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace"></span>
+    <span id="price-last-update" style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace"></span>
+  </div>
+</div>
+
+<!-- 股價更新面板 -->
+<div id="price-panel" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:9999;overflow-y:auto">
+  <div style="max-width:680px;margin:40px auto;background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <h2 style="font-family:'Fraunces',serif;font-size:18px;color:var(--text);font-weight:600">更新股價</h2>
+        <p style="font-size:11px;color:var(--muted);margin-top:3px;font-family:'DM Mono',monospace">點標的名稱在新分頁查詢股價 → 填入右側欄位 → 確認更新　台股 NT$ / 美股 USD（自動換算）</p>
+      </div>
+      <button onclick="closePricePanel()" style="background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;padding:4px 12px;cursor:pointer;font-size:13px">✕ 關閉</button>
+    </div>
+
+    <!-- 查詢參考連結 -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+      <span style="font-size:11px;color:var(--dim)">參考來源：</span>
+      <a href="https://tw.stock.yahoo.com" target="_blank"
+        style="font-family:'DM Mono',monospace;font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid rgba(96,165,248,.35);background:rgba(96,165,248,.08);color:var(--blue);text-decoration:none">
+        ↗ Yahoo股市（台股）
+      </a>
+      <a href="https://goodinfo.tw" target="_blank"
+        style="font-family:'DM Mono',monospace;font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid rgba(74,222,154,.35);background:rgba(74,222,154,.08);color:var(--green);text-decoration:none">
+        ↗ Goodinfo（配息/配股）
+      </a>
+      <a href="https://finance.yahoo.com" target="_blank"
+        style="font-family:'DM Mono',monospace;font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid rgba(245,200,66,.35);background:rgba(245,200,66,.08);color:var(--amber);text-decoration:none">
+        ↗ Yahoo Finance（美股）
+      </a>
+      <span id="twse-status" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace"></span>
+    </div>
+
+    <!-- 個股輸入表格 -->
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:var(--bg)">
+          <th style="padding:7px 10px;text-align:left;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border2)">標的</th>
+          <th style="padding:7px 10px;text-align:left;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border2)">類型</th>
+          <th style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border2)">現有股價</th>
+          <th style="padding:7px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border2)">更新股價</th>
+          <th style="padding:7px 10px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border2)">狀態</th>
+        </tr></thead>
+        <tbody id="price-table-body"></tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;flex-wrap:wrap;gap:10px">
+      <span style="font-size:10px;color:var(--dim)">✓ 確認後重算所有市值並儲存至本機</span>
+      <div style="display:flex;gap:8px">
+        <button onclick="closePricePanel()" style="font-family:'DM Mono',monospace;font-size:11px;padding:7px 16px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer">取消</button>
+        <button id="btn-apply-price" onclick="applyPriceUpdates()"
+          style="font-family:'DM Mono',monospace;font-size:11px;padding:7px 16px;border-radius:6px;border:1px solid rgba(74,222,154,.4);background:rgba(74,222,154,.1);color:var(--green);cursor:pointer;font-weight:500">
+          ✓ 確認更新所有股價
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tab-nav">
+  <
+  <button class="tab-btn active" onclick="switchTab('overview',this)">📊 總覽</button>
+  <button class="tab-btn" onclick="switchTab('holdings',this)">📋 現況持股</button>
+  <button class="tab-btn" onclick="switchTab('cashflow',this)">💰 現金流 &amp; 負債</button>
+  <button class="tab-btn" onclick="switchTab('rebalance',this)">⚖️ 433 再平衡</button>
+  <button class="tab-btn" onclick="switchTab('rebalance613',this)">📐 613 再平衡</button>
+  <button class="tab-btn" onclick="switchTab('pledge',this)">🔒 質押試算</button>
+</div>
+
+<!-- ═══ TAB 1：總覽 ═══ -->
+<div class="tab-panel active" id="tab-overview">
+  <div class="scenario-bar">
+    <span class="scen-label">情境切換：</span>
+    <button class="scen-btn bear" onclick="setScenario('bear',this)">🔵 保守　核心8% / 衛星12%</button>
+    <button class="scen-btn base active" onclick="setScenario('base',this)">🟢 基本　核心12% / 衛星20%</button>
+    <button class="scen-btn bull" onclick="setScenario('bull',this)">🟡 樂觀　核心16% / 衛星28%</button>
+    <span class="scen-note" id="scen-note">目前：基本情境</span>
+  </div>
+
+  <!-- 手動修改版提示列 -->
+  <div id="manual-override-bar" style="display:none;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);border-radius:8px;flex-wrap:wrap">
+    <span style="font-size:11px;color:var(--amber);font-family:'DM Mono',monospace;letter-spacing:.03em">✏️ 手動修改已啟用：</span>
+    <span id="manual-override-list" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace"></span>
+    <button onclick="clearAllOverrides()" style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid rgba(245,200,66,.3);background:transparent;color:var(--amber);cursor:pointer;font-family:'DM Mono',monospace;margin-left:auto">全部還原預設</button>
+  </div>
+
+  <div class="scen-kpi-row" id="scenKpis"></div>
+
+  <div class="sec-title">年度總資產 vs 淨資產</div>
+  <div class="sum-grid" id="sumGrid"></div>
+
+  <div class="sec-title">各桶市值趨勢</div>
+  <div class="table-wrap">
+    <table id="overviewTable">
+      <thead><tr>
+        <th style="min-width:78px">桶別</th>
+        <th class="yr-head">2026</th><th class="yr-head">2027</th><th class="yr-head">2028</th>
+        <th class="yr-head">2029</th><th class="yr-head">2030</th>
+        <th class="yr-head" style="background:rgba(74,222,154,.06)">2031★</th>
+        <th style="text-align:right;min-width:88px">6年倍數</th>
+      </tr></thead>
+      <tbody id="overviewBody"></tbody>
+    </table>
+  </div>
+  <div class="note-bar">⚠️ 第5年（2031）加入NT$1,000萬全投市場：核心+400萬 / 衛星+400萬 / QQQI+150萬 / 現金備用+50萬。現金桶與美股現金流組的報酬率在三個情境中維持不變，僅核心桶與衛星桶隨情境調整。非投資建議。</div>
+</div>
+
+<!-- ═══ TAB 2：現況持股 ═══ -->
+<div class="tab-panel" id="tab-holdings">
+
+  <!-- 控制列：年度切換 + 桶別篩選 -->
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:12px">
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace;letter-spacing:.04em">年度：</span>
+      <div id="yr-tabs" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+    </div>
+    <div style="width:1px;height:20px;background:var(--border2);flex-shrink:0"></div>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--dim)">篩選：</span>
+      <button class="f-btn f-all active" onclick="filterBucket('all',this)">全部</button>
+      <button class="f-btn f-core"   onclick="filterBucket('core',this)">🔵 核心桶</button>
+      <button class="f-btn f-sat"    onclick="filterBucket('sat',this)">🟡 衛星桶</button>
+      <button class="f-btn f-cash"   onclick="filterBucket('cash',this)">🟢 現金桶</button>
+      <button class="f-btn f-usflow" onclick="filterBucket('usflow',this)">💵 美股現金流</button>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <span id="save-status" style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace"></span>
+      <button onclick="clearAllDividendData()" style="font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--dim);cursor:pointer;font-family:'DM Mono',monospace;transition:.12s" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--dim)'">清除所有配息記錄</button>
+    </div>
+  </div>
+
+  <!-- 現金流總表（即時更新） -->
+  <div id="cf-summary-bar" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px;margin-bottom:16px"></div>
+
+  <!-- 主表：單年顯示 -->
+  <div class="table-wrap">
+    <table id="mainTable" style="min-width:920px">
+      <thead>
+        <tr>
+          <th rowspan="2" style="min-width:60px">桶別</th>
+          <th rowspan="2" style="min-width:72px">標的</th>
+          <th rowspan="2" style="text-align:right;min-width:64px">股數</th>
+          <th rowspan="2" style="text-align:right;min-width:50px">Beta</th>
+          <th rowspan="2" style="text-align:center;min-width:92px">年化報酬率<br><span style="font-size:9px;color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0">可手動修改</span></th>
+          <th id="col-yr-val" class="yr-head" style="min-width:96px">2026年 市值</th>
+          <th class="yr-head" style="min-width:108px">現金配息／股<br><span style="font-size:9px;color:var(--green);font-weight:400">NT$ 實際填入</span></th>
+          <th class="yr-head" style="min-width:108px">配股比例<br><span style="font-size:9px;color:var(--amber);font-weight:400">股/股（如 0.05）</span></th>
+          <th class="yr-head" style="min-width:104px">現金配息合計</th>
+          <th class="yr-head" style="min-width:104px">配股換算市值</th>
+          <th rowspan="2" style="min-width:148px">建議操作</th>
+        </tr>
+        <tr>
+          <th class="th-sub">估算市值（上）/ 較前年增長（下）</th>
+          <th class="th-sub" style="color:var(--green)">填入後 Enter 確認</th>
+          <th class="th-sub" style="color:var(--amber)">股數 × 比例 × 估算股價</th>
+          <th class="th-sub" style="color:var(--green)">= 股數 × 每股配息</th>
+          <th class="th-sub" style="color:var(--amber)">換算為等值市值增加</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+  <div class="note-bar">⚠️ 市值為複利估算值，非實際股價。配息／配股為人工填入欄位，填入後按 Enter 或點其他地方確認，即時更新頂部現金流總表。配股換算公式：股數 × 配股比例 × 該年估算股價。年化報酬率可逐支修改。</div>
+</div>
+
+<!-- ═══ TAB 3：現金流 & 負債 ═══ -->
+<div class="tab-panel" id="tab-cashflow">
+
+  <!-- 年度切換（與持股頁同步） -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <span style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace;letter-spacing:.04em">年度：</span>
+    <div id="cf-yr-tabs" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+    <span id="cf-datasource-note" style="font-size:10px;color:var(--dim);margin-left:6px;font-family:'DM Mono',monospace"></span>
+  </div>
+
+  <!-- 動態現金流 KPI -->
+  <div class="sec-title green">現金流總覽</div>
+  <div id="cf-kpi-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:20px"></div>
+
+  <!-- 動態配息來源拆解 -->
+  <div class="sec-title green">配息來源拆解</div>
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin-bottom:20px">
+    <div id="cf-bars-note" style="font-size:11px;color:var(--dim);margin-bottom:10px"></div>
+    <div id="cf-bars"></div>
+  </div>
+
+  <!-- 負債現況（可編輯） -->
+  <div class="sec-title red">負債現況</div>
+  <div class="debt-meta" id="debt-meta-grid">
+    <!-- 分期房貸 -->
+    <div class="di">
+      <div class="di-lbl">分期房貸</div>
+      <div class="di-val" style="color:var(--red)">NT$1,300萬</div>
+      <div class="di-sub">2.3%／30年剩26年<br>等額攤還 月付NT$55,398</div>
+    </div>
+    <!-- 理財房貸 -->
+    <div class="di">
+      <div class="di-lbl">理財房貸</div>
+      <div class="di-val" style="color:var(--red)">NT$400萬</div>
+      <div class="di-sub">2.95%／7年1約剩4年<br>只付息 月付NT$9,833 預計續約</div>
+    </div>
+    <!-- 信貸 -->
+    <div class="di">
+      <div class="di-lbl">信貸</div>
+      <div class="di-val" style="color:var(--red)">NT$320萬</div>
+      <div class="di-sub">2.4%／7年剩6年<br>等額攤還 月付NT$47,766 2031還清</div>
+    </div>
+    <!-- 元大質押（可編輯，連動質押頁） -->
+    <div class="di" id="di-pledge" style="border-color:rgba(96,165,248,.3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div class="di-lbl">元大質押 <span style="font-size:9px;color:var(--blue);font-family:'DM Mono',monospace">● 連動質押頁</span></div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+        <span style="font-size:10px;color:var(--dim)">借款</span>
+        <input id="debt-pledge-loan" type="number" min="0" step="100000"
+          style="width:80px;background:var(--surface2);border:1px solid rgba(96,165,248,.35);border-radius:4px;color:var(--red);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;padding:2px 5px;outline:none;text-align:right"
+          oninput="onDebtPledgeChange()"/>
+        <span style="font-size:10px;color:var(--dim)">元</span>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+        <span style="font-size:10px;color:var(--dim)">利率</span>
+        <input id="debt-pledge-rate" type="number" min="0" max="20" step="0.01"
+          style="width:55px;background:var(--surface2);border:1px solid rgba(96,165,248,.35);border-radius:4px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;padding:2px 5px;outline:none;text-align:right"
+          oninput="onDebtPledgeChange()"/>
+        <span style="font-size:10px;color:var(--dim)">%／只付息</span>
+      </div>
+      <div id="debt-pledge-summary" style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace"></div>
+    </div>
+    <!-- 月還款合計（動態） -->
+    <div class="di" style="border-color:rgba(248,113,113,.3)">
+      <div class="di-lbl">月還款合計</div>
+      <div class="di-val">NT$11.66萬</div>
+      <div class="di-sub" id="debt-summary-sub">年利息NT$53.7萬<br>加權利率2.46%</div>
+    </div>
+  </div>
+
+  <div class="sec-title red">負債逐年精算</div>
+  <div class="debt-table-wrap">
+    <table class="debt-table">
+      <thead><tr>
+        <th>負債項目</th>
+        <th class="yr-head">2026</th><th class="yr-head">2027</th><th class="yr-head">2028</th>
+        <th class="yr-head">2029</th><th class="yr-head">2030</th>
+        <th class="yr-head" style="background:rgba(74,222,154,.06)">2031★</th>
+        <th>備註</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>分期房貸</td>
+          <td class="num">1,300萬</td><td class="num">1,263萬</td><td class="num">1,225萬</td>
+          <td class="num">1,187萬</td><td class="num">1,147萬</td><td class="num">1,065萬</td>
+          <td class="sug">等額攤還，6年還本約NT$235萬</td></tr>
+        <tr><td>理財房貸</td>
+          <td class="num">400萬</td><td class="num">400萬</td><td class="num">400萬</td>
+          <td class="num">400萬</td><td class="num">400萬</td><td class="num">400萬</td>
+          <td class="sug"><span class="tag tag-watch">續約</span>CLEC精神：2.95%利差划算不還</td></tr>
+        <tr><td>信貸</td>
+          <td class="num">320萬</td><td class="num">270萬</td><td class="num">218萬</td>
+          <td class="num">166萬</td><td class="num">112萬</td><td class="num zero">還清</td>
+          <td class="sug">2031年底自然還清</td></tr>
+        <tr><td>元大質押</td>
+          <td class="num">150萬</td><td class="num">150萬</td><td class="num">150萬</td>
+          <td class="num">150萬</td><td class="num">150萬</td><td class="num">150萬</td>
+          <td class="sug"><span class="tag tag-hold">維持</span>質押比3.5%，遠低於20%上限</td></tr>
+        <tr class="subtotal"><td style="color:var(--text)">合計負債</td>
+          <td class="num total-debt">2,170萬</td><td class="num total-debt">2,083萬</td><td class="num total-debt">1,994萬</td>
+          <td class="num total-debt">1,902萬</td><td class="num total-debt">1,809萬</td>
+          <td class="num total-debt" style="background:rgba(74,222,154,.06)">1,615萬</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note-bar">⚠️ CLEC精神：理財房貸2.95%遠低於NASDAQ100預期報酬12~15%，不提前還款符合利差套利邏輯。5年後1,000萬入賬全部投入市場。配息欄位若已在「現況持股」頁填入實際數字，此頁自動同步顯示；未填入則顯示系統估算值（以灰色標注）。</div>
+</div>
+
+<!-- ═══ TAB 4：433 再平衡 ═══ -->
+<div class="tab-panel" id="tab-rebalance">
+
+  <!-- 說明列 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+    <div>
+      <div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--text)">433 配置再平衡試算</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;font-family:'DM Mono',monospace">以現有持股市值為基礎，計算目標配置 40/30/30 各桶缺口，並給出操作建議</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace">計算基準年：</span>
+      <div id="rb-yr-tabs" style="display:flex;gap:4px"></div>
+    </div>
+  </div>
+
+  <!-- 可調整目標比例 -->
+  <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:flex-end">
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 16px">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.04em">目標配置比例（可調整）</div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="font-size:11px;color:var(--core-c)">🔵 核心桶</span>
+          <input id="rb-target-core" type="number" min="0" max="100" step="1" value="40"
+            style="width:52px;background:var(--surface2);border:1px solid rgba(96,165,248,.4);border-radius:4px;color:var(--blue);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:center;padding:3px 4px;outline:none"
+            oninput="renderRebalance()"/>
+          <span style="font-size:11px;color:var(--dim)">%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="font-size:11px;color:var(--sat-c)">🟡 衛星桶</span>
+          <input id="rb-target-sat" type="number" min="0" max="100" step="1" value="30"
+            style="width:52px;background:var(--surface2);border:1px solid rgba(192,132,252,.4);border-radius:4px;color:var(--purple);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:center;padding:3px 4px;outline:none"
+            oninput="renderRebalance()"/>
+          <span style="font-size:11px;color:var(--dim)">%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="font-size:11px;color:var(--cash-c)">🟢 現金桶</span>
+          <input id="rb-target-cash" type="number" min="0" max="100" step="1" value="30"
+            style="width:52px;background:var(--surface2);border:1px solid rgba(74,222,154,.4);border-radius:4px;color:var(--green);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:center;padding:3px 4px;outline:none"
+            oninput="renderRebalance()"/>
+          <span style="font-size:11px;color:var(--dim)">%</span>
+        </div>
+        <div id="rb-target-sum" style="font-size:11px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:4px"></div>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 16px">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'DM Mono',monospace">新增資金（可填）</div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="font-size:11px;color:var(--dim)">NT$</span>
+        <input id="rb-new-funds" type="number" min="0" step="100000" value="0" placeholder="0"
+          style="width:100px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:13px;text-align:right;padding:3px 6px;outline:none"
+          oninput="renderRebalance()"/>
+        <span style="font-size:11px;color:var(--dim)">元（再平衡時可加入）</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 現況 vs 目標 總覽 -->
+  <div class="sec-title">現況 vs 目標配置</div>
+  <div id="rb-overview" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:20px"></div>
+
+  <!-- 缺口視覺化 -->
+  <div class="sec-title">各桶缺口圖</div>
+  <div id="rb-gap-chart" style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;margin-bottom:20px"></div>
+
+  <!-- 個股操作建議 -->
+  <div class="sec-title">個股再平衡建議</div>
+  <div class="table-wrap">
+    <table id="rb-table" style="min-width:780px">
+      <thead><tr>
+        <th style="min-width:60px">桶別</th>
+        <th style="min-width:72px">標的</th>
+        <th class="yr-head" style="min-width:80px">現有市值</th>
+        <th class="yr-head" style="min-width:72px">佔總資產%</th>
+        <th class="yr-head" style="min-width:72px">佔桶內%</th>
+        <th class="yr-head" style="min-width:90px">目標市值</th>
+        <th class="yr-head" style="min-width:90px">缺口金額</th>
+        <th style="min-width:160px">建議操作</th>
+      </tr></thead>
+      <tbody id="rb-tbody"></tbody>
+    </table>
+  </div>
+  <div class="note-bar">⚠️ 新增資金採「缺口優先」策略：先補最大缺口的桶，超配的桶不強制減倉。美股現金流組獨立於 433 框架，不納入再平衡計算。再平衡建議僅供規劃，非投資建議。</div>
+</div>
+
+<!-- ═══ TAB 6：613 再平衡 ═══ -->
+<div class="tab-panel" id="tab-rebalance613">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+    <div>
+      <div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--text)">613 配置再平衡試算</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;font-family:'DM Mono',monospace">成長型配置：核心60% ／ 衛星10% ／ 現金30%　適合牛市末期或高成長期</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace">計算基準年：</span>
+      <div id="rb613-yr-tabs" style="display:flex;gap:4px"></div>
+    </div>
+  </div>
+
+  <!-- 613 目標比例（固定 60/10/30，顯示說明） -->
+  <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:flex-end">
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 16px">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.04em">目標配置比例（可調整）</div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="font-size:11px;color:var(--core-c)">🔵 核心桶</span>
+          <input id="rb613-target-core" type="number" min="0" max="100" step="1" value="60"
+            style="width:52px;background:var(--surface2);border:1px solid rgba(96,165,248,.4);border-radius:4px;color:var(--blue);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:center;padding:3px 4px;outline:none"
+            oninput="renderRebalance613()"/>
+          <span style="font-size:11px;color:var(--dim)">%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="font-size:11px;color:var(--sat-c)">🟡 衛星桶</span>
+          <input id="rb613-target-sat" type="number" min="0" max="100" step="1" value="10"
+            style="width:52px;background:var(--surface2);border:1px solid rgba(192,132,252,.4);border-radius:4px;color:var(--purple);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:center;padding:3px 4px;outline:none"
+            oninput="renderRebalance613()"/>
+          <span style="font-size:11px;color:var(--dim)">%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="font-size:11px;color:var(--cash-c)">🟢 現金桶</span>
+          <input id="rb613-target-cash" type="number" min="0" max="100" step="1" value="30"
+            style="width:52px;background:var(--surface2);border:1px solid rgba(74,222,154,.4);border-radius:4px;color:var(--green);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:center;padding:3px 4px;outline:none"
+            oninput="renderRebalance613()"/>
+          <span style="font-size:11px;color:var(--dim)">%</span>
+        </div>
+        <div id="rb613-target-sum" style="font-size:11px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:4px"></div>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 16px">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'DM Mono',monospace">新增資金（可填）</div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="font-size:11px;color:var(--dim)">NT$</span>
+        <input id="rb613-new-funds" type="number" min="0" step="100000" value="0" placeholder="0"
+          style="width:100px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:13px;text-align:right;padding:3px 6px;outline:none"
+          oninput="renderRebalance613()"/>
+        <span style="font-size:11px;color:var(--dim)">元</span>
+      </div>
+    </div>
+    <!-- 與 433 差異對比 -->
+    <div id="rb613-diff-card" style="background:var(--surface);border:1px solid rgba(96,165,248,.25);border-radius:10px;padding:12px 16px;flex:1;min-width:200px"></div>
+  </div>
+
+  <div class="sec-title">現況 vs 目標配置</div>
+  <div id="rb613-overview" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:20px"></div>
+
+  <div class="sec-title">各桶缺口圖</div>
+  <div id="rb613-gap-chart" style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;margin-bottom:20px"></div>
+
+  <div class="sec-title">個股再平衡建議</div>
+  <div class="table-wrap">
+    <table id="rb613-table" style="min-width:780px">
+      <thead><tr>
+        <th style="min-width:60px">桶別</th>
+        <th style="min-width:72px">標的</th>
+        <th class="yr-head" style="min-width:80px">現有市值</th>
+        <th class="yr-head" style="min-width:72px">佔總資產%</th>
+        <th class="yr-head" style="min-width:72px">佔桶內%</th>
+        <th class="yr-head" style="min-width:90px">目標市值</th>
+        <th class="yr-head" style="min-width:90px">缺口金額</th>
+        <th style="min-width:160px">建議操作</th>
+      </tr></thead>
+      <tbody id="rb613-tbody"></tbody>
+    </table>
+  </div>
+  <div class="note-bar">⚠️ 613 配置適合看好大盤長期走勢、願意提高核心比重的時期。核心桶60%代表大量資金集中於 NASDAQ100/台股ETF，波動較 433 大。衛星桶降至10%，減少正2槓桿曝險。新增資金採缺口優先策略。非投資建議。</div>
+</div>
+
+<!-- ═══ TAB 5：質押試算 ═══ -->
+<div class="tab-panel" id="tab-pledge">
+  <div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">元大質押安全試算</div>
+  <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:16px">維持率 = 抵押品總市值 ÷ 借款金額 × 100%　　警戒線 130%　　斷頭線 120%</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;align-items:start">
+
+    <!-- 左欄：現有抵押品（多標的） -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em">現有抵押品設定（可多筆）</div>
+        <button onclick="addPledgeRow()" style="font-size:10px;padding:2px 9px;border-radius:4px;border:1px solid rgba(96,165,248,.4);background:rgba(96,165,248,.08);color:var(--blue);cursor:pointer;font-family:'DM Mono',monospace">+ 新增標的</button>
+      </div>
+      <div id="pl-collateral-rows" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <div style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace">抵押品總市值</div>
+          <div id="pl-maint-badge" style="font-size:11px;font-family:'DM Mono',monospace"></div>
+        </div>
+        <div id="pl-total-mkt" style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text);margin-top:2px">—</div>
+        <div id="pl-maint-detail" style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace;margin-top:3px"></div>
+      </div>
+    </div>
+
+    <!-- 右欄：借款設定 + 即時結果 -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:10px;font-family:'DM Mono',monospace;letter-spacing:.04em">借款設定</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div>
+            <div style="font-size:10px;color:var(--dim);margin-bottom:3px">借款金額（NT$）</div>
+            <input id="pl-loan" type="number" min="0" step="100000" oninput="calcPledge()"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--red);font-family:'DM Mono',monospace;font-size:13px;padding:4px 7px;outline:none"/>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div>
+              <div style="font-size:10px;color:var(--dim);margin-bottom:3px">利率（年）</div>
+              <div style="display:flex;align-items:center;gap:4px">
+                <input id="pl-rate" type="number" min="0" max="20" step="0.01" value="2.88" oninput="calcPledge()"
+                  style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;padding:4px 6px;outline:none"/>
+                <span style="font-size:10px;color:var(--dim)">%</span>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--dim);margin-bottom:3px">成數上限</div>
+              <div style="display:flex;align-items:center;gap:4px">
+                <input id="pl-ratio-limit" type="number" min="10" max="80" step="1" value="60" oninput="calcPledge()"
+                  style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;padding:4px 6px;outline:none"/>
+                <span style="font-size:10px;color:var(--dim)">%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 即時計算結果 -->
+      <div id="pl-result" style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.04em">即時計算結果</div>
+        <div style="color:var(--dim);font-size:12px">請填入左側欄位</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 股價下跌模擬 -->
+  <div class="sec-title">股價下跌模擬</div>
+  <div id="pl-simulation" style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;margin-bottom:20px">
+    <div style="color:var(--dim);font-size:12px">請先填入上方資料</div>
+  </div>
+
+  <!-- 補繳/補股試算 -->
+  <div class="sec-title">補繳 / 補股計算</div>
+  <div id="pl-topup" style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;margin-bottom:20px">
+    <div style="color:var(--dim);font-size:12px">請先填入上方資料</div>
+  </div>
+
+  <div id="pl-note" class="note-bar"></div>
+</div>
+
+<script>
+const FX=31.45;
+
+// ── 股價快取系統 ──
+const PRICE_KEY  = 'clec_prices_v1';
+const SHARES_KEY = 'clec_shares_v1';
+const TW_TICKERS = ['00662','006208','00692','00830','2330','1231','2382',
+                    '00757','00675L','00631L','00670L','00865B','2890','2884','2881'];
+const US_TICKERS = ['QQQI','QQQM','VTI','BRK-B','QQXL'];
+
+// 負債快取（元大質押可由負債頁填改後同步質押頁）
+const DEBT_KEY = 'clec_debt_v1';
+let debtCache = {pledgeLoan:1500000, pledgeRate:2.88};
+try{ const s=localStorage.getItem(DEBT_KEY); if(s) Object.assign(debtCache,JSON.parse(s)); }catch(e){}
+function saveDebtCache(){
+  try{ localStorage.setItem(DEBT_KEY,JSON.stringify(debtCache)); }catch(e){}
+}
+
+// 股價快取
+let priceCache = {};
+try{ const s=localStorage.getItem(PRICE_KEY); if(s) priceCache=JSON.parse(s); }catch(e){}
+function getPrice(ticker, defaultPrice){
+  return priceCache[ticker]!==undefined ? priceCache[ticker] : defaultPrice;
+}
+function savePrice(ticker, price){
+  priceCache[ticker]=price;
+  try{ localStorage.setItem(PRICE_KEY, JSON.stringify(priceCache)); }catch(e){}
+}
+
+// 股數快取
+let sharesCache = {};
+try{ const s=localStorage.getItem(SHARES_KEY); if(s) sharesCache=JSON.parse(s); }catch(e){}
+function getShares(ticker, defaultShares){
+  return sharesCache[ticker]!==undefined ? sharesCache[ticker] : defaultShares;
+}
+function saveShares(ticker, shares){
+  sharesCache[ticker]=shares;
+  try{ localStorage.setItem(SHARES_KEY, JSON.stringify(sharesCache)); }catch(e){}
+}
+function getInitVal(ticker, defaultShares, defaultPrice){
+  return getPrice(ticker,defaultPrice) * getShares(ticker,defaultShares);
+}
+
+// ── 股價更新面板 ──
+let tempPrices = {};
+
+function openPricePanel(){
+  tempPrices = {};
+  const tbody = document.getElementById('price-table-body');
+  tbody.innerHTML = '';
+
+  holdings.forEach(h=>{
+    const [cat,ticker,shares,defPrice]=h;
+    if(ticker==='美金定存') return;
+    const isTW = TW_TICKERS.includes(ticker);
+    const isUS = US_TICKERS.includes(ticker);
+    const curP  = getPrice(ticker, defPrice);
+    const displayP = isUS ? (curP/FX).toFixed(2) : curP.toFixed(2);
+    const unit  = isUS ? 'USD' : 'NT$';
+    const ref   = isTW
+      ? `https://tw.stock.yahoo.com/quote/${ticker}`
+      : `https://finance.yahoo.com/quote/${ticker}`;
+    const curSh = getShares(ticker, shares);
+
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid var(--border)';
+    tr.innerHTML = `
+      <td style="padding:7px 10px;font-family:'DM Mono',monospace;font-weight:500">
+        <a href="${ref}" target="_blank" style="color:var(--blue);text-decoration:none"
+           title="點擊在新分頁查詢">${ticker} ↗</a>
+      </td>
+      <td style="padding:7px 10px;font-size:10px;color:var(--dim)">${isTW?'台股':'美股'}</td>
+      <td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;color:var(--muted)">
+        ${unit} ${displayP}
+        <div style="font-size:9px;color:var(--dim);margin-top:1px">${curSh.toLocaleString()} 股</div>
+      </td>
+      <td style="padding:7px 10px;text-align:center">
+        <input id="price-inp-${ticker}" type="number" min="0" step="${isUS?'0.01':'0.1'}"
+          placeholder="${displayP}"
+          style="width:90px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 5px;outline:none"
+          title="${isUS?'USD，自動×31.45換算NT$':'NT$收盤價'}"
+          oninput="tempPrices['${ticker}']=this.value"
+          onkeydown="if(event.key==='Enter'){const next=this.closest('tr').nextElementSibling?.querySelector('input');if(next)next.focus();else document.getElementById('btn-apply-price').focus();}"/>
+        <span style="font-size:10px;color:var(--dim)">${unit}</span>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('price-panel').style.display='block';
+  document.getElementById('twse-status').innerHTML='';
+  setTimeout(()=>{ const first=tbody.querySelector('input'); if(first)first.focus(); },100);
+}
+
+function closePricePanel(){
+  document.getElementById('price-panel').style.display='none';
+}
+
+function applyPriceUpdates(){
+  let updated=0;
+  Object.keys(tempPrices).forEach(ticker=>{
+    const v=parseFloat(tempPrices[ticker]);
+    if(isNaN(v)||v<=0) return;
+    const isUS = US_TICKERS.includes(ticker);
+    savePrice(ticker, isUS ? v*FX : v);
+    updated++;
+  });
+  if(updated===0){ closePricePanel(); return; }
+
+  const now=new Date();
+  const timeStr=`${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  try{ localStorage.setItem('clec_price_updated', timeStr); }catch(e){}
+  document.getElementById('price-last-update').textContent='最後更新：'+timeStr;
+
+  renderOverview(curScen);
+  renderHoldings();
+  if(document.getElementById('tab-cashflow').classList.contains('active')) renderCashflow();
+
+  closePricePanel();
+
+  const statusEl=document.getElementById('price-update-status');
+  statusEl.textContent=`✓ 已更新 ${updated} 支股價`;
+  statusEl.style.color='var(--green)';
+  setTimeout(()=>{ statusEl.textContent=''; },4000);
+}
+
+async function fetchTwseAll(){
+  document.getElementById('twse-status').innerHTML =
+    '參考 <a href="https://tw.stock.yahoo.com" target="_blank" style="color:var(--blue)">tw.stock.yahoo.com</a> 或 <a href="https://goodinfo.tw" target="_blank" style="color:var(--blue)">goodinfo.tw</a> 查詢後填入股價';
+  document.getElementById('twse-status').style.color='var(--muted)';
+}
+
+// ── 匯出 / 匯入備份 ──
+function exportAllData(){
+  const payload = {
+    _version: 2,
+    _exported: new Date().toISOString(),
+    prices:    priceCache,
+    shares:    sharesCache,
+    dividends: dividendData,
+    userRates: userRates,
+    cats:      catCache,
+    debt:      debtCache,
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const now  = new Date();
+  const stamp= `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  a.href     = url;
+  a.download = `clec_portfolio_${stamp}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  const el=document.getElementById('price-update-status');
+  if(el){ el.textContent='✓ 備份已下載'; el.style.color='var(--green)';
+    setTimeout(()=>el.textContent='',3000); }
+}
+
+function importAllData(input){
+  const file = input.files?.[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    try{
+      const data = JSON.parse(e.target.result);
+      // 驗證格式
+      if(!data._version || !data.prices){
+        alert('檔案格式不符，請選擇由本系統匯出的 .json 備份');
+        return;
+      }
+      if(!confirm(`確定匯入備份（${data._exported?.slice(0,10) || '未知日期'}）？\n目前所有資料將被覆蓋。`)) return;
+
+      // 寫入快取
+      Object.assign(priceCache,   data.prices   || {});
+      Object.assign(sharesCache,  data.shares   || {});
+      Object.assign(dividendData, data.dividends|| {});
+      if(data.userRates) Object.assign(userRates, data.userRates);
+      if(data.cats)  Object.assign(catCache,  data.cats);
+      if(data.debt)  Object.assign(debtCache, data.debt);
+
+      try{ localStorage.setItem(PRICE_KEY,   JSON.stringify(priceCache));   }catch(err){}
+      try{ localStorage.setItem(SHARES_KEY,  JSON.stringify(sharesCache));  }catch(err){}
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(dividendData)); }catch(err){}
+      try{ localStorage.setItem(CAT_KEY,     JSON.stringify(catCache));     }catch(err){}
+      try{ localStorage.setItem(DEBT_KEY,    JSON.stringify(debtCache));    }catch(err){}
+
+      // 重繪全頁
+      renderOverview(curScen);
+      renderHoldings();
+      renderCashflow();
+
+      const el=document.getElementById('price-update-status');
+      if(el){ el.textContent='✓ 匯入成功，所有資料已還原'; el.style.color='var(--green)';
+        setTimeout(()=>el.textContent='',4000); }
+    } catch(err){
+      alert('匯入失敗：' + err.message);
+    }
+    input.value=''; // reset，允許再次選同一檔
+  };
+  reader.readAsText(file);
+}
+
+// 負債精算
+// ── 質押資料（集中管理，質押頁直接讀取）──
+// PLEDGE_DATA 動態從 debtCache 讀取 loan/rate
+const PLEDGE_DATA = {
+  ticker:  '00662',
+  get loan(){ return debtCache.pledgeLoan||1500000; },
+  get rate(){ return debtCache.pledgeRate||2.88; },
+  ratioLim:60,
+  warnRate:130,
+  bustRate:120,
+};
+const r1m=0.023/12,_n1=26*12,_p1=13000000;
+const _m1=_p1*(r1m*(1+r1m)**_n1)/((1+r1m)**_n1-1);
+const r3m=0.024/12,_n3=6*12,_p3=3200000;
+const _m3=_p3*(r3m*(1+r3m)**_n3)/((1+r3m)**_n3-1);
+function debtTotal(y){
+  const mo=y*12;
+  const b1=_p1*(1+r1m)**mo-_m1*((1+r1m)**mo-1)/r1m;
+  const b3=Math.max(0,_p3*(1+r3m)**mo-_m3*((1+r3m)**mo-1)/r3m);
+  return Math.round(b1+4000000+b3+1500000);
+}
+const DEBTS=[0,1,2,3,4,5].map(y=>debtTotal(y));
+
+const SCENARIOS={
+  bear:{core:0.08,sat:0.12,label:'保守',note:'核心8% / 衛星12%'},
+  base:{core:0.12,sat:0.20,label:'基本',note:'核心12% / 衛星20%'},
+  bull:{core:0.16,sat:0.28,label:'樂觀',note:'核心16% / 衛星28%'},
+};
+let curScen='base';
+const userRates={};
+
+const holdings=[
+  ["core","00662",  114000,102.68,1.0,  0,      0.12,"hold","CLEC核心標的，持續累積，崩盤加碼首選"],
+  ["core","006208",  8000,176.55,0.85,27600,    0.10,"hold","台50穩定配息，每年6月/11月除息"],
+  ["core","00692",  18000, 67.05,0.80,33840,    0.10,"hold","公司治理ETF，分散個股風險"],
+  ["core","00830",   7000, 56.30,0.95,63000,    0.10,"hold","費城半導體，高殖利率9%，1月除息"],
+  ["core","2330",    3000,2000.0,1.10,72000,    0.12,"hold","台積電季配4次，AI受惠核心持股"],
+  ["core","1231",   20000, 91.10,0.50,32000,    0.06,"hold","防禦性配息股，低Beta穩定現金流"],
+  ["core","2382",    2000,321.50,1.20,31200,    0.12,"hold","廣達AI伺服器受惠，年配$15.6"],
+  ["sat", "00757",  50000,107.60,1.20,    0,    0.15,"hold","FANG+追蹤，科技巨頭曝險"],
+  ["sat", "00675L",  8700,185.60,2.00,    0,    0.20,"add", "主力正2，第5年1000萬入賬優先加碼"],
+  ["sat", "00631L", 22000, 23.47,2.00,    0,    0.20,"hold","台50正2，流動性最佳，續持"],
+  ["sat", "00670L",  9000,143.65,2.00,    0,    0.20,"hold","NASDAQ正2，與00675L互補"],
+  ["cash","美金定存",   1,7114028,0.00,213418,  0.03,"hold","美金3%定存，現金流最大貢獻者"],
+  ["cash","00865B",  1000, 46.58,0.10, 2000,    0.02,"hold","債券ETF，現金桶穩定器"],
+  ["cash","2890",   23000, 22.40,0.70,20930,    0.05,"hold","永豐金，配息穩健，金融股壓艙石"],
+  ["cash","2884",   13000, 28.75,0.70,19500,    0.05,"hold","玉山金，數位金融布局受惠"],
+  ["cash","2881",    4715, 90.90,0.80,20039,    0.06,"hold","富邦金，綜合金融龍頭"],
+  ["usflow","QQQI",   244, 52*FX,0.90,Math.round(244*7.48*FX),0.12,"add","月配ETF核心，目標3,068股月配6萬，第5年入賬150萬加碼"],
+  ["usflow","QQQM",    25,254*FX,1.00,Math.round(25*1.00*FX), 0.13,"hold","NASDAQ100低費用版，核心美股持倉"],
+  ["usflow","VTI",     48,252*FX,1.00,Math.round(48*4.00*FX), 0.10,"hold","全美市場ETF，分散個股風險"],
+  ["usflow","BRK-B",   26,530*FX,0.80,0,                      0.10,"hold","波克夏，不配息複利機器，防禦型核心"],
+  ["usflow","QQXL",    56, 42*FX,1.20,Math.round(56*2.40*FX), 0.15,"watch","NASDAQ槓桿配息，留意規模風險"],
+];
+const BONUS={"00675L":4000000,"QQQI":1500000};
+const BONUS_YEAR=5;
+const BKL={core:{label:"核心桶",cls:"bk-core",color:"var(--core-c)"},sat:{label:"衛星桶",cls:"bk-sat",color:"var(--sat-c)"},cash:{label:"現金桶",cls:"bk-cash",color:"var(--cash-c)"},usflow:{label:"美股現金流",cls:"bk-usflow",color:"var(--usflow-c)"}};
+const TI={hold:{cls:"tag-hold",txt:"持續持有"},add:{cls:"tag-add",txt:"建議加碼"},watch:{cls:"tag-watch",txt:"留意觀察"},trim:{cls:"tag-trim",txt:"考慮調節"}};
+
+function fmtM(v){return (v/10000).toFixed(1)+"萬"}
+function fmtI(v){return Math.round(v/10000)+"萬"}
+
+function effectiveRate(ticker,baseRet,scen){
+  if(userRates[ticker]!==undefined) return userRates[ticker];
+  const cat=holdings.find(h=>h[1]===ticker)?.[0];
+  const sc=SCENARIOS[scen];
+  if(sc){if(cat==='core') return sc.core; if(cat==='sat') return sc.sat;}
+  return baseRet;
+}
+
+function calcVals(initVal,ret,name){
+  let v=initVal,vals=[Math.round(v)];
+  for(let y=1;y<=5;y++){v=v*(1+ret);if(y===BONUS_YEAR&&BONUS[name])v+=BONUS[name];vals.push(Math.round(v));}
+  return vals;
+}
+
+function yrCells(vals,ticker,overrideColor,useId){
+  return vals.map((v,i)=>{
+    const best=i===5,c=overrideColor||'';
+    const idAttr=useId?` id="yr-${ticker}-${i}"`:'';
+    if(i===0) return `<td${idAttr} class="yr" style="background:rgba(255,255,255,.03)"><div class="yr-main"${c?` style="color:${c}"`:''}>${fmtM(v)}</div><div class="yr-delta zero">基準年</div></td>`;
+    const prev=vals[i-1],diff=v-prev,pct=prev>0?diff/prev*100:0,s=diff>=0?'+':'';
+    const bonus=(i===5&&BONUS[ticker])?'<span style="color:var(--amber)"> ★</span>':'';
+    return `<td${idAttr} class="yr${best?' best':''}"><div class="yr-main"${c?` style="color:${c}"`:''}>${fmtM(v)}</div><div class="yr-delta">${s}${(diff/10000).toFixed(1)}萬 ${s}${pct.toFixed(1)}%${bonus}</div></td>`;
+  }).join('');
+}
+
+function calcAllTotals(scen){
+  const cats=['core','sat','cash','usflow'];
+  const ct={core:[0,0,0,0,0,0],sat:[0,0,0,0,0,0],cash:[0,0,0,0,0,0],usflow:[0,0,0,0,0,0]};
+  holdings.forEach(h=>{
+    const [defaultCat,ticker,shares,price,,,baseRet]=h;
+    const cat=getHoldingCat(ticker,defaultCat);
+    const vals=calcVals(getInitVal(ticker,shares,price),effectiveRate(ticker,baseRet,scen),ticker);    ct[cat]=ct[cat].map((v,i)=>v+vals[i]);
+  });
+  const grand=[0,0,0,0,0,0];
+  cats.forEach(c=>ct[c].forEach((v,i)=>grand[i]+=v));
+  return {ct,grand};
+}
+
+// ── Tab 1 Render ──
+function renderOverview(scen){
+  const {ct,grand}=calcAllTotals(scen);
+  const sc=SCENARIOS[scen];
+  document.getElementById('kpi-2031').textContent='NT$'+fmtI(grand[5]);
+  document.getElementById('kpi-growth').textContent='6年成長 +'+((grand[5]/grand[0]-1)*100).toFixed(0)+'%';
+  document.getElementById('kpi-net').textContent='NT$'+Math.round((grand[5]-DEBTS[5])/10000)+'萬';
+  document.getElementById('scen-note').textContent='目前：'+sc.label+'情境（'+sc.note+'）';
+
+  const kr=document.getElementById('scenKpis');kr.innerHTML='';
+  [{l:'2026 起始',v:grand[0],c:'var(--blue)'},{l:'2028 第3年',v:grand[2],c:'var(--muted)'},{l:'2030 第5年★',v:grand[4],c:'var(--amber)',s:'1000萬入賬後'},{l:'2031 終點',v:grand[5],c:'var(--green)',s:'淨資產 NT$'+Math.round((grand[5]-DEBTS[5])/10000)+'萬'}].forEach(k=>{
+    const d=document.createElement('div');d.className='skpi';
+    d.innerHTML=`<div class="skpi-lbl">${k.l}</div><div class="skpi-val" style="color:${k.c}">NT$${fmtI(k.v)}</div>${k.s?`<div class="skpi-sub">${k.s}</div>`:''}`;
+    kr.appendChild(d);
+  });
+
+  const sg=document.getElementById('sumGrid');sg.innerHTML='';
+  [0,1,2,3,4,5].forEach(i=>{
+    const yr=2026+i,asset=grand[i],net=asset-DEBTS[i];
+    const card=document.createElement('div');card.className='sum-card'+(i===5?' hi':'');
+    card.innerHTML=`<div class="sum-yr">${yr}${i===4?' ★1000萬入賬':''}</div><div class="sum-asset">NT$${Math.round(asset/10000)}萬</div><div class="sum-net">淨資產 NT$${Math.round(net/10000)}萬</div><div class="sum-debt-txt">負債 NT$${Math.round(DEBTS[i]/10000)}萬</div>`;
+    sg.appendChild(card);
+  });
+
+  const ob=document.getElementById('overviewBody');ob.innerHTML='';
+  ['core','sat','cash','usflow'].forEach(cat=>{
+    const binfo=BKL[cat],vals=ct[cat],mult=(vals[5]/vals[0]).toFixed(2);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><span class="bk ${binfo.cls}">${binfo.label}</span></td>`
+      +vals.map((v,i)=>{
+        if(i===0) return `<td class="yr" style="background:rgba(255,255,255,.03)"><div class="yr-main" style="color:${binfo.color}">${fmtI(v)}</div><div class="yr-delta zero">基準</div></td>`;
+        const prev=vals[i-1],diff=v-prev,pct=prev>0?diff/prev*100:0,s=diff>=0?'+':'';
+        return `<td class="yr${i===5?' best':''}"><div class="yr-main" style="color:${binfo.color}">${fmtI(v)}</div><div class="yr-delta">${s}${(diff/10000).toFixed(0)}萬 ${s}${pct.toFixed(1)}%</div></td>`;
+      }).join('')
+      +`<td class="num" style="color:var(--green);font-size:13px;font-weight:500">${mult}×</td>`;
+    ob.appendChild(tr);
+  });
+  const gtr=document.createElement('tr');gtr.className='subtotal';
+  gtr.innerHTML=`<td style="color:var(--text);font-size:12px;font-weight:500">總資產合計</td>`
+    +grand.map((v,i)=>{
+      const best=i===5,color=best?'var(--green)':'var(--text)';
+      if(i===0) return `<td class="yr" style="background:rgba(255,255,255,.02)"><div class="yr-main" style="color:${color};font-size:12px">${fmtI(v)}</div><div class="yr-delta zero" style="color:var(--dim)">基準</div></td>`;
+      const prev=grand[i-1],diff=v-prev,pct=prev>0?diff/prev*100:0,s=diff>=0?'+':'';
+      return `<td class="yr${best?' best':''}"><div class="yr-main" style="color:${color};font-size:12px">${fmtI(v)}</div><div class="yr-delta">${s}${(diff/10000).toFixed(0)}萬 ${s}${pct.toFixed(1)}%</div></td>`;
+    }).join('')
+    +`<td class="num" style="color:var(--green);font-size:13px;font-weight:500">${(grand[5]/grand[0]).toFixed(2)}×</td>`;
+  ob.appendChild(gtr);
+}
+
+// ── 年度切換狀態 ──
+let curYrIdx=0;
+const YR_LABELS=['2026','2027','2028','2029','2030','2031'];
+// dividendData[ticker][yrIdx] = {div:'', stock:''}
+// ── 2025 實際配息預設值（來源：各公司公告）──
+// div = 每股現金配息 NT$，stock = 配股比例（股/股）
+const DEFAULTS_2025 = {
+  '2330':    {div:'24.00', stock:''},   // 台積電季配×4=$24
+  '1231':    {div:'1.60',  stock:''},   // 聯華食
+  '00692':   {div:'1.88',  stock:''},   // 富邦公司治理
+  '006208':  {div:'3.45',  stock:''},   // 富邦台50
+  '00830':   {div:'9.00',  stock:''},   // 費城半導體
+  '2382':    {div:'15.60', stock:''},   // 廣達
+  '2881':    {div:'4.25',  stock:''},   // 富邦金
+  '2884':    {div:'1.50',  stock:''},   // 玉山金
+  '2890':    {div:'0.91',  stock:''},   // 永豐金
+  '00865B':  {div:'2.00',  stock:''},   // 債券ETF
+  'QQQI':    {div:'7.48',  stock:''},   // QQQI USD/股（TTM）× 244股 × 31.45
+  'QQQM':    {div:'1.00',  stock:''},   // QQQM USD/股 × 25股 × 31.45
+  'VTI':     {div:'4.00',  stock:''},   // VTI USD/股 × 48股 × 31.45
+  'QQXL':    {div:'2.40',  stock:''},   // QQXL USD/股估 × 56股 × 31.45
+  '美金定存':  {div:'213418', stock:''}, // 年總利息 NT$（shares=1，直接填總金額）
+};
+
+// 特殊標的：輸入欄的標籤和計算方式不同
+const SPECIAL_TICKERS = {
+  '美金定存': {unit:'年總利息 NT$', hint:'直接填年利息總額（非每股）'},
+  'QQQI':    {unit:'USD/股', hint:'系統自動×股數×31.45換算NT$'},
+  'QQQM':    {unit:'USD/股', hint:'系統自動×股數×31.45換算NT$'},
+  'VTI':     {unit:'USD/股', hint:'系統自動×股數×31.45換算NT$'},
+  'BRK-B':   {unit:'USD/股', hint:'不配息'},
+  'QQXL':    {unit:'USD/股', hint:'系統自動×股數×31.45換算NT$'},
+};
+// 2025資料套用到 yrIdx=0（2026欄的「對應2025配息」），其餘年度空白讓使用者填入
+
+const STORAGE_KEY = 'clec_dividend_data_v1';
+
+// 從 localStorage 載入，若沒有則用 2025 預設
+let dividendData = {};
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved){
+    dividendData = JSON.parse(saved);
+  }
+} catch(e){}
+
+// 若 yrIdx=0 沒有資料，預帶 2025 預設值
+function applyDefaults(){
+  Object.keys(DEFAULTS_2025).forEach(ticker=>{
+    if(!dividendData[ticker]) dividendData[ticker]={};
+    if(!dividendData[ticker][0]){
+      dividendData[ticker][0] = {...DEFAULTS_2025[ticker]};
+    }
+  });
+}
+applyDefaults();
+
+function getDivData(ticker,yrIdx){
+  if(!dividendData[ticker])dividendData[ticker]={};
+  if(!dividendData[ticker][yrIdx])dividendData[ticker][yrIdx]={div:'',stock:''};
+  return dividendData[ticker][yrIdx];
+}
+
+function saveDividendData(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dividendData));
+    const el=document.getElementById('save-status');
+    if(el){
+      el.textContent='✓ 已自動儲存';
+      el.style.color='var(--green)';
+      clearTimeout(el._t);
+      el._t=setTimeout(()=>{
+        el.textContent='資料已儲存於本機';
+        el.style.color='var(--dim)';
+      },2000);
+    }
+  } catch(e){
+    const el=document.getElementById('save-status');
+    if(el){el.textContent='⚠ 儲存失敗';el.style.color='var(--amber)';}
+  }
+}
+
+function clearAllDividendData(){
+  try{ localStorage.removeItem(STORAGE_KEY); } catch(e){}
+  dividendData={};
+  applyDefaults();
+  renderHoldings();
+  renderCashflow();
+}
+
+// ── 建立年度切換按鈕 ──
+function buildYrTabs(){
+  const wrap=document.getElementById('yr-tabs');if(!wrap)return;
+  wrap.innerHTML='';
+  YR_LABELS.forEach((lbl,i)=>{
+    const isBonus=i===5;
+    const btn=document.createElement('button');
+    btn.className='yr-tab-btn'+(isBonus?' is-bonus':'')+(i===curYrIdx?' active':'');
+    btn.textContent=lbl+(isBonus?' ★':'');
+    btn.onclick=()=>{curYrIdx=i;renderHoldings();};
+    wrap.appendChild(btn);
+  });
+  // update col header
+  const col=document.getElementById('col-yr-val');
+  if(col)col.textContent=YR_LABELS[curYrIdx]+(curYrIdx===5?' ★':'')+' 市值';
+}
+
+// ── 現金流總表即時更新 ──
+function updateCfSummary(){
+  const bar=document.getElementById('cf-summary-bar');if(!bar)return;
+  let totalDiv=0,totalStock=0,filledDiv=0,filledStock=0;
+  const {grand}=calcAllTotals(curScen);
+
+  holdings.forEach(h=>{
+    const [,ticker,shares,price,,,baseRet]=h;
+    const curSh=getShares(ticker,shares);
+    const ret=userRates[ticker]!==undefined?userRates[ticker]:baseRet;
+    const vals=calcVals(getInitVal(ticker,shares,price),ret,ticker);
+    const mktVal=vals[curYrIdx];
+    const pricePerShare=curSh>0?mktVal/curSh:price;
+    const d=getDivData(ticker,curYrIdx);
+    const divRaw=d.div!==''&&!isNaN(parseFloat(d.div))?parseFloat(d.div):null;
+
+    if(divRaw!==null){
+      let divAmt=0;
+      if(ticker==='美金定存'){
+        divAmt=divRaw;
+      } else if(['QQQI','QQQM','VTI','QQXL'].includes(ticker)){
+        divAmt=divRaw*curSh*FX;
+      } else {
+        divAmt=divRaw*curSh;
+      }
+      totalDiv+=divAmt;
+      filledDiv++;
+    }
+    if(d.stock!==''&&!isNaN(parseFloat(d.stock))){
+      totalStock+=parseFloat(d.stock)*curSh*pricePerShare;
+      filledStock++;
+    }
+  });
+
+  const totalCF=totalDiv+totalStock;
+  const grandVal=grand[curYrIdx]||1;
+  const divYld=totalDiv>0?((totalDiv/grandVal)*100).toFixed(2):null;
+  const debtInterest=537000; // 年利息 NT$537,000
+  const netCF=totalDiv-debtInterest;
+
+  bar.innerHTML=`
+    <div class="cf-sum-card">
+      <div class="cf-sum-lbl">${YR_LABELS[curYrIdx]} 現金配息合計</div>
+      <div class="cf-sum-val" style="color:${totalDiv>0?'var(--green)':'var(--dim)'}">${totalDiv>0?'NT$'+(totalDiv/10000).toFixed(2)+'萬':'未填入'}</div>
+      <div class="cf-sum-sub">月均 ${totalDiv>0?'NT$'+(totalDiv/12).toLocaleString('zh-TW',{maximumFractionDigits:0}):'—'}　已填${filledDiv}支</div>
+    </div>
+    <div class="cf-sum-card">
+      <div class="cf-sum-lbl">${YR_LABELS[curYrIdx]} 配股換算市值</div>
+      <div class="cf-sum-val" style="color:${totalStock>0?'var(--amber)':'var(--dim)'}">${totalStock>0?'≈NT$'+(totalStock/10000).toFixed(2)+'萬':'未填入'}</div>
+      <div class="cf-sum-sub">股數×比例×估算股價　已填${filledStock}支</div>
+    </div>
+    <div class="cf-sum-card">
+      <div class="cf-sum-lbl">現金+配股合計</div>
+      <div class="cf-sum-val" style="color:${totalCF>0?'var(--teal)':'var(--dim)'}">${totalCF>0?'NT$'+(totalCF/10000).toFixed(2)+'萬':'—'}</div>
+      <div class="cf-sum-sub">${totalCF>0?'月均 NT$'+(totalCF/12).toLocaleString('zh-TW',{maximumFractionDigits:0}):''}</div>
+    </div>
+    <div class="cf-sum-card">
+      <div class="cf-sum-lbl">現金殖利率</div>
+      <div class="cf-sum-val" style="color:${divYld?'var(--blue)':'var(--dim)'}">${divYld?divYld+'%':'—'}</div>
+      <div class="cf-sum-sub">現金配息 ÷ ${YR_LABELS[curYrIdx]}總資產</div>
+    </div>
+    <div class="cf-sum-card" style="${totalDiv>0?'border-color:'+(netCF>=0?'rgba(74,222,154,.3)':'rgba(248,113,113,.3)'):''}">
+      <div class="cf-sum-lbl">現金配息 − 負債利息</div>
+      <div class="cf-sum-val" style="color:${totalDiv>0?(netCF>=0?'var(--green)':'var(--red)'):'var(--dim)'}">
+        ${totalDiv>0?(netCF>=0?'+':'')+' NT$'+(netCF/10000).toFixed(2)+'萬':'—'}
+      </div>
+      <div class="cf-sum-sub">負債年利息 NT$53.7萬</div>
+    </div>`;
+}
+
+// ── Tab 2 Render（單年模式）──
+let _allRows=[],_grandRow=null;
+function renderHoldings(){
+  buildYrTabs();
+  const tbody=document.getElementById('tableBody');tbody.innerHTML='';
+  _allRows=[];
+  const catOrder=['core','sat','cash','usflow'],catH={};
+  catOrder.forEach(c=>catH[c]=[]);
+  holdings.forEach(h=>catH[h[0]].push(h));
+  const catTot={};
+
+  catOrder.forEach(cat=>{
+    const bi=BKL[cat];
+    let catMktSum=0, catDivSum=0, catStockSum=0;
+
+    catH[cat].forEach(h=>{
+      const [c,ticker,shares,price,beta,,baseRet,tag,sug]=h;
+      const curShares = getShares(ticker, shares); // 有效股數（優先用 sharesCache）
+      const initVal=getInitVal(ticker,shares,price);
+      const curPrice=getPrice(ticker,price);
+      const ret=userRates[ticker]!==undefined?userRates[ticker]:baseRet;
+      const vals=calcVals(initVal,ret,ticker);
+
+      const mktVal=vals[curYrIdx];
+      const prevMktVal=curYrIdx>0?vals[curYrIdx-1]:null;
+      const pricePerShare=curShares>0?mktVal/curShares:price;
+      catMktSum+=mktVal;
+
+      const bp=Math.min(beta/2.5*100,100);
+      const bc=beta>=2?"var(--purple)":beta>=1?"var(--blue)":"var(--green)";
+      const ti=TI[tag];
+      const defR=baseRet*100;
+      const isChanged=userRates[ticker]!==undefined;
+      const curR=isChanged?userRates[ticker]*100:defR;
+
+      // 配息配股資料
+      const dd=getDivData(ticker,curYrIdx);
+      const divRaw=dd.div!==''&&!isNaN(parseFloat(dd.div))?parseFloat(dd.div):null;
+      const stockRatio=dd.stock!==''&&!isNaN(parseFloat(dd.stock))?parseFloat(dd.stock):null;
+
+      // 計算現金配息總額（NT$）
+      let divTotal=null;
+      if(divRaw!==null){
+        if(ticker==='美金定存'){
+          divTotal=divRaw;
+        } else if(['QQQI','QQQM','VTI','QQXL'].includes(ticker)){
+          divTotal=divRaw*curShares*FX;
+        } else {
+          divTotal=divRaw*curShares;
+        }
+      }
+
+      const stockMktVal=stockRatio!==null?stockRatio*curShares*pricePerShare:null;
+      if(divTotal!==null)catDivSum+=divTotal;
+      if(stockMktVal!==null)catStockSum+=stockMktVal;
+
+      // 輸入欄標籤
+      const sp=SPECIAL_TICKERS[ticker];
+      const divUnit=sp?sp.unit:'NT$/股';
+      const divHint=sp?sp.hint:'填每股現金配息（NT$），Enter確認';
+      // 顯示合計說明
+      let divTotalLabel='';
+      if(divTotal!==null){
+        if(ticker==='美金定存'){
+          divTotalLabel=`= NT$${(divTotal/10000).toFixed(2)}萬`;
+        } else if(['QQQI','QQQM','VTI','QQXL'].includes(ticker)){
+          divTotalLabel=`= NT$${(divTotal/10000).toFixed(2)}萬（USD×${shares}×31.45）`;
+        } else {
+          divTotalLabel=`= NT$${(divTotal/10000).toFixed(2)}萬`;
+        }
+      }
+
+      // 市值欄：上行市值，下行較前年增長
+      const isBonus=curYrIdx===5&&BONUS[ticker];
+      const bonusBadge=isBonus?'<span style="font-size:9px;color:var(--amber);margin-left:2px">★</span>':'';
+      let deltaHtml='';
+      if(curYrIdx===0){
+        deltaHtml='<div class="yr-delta zero">基準年</div>';
+      } else {
+        const diff=mktVal-prevMktVal;
+        const pct=(diff/prevMktVal*100);
+        const s=diff>=0?'+':'';
+        deltaHtml=`<div class="yr-delta">${s}${(diff/10000).toFixed(1)}萬 ${s}${pct.toFixed(1)}%${isBonus?' <span style="color:var(--amber)">+入賬</span>':''}</div>`;
+      }
+
+      const sharesChanged = sharesCache[ticker] !== undefined;
+      const effectiveCat = getHoldingCat(ticker, cat);
+      const bi2 = BKL[effectiveCat]||bi;
+      const catChanged = catCache[ticker] !== undefined;
+
+      const tr=document.createElement('tr');tr.dataset.cat=effectiveCat;
+      tr.innerHTML=`
+        <td style="padding:5px 8px">
+          <select data-ticker="${ticker}" class="cat-select"
+            style="background:var(--surface2);border:1px solid ${catChanged?'var(--amber)':'var(--border2)'};border-radius:5px;color:${catChanged?'var(--amber)':'var(--text)'};font-family:'DM Mono',monospace;font-size:10px;padding:2px 4px;outline:none;cursor:pointer;width:70px">
+            ${BUCKET_OPTIONS.map(b=>`<option value="${b}"${b===effectiveCat?' selected':''}>${BKL[b].label}</option>`).join('')}
+          </select>
+        </td>
+        <td><span class="ticker">${ticker}</span></td>
+        <td style="text-align:right;padding:5px 8px">
+          ${ticker==='美金定存'
+            ? `<span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim)">1</span>`
+            : `<div style="display:flex;align-items:center;justify-content:flex-end;gap:3px">
+                <input class="shares-input${sharesChanged?' changed':''}" id="shares-${ticker}"
+                  type="number" min="0" step="1"
+                  value="${curShares}"
+                  data-default="${shares}"
+                  data-ticker="${ticker}"
+                  style="width:72px;background:var(--surface2);border:1px solid ${sharesChanged?'var(--blue)':'var(--border2)'};border-radius:4px;color:${sharesChanged?'var(--blue)':'var(--text)'};font-family:'DM Mono',monospace;font-size:11px;text-align:right;padding:2px 5px;outline:none"
+                  title="修改持有股數，Enter確認即時重算"/>
+                <span style="font-size:10px;color:var(--dim)">股</span>
+              </div>
+              ${sharesChanged?`<div style="font-size:9px;color:var(--blue);margin-top:1px;text-align:right">預設${shares.toLocaleString()}</div>`:''}`
+          }
+        </td>
+        <td>
+          <div class="beta-wrap">
+            <div class="beta-bar-bg"><div class="beta-bar-fill" style="width:${bp}%;background:${bc}"></div></div>
+            <span class="beta-val">${beta.toFixed(1)}</span>
+          </div>
+        </td>
+        <td style="text-align:center;padding:5px 8px">
+          <div class="rate-cell">
+            <input class="rate-input${isChanged?' changed':''}" id="rate-${ticker}"
+              type="number" min="0" max="100" step="0.5"
+              value="${curR.toFixed(1)}" data-default="${defR.toFixed(1)}" data-ticker="${ticker}"
+              title="修改年化報酬率，Enter確認"/>
+            <span class="rate-lbl">%</span>
+          </div>
+          <button class="reset-btn" data-ticker="${ticker}" data-default="${defR.toFixed(1)}">還原</button>
+        </td>
+        <td class="yr${curYrIdx===5?' best':''}">
+          <div class="yr-main">${fmtM(mktVal)}${bonusBadge}</div>
+          ${deltaHtml}
+        </td>
+        <td style="text-align:center;padding:5px 10px">
+          <div style="font-size:9px;color:var(--dim);margin-bottom:2px;font-family:'DM Mono',monospace">${divUnit}</div>
+          <input class="div-input${divRaw!==null?' filled':''}"
+            id="div-${ticker}-${curYrIdx}" type="number" min="0" step="${ticker==='美金定存'?'1000':['QQQI','QQQM','VTI','QQXL'].includes(ticker)?'0.01':'0.01'}"
+            value="${divRaw!==null?divRaw:''}" placeholder="${ticker==='美金定存'?'213418':'0.00'}"
+            data-ticker="${ticker}" data-yridx="${curYrIdx}"
+            title="${divHint}"/>
+          <div style="font-size:10px;margin-top:2px;min-height:14px;font-family:'DM Mono',monospace;color:${divTotal!==null?'var(--green)':'var(--dim)'}">
+            ${divTotalLabel}
+          </div>
+        </td>
+        <td style="text-align:center;padding:5px 10px">
+          <input class="stock-input${stockRatio!==null?' filled':''}"
+            id="stock-${ticker}-${curYrIdx}" type="number" min="0" step="0.001"
+            value="${stockRatio!==null?stockRatio:''}" placeholder="0.000"
+            data-ticker="${ticker}" data-yridx="${curYrIdx}"
+            title="填配股比例（如每股配0.05股填0.05），Enter確認"/>
+          <div style="font-size:10px;margin-top:2px;min-height:14px;font-family:'DM Mono',monospace;color:${stockMktVal!==null?'var(--amber)':'var(--dim)'}">
+            ${stockMktVal!==null?'≈NT$'+(stockMktVal/10000).toFixed(2)+'萬':''}
+          </div>
+        </td>
+        <td class="num" style="color:${divTotal!==null?'var(--green)':'var(--dim)'}">
+          <div>${divTotal!==null?'NT$'+(divTotal/10000).toFixed(2)+'萬':'—'}</div>
+          ${divTotal!==null?`<div style="font-size:10px;color:var(--dim);margin-top:1px">月均 NT$${(divTotal/12).toLocaleString('zh-TW',{maximumFractionDigits:0})}</div>`:''}
+        </td>
+        <td class="num" style="color:${stockMktVal!==null?'var(--amber)':'var(--dim)'}">
+          ${stockMktVal!==null?'≈NT$'+(stockMktVal/10000).toFixed(2)+'萬':'—'}
+        </td>
+        <td class="sug"><span class="tag ${ti.cls}">${ti.txt}</span> ${sug}</td>`;
+      tbody.appendChild(tr);
+      _allRows.push(tr);
+    });
+
+    // 桶別小計列
+    const sub=document.createElement('tr');sub.className='subtotal';sub.dataset.cat=cat;
+    sub.innerHTML=`
+      <td colspan="5" style="color:${bi.color};font-size:11px">${bi.label} 小計</td>
+      <td class="yr">
+        <div class="yr-main" style="color:${bi.color}">${fmtI(catMktSum)}</div>
+      </td>
+      <td colspan="2"></td>
+      <td class="num" style="color:${catDivSum>0?'var(--green)':'var(--dim)'}">
+        ${catDivSum>0?'NT$'+(catDivSum/10000).toFixed(2)+'萬':'—'}
+      </td>
+      <td class="num" style="color:${catStockSum>0?'var(--amber)':'var(--dim)'}">
+        ${catStockSum>0?'≈NT$'+(catStockSum/10000).toFixed(2)+'萬':'—'}
+      </td>
+      <td></td>`;
+    tbody.appendChild(sub);
+    catTot[cat]={mkt:catMktSum,div:catDivSum,stock:catStockSum};
+    _allRows.push(sub);
+  });
+
+  // 總計列
+  let grandMkt=0,grandDiv=0,grandStock=0;
+  Object.values(catTot).forEach(v=>{grandMkt+=v.mkt;grandDiv+=v.div;grandStock+=v.stock;});
+  const gr=document.createElement('tr');gr.id='grand-row';gr.className='subtotal';
+  gr.style.borderTop='2px solid rgba(255,255,255,.2)';
+  gr.innerHTML=`
+    <td colspan="5" style="color:var(--text);font-size:12px;font-weight:500">總資產合計</td>
+    <td class="yr best"><div class="yr-main" style="color:var(--green);font-size:12px">${fmtI(grandMkt)}</div></td>
+    <td colspan="2"></td>
+    <td class="num" style="color:${grandDiv>0?'var(--green)':'var(--dim)'}">
+      <div>${grandDiv>0?'NT$'+(grandDiv/10000).toFixed(2)+'萬':'—'}</div>
+      ${grandDiv>0?`<div style="font-size:10px;color:var(--dim);margin-top:1px">月均 NT$${(grandDiv/12).toLocaleString('zh-TW',{maximumFractionDigits:0})}</div>`:''}
+    </td>
+    <td class="num" style="color:${grandStock>0?'var(--amber)':'var(--dim)'}">
+      ${grandStock>0?'≈NT$'+(grandStock/10000).toFixed(2)+'萬':'—'}
+    </td>
+    <td></td>`;
+  tbody.appendChild(gr);_grandRow=gr;
+  updateCfSummary();
+}
+
+function recalcHoldings(){renderHoldings();}
+
+
+// ── Tab 3 Render（完全動態，同步持股頁配息資料）──
+// 系統估算值（未填入時使用）
+const CF_DEFAULTS = {
+  '美金定存': {lbl:'美金定存利息（3%）', val:213418, color:'#4ade9a'},
+  '2330':    {lbl:'2330台積電', val:72000, color:'#60a5f8'},
+  '00830':   {lbl:'00830費城半導體', val:63000, color:'#60a5f8'},
+  'QQQI':    {lbl:'QQQI月配息', val:57518, color:'#f5c842'},
+  '2881':    {lbl:'2881富邦金', val:20039, color:'#4ade9a'},
+  '2884':    {lbl:'2884玉山金', val:19500, color:'#4ade9a'},
+  '2890':    {lbl:'2890永豐金', val:20930, color:'#4ade9a'},
+  '2382':    {lbl:'2382廣達', val:31200, color:'#60a5f8'},
+  '1231':    {lbl:'1231聯華食', val:32000, color:'#60a5f8'},
+  '00692':   {lbl:'00692公司治理', val:33840, color:'#60a5f8'},
+  '006208':  {lbl:'006208富邦台50', val:27600, color:'#60a5f8'},
+  'QQQM':    {lbl:'QQQM', val:785, color:'#f5c842'},
+  'VTI':     {lbl:'VTI', val:6038, color:'#f5c842'},
+  'QQXL':    {lbl:'QQXL', val:4234, color:'#f5c842'},
+  '00865B':  {lbl:'00865B債券ETF', val:2000, color:'#4ade9a'},
+};
+const DEBT_INTEREST = 537000; // 年利息
+
+function buildCfYrTabs(){
+  const wrap=document.getElementById('cf-yr-tabs');if(!wrap)return;
+  wrap.innerHTML='';
+  YR_LABELS.forEach((lbl,i)=>{
+    const isBonus=i===5;
+    const btn=document.createElement('button');
+    btn.className='yr-tab-btn'+(isBonus?' is-bonus':'')+(i===curYrIdx?' active':'');
+    btn.textContent=lbl+(isBonus?' ★':'');
+    btn.onclick=()=>{
+      curYrIdx=i;
+      buildYrTabs();      // 同步持股頁年度 tab
+      buildCfYrTabs();    // 同步自己
+      renderCashflow();
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function renderCashflow(){
+  buildCfYrTabs();
+
+  // ── 收集資料：優先用手填，否則用估算 ──
+  const items=[];
+  let hasRealData=false;
+
+  holdings.forEach(h=>{
+    const [cat,ticker,shares,price,,,baseRet]=h;
+    const curSh = getShares(ticker, shares); // ← 套用 sharesCache
+    const ret=userRates[ticker]!==undefined?userRates[ticker]:baseRet;
+    const vals=calcVals(getInitVal(ticker,shares,price),ret,ticker);
+    const mktVal=vals[curYrIdx];
+    const pricePerShare=curSh>0?mktVal/curSh:price; // ← 用有效股數
+    const dd=getDivData(ticker,curYrIdx);
+    const def=CF_DEFAULTS[ticker];
+
+    if(dd.div!==''&&!isNaN(parseFloat(dd.div))){
+      let divAmt=0;
+      const dv=parseFloat(dd.div);
+      if(ticker==='美金定存'){
+        divAmt=dv;
+      } else if(['QQQI','QQQM','VTI','QQXL'].includes(ticker)){
+        divAmt=dv*curSh*FX; // ← curSh
+      } else {
+        divAmt=dv*curSh;    // ← curSh
+      }
+      if(divAmt>0){
+        hasRealData=true;
+        const unitLabel=ticker==='美金定存'?'年利息NT$':(SPECIAL_TICKERS[ticker]?'USD$'+dv.toFixed(2)+'/股':'NT$'+dv.toFixed(2)+'/股');
+        items.push({
+          lbl:ticker+' （'+unitLabel+'）',
+          val:Math.round(divAmt),
+          color:CF_DEFAULTS[ticker]?CF_DEFAULTS[ticker].color:'#60a5f8',
+          isReal:true,
+          ticker
+        });
+      }
+    } else if(def){
+      const growthFactor=Math.pow(1+baseRet*0.3, curYrIdx);
+      items.push({
+        lbl:def.lbl,
+        val:Math.round(def.val*growthFactor),
+        color:def.color,
+        isReal:false,
+        ticker
+      });
+    }
+
+    // 配股（換算市值）
+    if(dd.stock!==''&&!isNaN(parseFloat(dd.stock))){
+      const stockMkt=parseFloat(dd.stock)*curSh*pricePerShare; // ← curSh
+      if(stockMkt>0){
+        hasRealData=true;
+        items.push({
+          lbl:ticker+' 配股市值',
+          val:Math.round(stockMkt),
+          color:'#f5c842',
+          isReal:true,
+          isStock:true,
+          ticker
+        });
+      }
+    }
+  });
+
+  // 去重（同一 ticker 不重複加估算）
+  const seenTickers=new Set();
+  const filteredItems=items.filter(it=>{
+    if(it.isReal){seenTickers.add(it.ticker+'_div');return true;}
+    if(seenTickers.has(it.ticker+'_div'))return false; // 已有實際值，跳過估算
+    return true;
+  });
+
+  filteredItems.sort((a,b)=>b.val-a.val);
+  const totalDiv=filteredItems.filter(it=>!it.isStock).reduce((s,it)=>s+it.val,0);
+  const totalStock=filteredItems.filter(it=>it.isStock).reduce((s,it)=>s+it.val,0);
+  const totalCF=totalDiv+totalStock;
+  const netCF=totalDiv-DEBT_INTEREST;
+  const {grand}=calcAllTotals(curScen);
+  const grandVal=grand[curYrIdx]||1;
+  const divYld=(totalDiv/grandVal*100).toFixed(2);
+  const realCount=filteredItems.filter(it=>it.isReal).length;
+
+  // 來源說明
+  const noteEl=document.getElementById('cf-datasource-note');
+  const noteEl2=document.getElementById('cf-bars-note');
+  const yr=YR_LABELS[curYrIdx]+(curYrIdx===5?' ★':'');
+  if(noteEl) noteEl.textContent=realCount>0?`✏️ ${realCount} 筆來自手動填入，其餘為系統估算`:'全部為系統估算值（可至「現況持股」頁填入實際配息）';
+  if(noteEl2) noteEl2.textContent=hasRealData?'橘底 = 手動填入實際值　灰底 = 系統估算值':'全部為系統估算，至「現況持股」頁填入實際配息後自動同步';
+
+  // ── KPI 卡片 ──
+  const kpiGrid=document.getElementById('cf-kpi-grid');
+  if(kpiGrid) kpiGrid.innerHTML=`
+    <div class="cf-card">
+      <div class="cf-lbl">${yr} 現金配息合計</div>
+      <div class="cf-val" style="color:var(--green)">NT$${(totalDiv/10000).toFixed(2)}萬</div>
+      <div class="cf-sub">月均 NT$${Math.round(totalDiv/12).toLocaleString('zh-TW')}</div>
+    </div>
+    <div class="cf-card">
+      <div class="cf-lbl">${yr} 配股換算市值</div>
+      <div class="cf-val" style="color:${totalStock>0?'var(--amber)':'var(--dim)'}">
+        ${totalStock>0?'≈NT$'+(totalStock/10000).toFixed(2)+'萬':'—'}
+      </div>
+      <div class="cf-sub">${totalStock>0?'股數×比例×估算股價':'未填入配股資料'}</div>
+    </div>
+    <div class="cf-card">
+      <div class="cf-lbl">負債年利息</div>
+      <div class="cf-val" style="color:var(--red)">NT$${(DEBT_INTEREST/10000).toFixed(1)}萬</div>
+      <div class="cf-sub">月均 NT$${Math.round(DEBT_INTEREST/12).toLocaleString('zh-TW')}</div>
+    </div>
+    <div class="cf-card" style="${netCF>=0?'border-color:rgba(74,222,154,.35)':'border-color:rgba(248,113,113,.3)'}">
+      <div class="cf-lbl">現金配息 − 負債利息</div>
+      <div class="cf-val" style="color:${netCF>=0?'var(--green)':'var(--red)'}">
+        ${netCF>=0?'+':''}NT$${(netCF/10000).toFixed(2)}萬
+      </div>
+      <div class="cf-sub">月淨 ${netCF>=0?'+':''}NT$${Math.round(netCF/12).toLocaleString('zh-TW')}</div>
+    </div>
+    <div class="cf-card">
+      <div class="cf-lbl">現金殖利率</div>
+      <div class="cf-val" style="color:var(--blue)">${divYld}%</div>
+      <div class="cf-sub">現金配息 ÷ ${yr}總資產</div>
+    </div>`;
+
+  // ── 拆解條形圖 ──
+  const cfBars=document.getElementById('cf-bars');
+  if(!cfBars||filteredItems.length===0){if(cfBars)cfBars.innerHTML='<div style="color:var(--dim);font-size:12px">尚無資料</div>';return;}
+  const maxVal=filteredItems[0].val;
+  cfBars.innerHTML=filteredItems.map(it=>{
+    const pct=Math.max(2,it.val/maxVal*100).toFixed(1);
+    const bg=it.isReal?(it.isStock?'rgba(245,200,66,.15)':'rgba(74,222,154,.12)'):'rgba(255,255,255,.04)';
+    const tag=it.isReal?`<span style="font-size:9px;padding:1px 5px;border-radius:3px;margin-right:5px;background:${it.isStock?'rgba(245,200,66,.15)':'rgba(74,222,154,.15)'};color:${it.isStock?'var(--amber)':'var(--green)'};">${it.isStock?'配股':'實填'}</span>`:'<span style="font-size:9px;padding:1px 5px;border-radius:3px;margin-right:5px;background:rgba(255,255,255,.06);color:var(--dim)">估算</span>';
+    return `
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;padding:4px 8px;background:${bg};border-radius:4px">
+        <span style="color:var(--muted)">${tag}${it.lbl}</span>
+        <span style="font-family:'DM Mono',monospace;font-weight:500;color:var(--text)">NT$${(it.val/10000).toFixed(1)}萬</span>
+      </div>
+      <div style="height:8px;border-radius:3px;margin-bottom:8px;background:${it.color};opacity:${it.isReal?0.85:0.35};width:${pct}%;transition:width .3s"></div>`;
+  }).join('');
+}
+
+// ── 事件 ──
+function updateOverrideBar(){
+  const bar=document.getElementById('manual-override-bar');
+  const list=document.getElementById('manual-override-list');
+  const keys=Object.keys(userRates);
+  if(keys.length===0){bar.style.display='none';return;}
+  bar.style.display='flex';
+  list.textContent=keys.map(t=>`${t} → ${(userRates[t]*100).toFixed(1)}%`).join('　');
+  // 同時更新總覽頁
+  renderOverview(curScen);
+}
+function clearAllOverrides(){
+  Object.keys(userRates).forEach(t=>{
+    delete userRates[t];
+    const inp=document.getElementById('rate-'+t);
+    if(inp){inp.value=inp.dataset.default;inp.classList.remove('changed');}
+  });
+  updateOverrideBar();
+  recalcHoldings();
+}
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='cashflow')  renderCashflow();
+  if(name==='rebalance') renderRebalance();
+  if(name==='pledge')    initPledge();
+}
+
+// ── Tab 5：質押試算 ──
+// ── Tab 5：質押試算（多標的抵押品）──
+let pledgeRows = []; // [{ticker, shares, price, rowId}]
+let pledgeRowCounter = 0;
+
+function initPledge(){
+  const h0=holdings.find(h=>h[1]===PLEDGE_DATA.ticker);
+  const curSh0=h0?getShares(PLEDGE_DATA.ticker,h0[2]):0;
+  const curP0 =h0?getPrice(PLEDGE_DATA.ticker,h0[3]):0;
+  const mktNow=curSh0*curP0;
+  const maintNow=PLEDGE_DATA.loan>0?(mktNow/PLEDGE_DATA.loan*100):0;
+  const noteEl=document.getElementById('pl-note');
+  if(noteEl) noteEl.innerHTML=`⚠️ 負債頁現況：元大質押借款 <b style="color:var(--red)">NT$${(PLEDGE_DATA.loan/10000).toFixed(0)}萬</b> ／ 利率 ${PLEDGE_DATA.rate}% ／ 抵押標的 ${PLEDGE_DATA.ticker}（${curSh0.toLocaleString()}股 × NT$${curP0.toFixed(1)} = NT$${(mktNow/10000).toFixed(1)}萬）／ <b>目前維持率 <span style="color:${maintNow>=200?'var(--green)':maintNow>=130?'var(--amber)':'var(--red)'}">${maintNow.toFixed(1)}%</span></b>。警戒線130%、斷頭線120%為元大融資標準，實際以合約為準。`;
+  const loanEl=document.getElementById('pl-loan');
+  const rateEl=document.getElementById('pl-rate');
+  const ratioEl=document.getElementById('pl-ratio-limit');
+  if(loanEl) loanEl.value=debtCache.pledgeLoan||PLEDGE_DATA.loan;
+  if(rateEl) rateEl.value=debtCache.pledgeRate||PLEDGE_DATA.rate;
+  if(ratioEl) ratioEl.value=PLEDGE_DATA.ratioLim;
+  const rows=document.getElementById('pl-collateral-rows');
+  if(rows&&rows.children.length===0) addPledgeRow(PLEDGE_DATA.ticker);
+  calcPledge();
+}
+
+let _pledgeRowId=0;
+function addPledgeRow(defaultTicker){
+  const rows=document.getElementById('pl-collateral-rows');if(!rows)return;
+  const id=++_pledgeRowId;
+  const ticker=defaultTicker||holdings.filter(h=>h[1]!=='美金定存')[0]?.[1]||'';
+  const h=holdings.find(h=>h[1]===ticker);
+  const curSh=h?getShares(ticker,h[2]):0;
+  const curP =h?getPrice(ticker,h[3]):0;
+  const opts=holdings.filter(h=>h[1]!=='美金定存').map(h=>{
+    const t=h[1];return `<option value="${t}"${t===ticker?' selected':''}>${t}</option>`;
+  }).join('');
+  const div=document.createElement('div');
+  div.id=`pl-row-${id}`;
+  div.style.cssText='display:grid;grid-template-columns:100px 90px 90px 28px;gap:6px;align-items:center';
+  div.innerHTML=`
+    <select data-row="${id}" onchange="onPledgeRowChange(${id})"
+      style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:3px 5px;outline:none">${opts}</select>
+    <div>
+      <div style="font-size:9px;color:var(--dim);margin-bottom:1px">抵押股數</div>
+      <input id="pl-sh-${id}" type="number" min="0" step="1000" value="${curSh}"
+        style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:12px;padding:3px 5px;outline:none;text-align:right"
+        oninput="calcPledge()"/>
+    </div>
+    <div>
+      <div style="font-size:9px;color:var(--dim);margin-bottom:1px">股價 <span style="color:rgba(74,222,154,.7)">●自動</span></div>
+      <input id="pl-pr-${id}" type="number" min="0" step="0.1" value="${curP.toFixed(2)}"
+        style="width:100%;background:var(--surface2);border:1px solid rgba(74,222,154,.3);border-radius:4px;color:var(--green);font-family:'DM Mono',monospace;font-size:12px;padding:3px 5px;outline:none;text-align:right"
+        oninput="calcPledge()"/>
+    </div>
+    <button onclick="removePledgeRow(${id})"
+      style="background:transparent;border:1px solid var(--border2);border-radius:4px;color:var(--dim);cursor:pointer;font-size:13px;padding:2px 5px;line-height:1"
+      onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--dim)'">×</button>`;
+  rows.appendChild(div);calcPledge();
+}
+
+function onPledgeRowChange(id){
+  const sel=document.querySelector(`[data-row="${id}"]`);if(!sel)return;
+  const ticker=sel.value;
+  const h=holdings.find(h=>h[1]===ticker);if(!h)return;
+  const shEl=document.getElementById(`pl-sh-${id}`);
+  const prEl=document.getElementById(`pl-pr-${id}`);
+  if(shEl) shEl.value=getShares(ticker,h[2]);
+  if(prEl) prEl.value=getPrice(ticker,h[3]).toFixed(2);
+  calcPledge();
+}
+
+function removePledgeRow(id){
+  const el=document.getElementById(`pl-row-${id}`);if(el)el.remove();calcPledge();
+}
+
+function calcPledge(){
+  const rows=document.getElementById('pl-collateral-rows');if(!rows)return;
+  let totalMkt=0;const collItems=[];
+  rows.querySelectorAll('[id^="pl-row-"]').forEach(row=>{
+    const id=row.id.replace('pl-row-','');
+    const sel=row.querySelector('select');
+    const sh=parseFloat(document.getElementById(`pl-sh-${id}`)?.value)||0;
+    const pr=parseFloat(document.getElementById(`pl-pr-${id}`)?.value)||0;
+    const ticker=sel?sel.value:'';
+    const mkt=sh*pr; totalMkt+=mkt;
+    collItems.push({ticker,sh,pr,mkt});
+  });
+  const totMktEl=document.getElementById('pl-total-mkt');
+  if(totMktEl) totMktEl.innerHTML=totalMkt>0?`NT$${(totalMkt/10000).toFixed(2)}萬`:'<span style="color:var(--dim)">—</span>';
+  // 維持率徽章（左側面板即時）
+  if(loan>0&&totalMkt>0){
+    const mr=totalMkt/loan*100;
+    const mc=mr>=200?'var(--green)':mr>=130?'var(--amber)':mr>=120?'#f97316':'var(--red)';
+    const badge=document.getElementById('pl-maint-badge');
+    if(badge) badge.innerHTML=`維持率 <b style="color:${mc}">${mr.toFixed(1)}%</b>`;
+    const det=document.getElementById('pl-maint-detail');
+    if(det) det.innerHTML=`借款 NT$${(loan/10000).toFixed(0)}萬　質押比 ${(loan/totalMkt*100).toFixed(1)}%`;
+  } else {
+    const badge=document.getElementById('pl-maint-badge');
+    if(badge) badge.innerHTML='';
+  }
+  const loan=parseFloat(document.getElementById('pl-loan')?.value)||0;
+  const rate=parseFloat(document.getElementById('pl-rate')?.value)||2.88;
+  const ratioLim=parseFloat(document.getElementById('pl-ratio-limit')?.value)||60;
+  if(totalMkt<=0||loan<=0){
+    ['pl-result','pl-simulation','pl-topup'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<div style="color:var(--dim);font-size:12px">請填入資料</div>';});
+    return;
+  }
+  const maintenRate=totalMkt/loan*100;
+  const pledgeRatio=loan/totalMkt*100;
+  const maxLoan=totalMkt*ratioLim/100;
+  const annualInt=loan*rate/100;
+  const isSafe=maintenRate>=200,isWarn=maintenRate>=130&&maintenRate<200;
+  const isDanger=maintenRate>=120&&maintenRate<130,isBust=maintenRate<120;
+  const sColor=isSafe?'var(--green)':isWarn?'var(--amber)':isDanger?'#f97316':'var(--red)';
+  const sText=isSafe?'🟢 安全':isWarn?'🟡 注意':isDanger?'🟠 警戒':'🔴 危險！接近斷頭';
+  const detail=collItems.length>1?collItems.map(c=>`<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--dim);font-family:'DM Mono',monospace;margin-bottom:2px"><span>${c.ticker} ${c.sh.toLocaleString()}股×${c.pr.toFixed(1)}</span><span>NT$${(c.mkt/10000).toFixed(2)}萬</span></div>`).join(''):'';
+  document.getElementById('pl-result').innerHTML=`
+    <div style="font-size:10px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace">即時計算結果</div>
+    ${detail?`<div style="margin-bottom:8px;padding:6px 8px;background:var(--bg);border-radius:5px">${detail}</div>`:''}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><div style="font-size:10px;color:var(--dim)">抵押品總市值</div><div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--text)">NT$${(totalMkt/10000).toFixed(2)}萬</div></div>
+      <div><div style="font-size:10px;color:var(--dim)">維持率</div><div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:${sColor}">${maintenRate.toFixed(1)}%</div></div>
+      <div><div style="font-size:10px;color:var(--dim)">質押比例</div><div style="font-family:'DM Mono',monospace;font-size:13px;color:${pledgeRatio>ratioLim?'var(--red)':'var(--muted)'}">${pledgeRatio.toFixed(2)}%（上限${ratioLim}%）</div></div>
+      <div><div style="font-size:10px;color:var(--dim)">可再借上限</div><div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--green)">NT$${((maxLoan-loan)/10000).toFixed(1)}萬</div></div>
+      <div><div style="font-size:10px;color:var(--dim)">年利息</div><div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--red)">NT$${(annualInt/10000).toFixed(2)}萬</div></div>
+      <div><div style="font-size:10px;color:var(--dim)">月利息</div><div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--red)">NT$${(annualInt/12).toFixed(0)}</div></div>
+    </div>
+    <div style="margin-top:10px;padding:8px 10px;border-radius:6px;background:${isBust?'rgba(248,113,113,.1)':isDanger?'rgba(249,115,22,.1)':isWarn?'rgba(245,200,66,.08)':'rgba(74,222,154,.08)'};font-family:'DM Mono',monospace;font-size:12px;color:${sColor}">${sText}</div>`;
+  // 下跌模擬（多標的同步跌幅）
+  const warnDrop=Math.max(0,(1-130*loan/totalMkt/100)*100);
+  const dangerDrop=Math.max(0,(1-120*loan/totalMkt/100)*100);
+  const rows2=[5,10,15,20,25,30,40,50].map(pct=>{
+    const simMkt=totalMkt*(1-pct/100);const simRate=simMkt/loan*100;
+    const bg=simRate<120?'rgba(248,113,113,.12)':simRate<130?'rgba(249,115,22,.08)':simRate<160?'rgba(245,200,66,.06)':'';
+    const col=simRate<120?'var(--red)':simRate<130?'#f97316':simRate<160?'var(--amber)':'var(--muted)';
+    return `<tr style="background:${bg}"><td style="padding:6px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">-${pct}%</td><td style="padding:6px 10px;font-family:'DM Mono',monospace;font-size:11px">NT$${(simMkt/10000).toFixed(1)}萬</td><td style="padding:6px 10px;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:${col}">${simRate.toFixed(1)}%</td><td style="padding:6px 10px;font-size:11px;color:${col}">${simRate<120?'🔴 斷頭':simRate<130?'🟠 警戒':simRate<160?'🟡 注意':'✓'}</td></tr>`;
+  }).join('');
+  document.getElementById('pl-simulation').innerHTML=`
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-family:'DM Mono',monospace">所有抵押品同步跌：警戒線觸發跌 <span style="color:var(--amber)">${warnDrop.toFixed(1)}%</span>　斷頭線觸發跌 <span style="color:var(--red)">${dangerDrop.toFixed(1)}%</span></div>
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:300px">
+      <thead><tr style="background:var(--bg)"><th style="padding:6px 10px;text-align:left;font-size:10px;color:var(--dim);font-family:'DM Mono',monospace">跌幅</th><th style="padding:6px 10px;text-align:left;font-size:10px;color:var(--dim);font-family:'DM Mono',monospace">總市值</th><th style="padding:6px 10px;text-align:left;font-size:10px;color:var(--dim);font-family:'DM Mono',monospace">維持率</th><th style="padding:6px 10px;text-align:left;font-size:10px;color:var(--dim);font-family:'DM Mono',monospace">狀態</th></tr></thead>
+      <tbody>${rows2}</tbody></table></div>`;
+  // 補繳/補股
+  const topupEl=document.getElementById('pl-topup');
+  if(maintenRate>=130){
+    topupEl.innerHTML=`<div style="color:var(--green);font-family:'DM Mono',monospace;font-size:12px">✓ 維持率 ${maintenRate.toFixed(1)}%，無需補繳。距警戒線還有 ${(maintenRate-130).toFixed(1)} 個百分點。</div>`;
+  } else {
+    const cashNeeded=Math.max(0,loan-totalMkt/1.6);
+    const mktNeeded=Math.max(0,loan*1.6-totalMkt);
+    topupEl.innerHTML=`
+      <div style="font-size:11px;color:var(--red);font-family:'DM Mono',monospace;margin-bottom:12px">⚠️ 維持率 ${maintenRate.toFixed(1)}% 低於 ${maintenRate<120?'斷頭線120%':'警戒線130%'}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="background:var(--surface2);border-radius:8px;padding:12px">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px">方案A：還款（減借款）</div>
+          <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--amber)">NT$${(cashNeeded/10000).toFixed(2)}萬</div>
+          <div style="font-size:10px;color:var(--dim);margin-top:3px">還後維持率回到160%</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:12px">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px">方案B：補提抵押品市值</div>
+          <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--blue)">NT$${(mktNeeded/10000).toFixed(2)}萬</div>
+          <div style="font-size:10px;color:var(--dim);margin-top:3px">補後維持率回到160%</div>
+        </div>
+      </div>`;
+  }
+}
+function updatePledgeDefaults(){ onPledgeRowChange(1); }
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='cashflow')     renderCashflow();
+  if(name==='rebalance')    renderRebalance();
+  if(name==='rebalance613') renderRebalance613();
+  if(name==='pledge')       initPledge();
+}
+
+// ── 共用再平衡計算核心 ──
+// prefix: 'rb' (433) or 'rb613' (613)
+function _calcRebalance(prefix){
+  const tCore = parseFloat(document.getElementById(`${prefix}-target-core`)?.value)||40;
+  const tSat  = parseFloat(document.getElementById(`${prefix}-target-sat`)?.value)||30;
+  const tCash = parseFloat(document.getElementById(`${prefix}-target-cash`)?.value)||30;
+  const newFunds = parseFloat(document.getElementById(`${prefix}-new-funds`)?.value)||0;
+  const tSum = tCore+tSat+tCash;
+  const yrIdx = prefix==='rb' ? rbYrIdx : rb613YrIdx;
+
+  const sumEl=document.getElementById(`${prefix}-target-sum`);
+  if(sumEl){
+    sumEl.textContent=`合計 ${tSum}%`;
+    sumEl.style.background=Math.abs(tSum-100)<0.01?'rgba(74,222,154,.12)':'rgba(248,113,113,.12)';
+    sumEl.style.color=Math.abs(tSum-100)<0.01?'var(--green)':'var(--red)';
+  }
+
+  const {ct} = calcAllTotals(curScen);
+  const coreVal=ct.core[yrIdx], satVal=ct.sat[yrIdx], cashVal=ct.cash[yrIdx], usflowVal=ct.usflow[yrIdx];
+  const totalBase=coreVal+satVal+cashVal;
+  const grandTotal=totalBase+usflowVal;
+
+  // ── 再平衡規則 ──
+  // 1. 衛星桶超配 → 超額轉入現金桶（不減倉，視為現金桶加分）
+  // 2. 現金桶超配 → 超額轉入衛星桶（不減倉，視為衛星桶加分）
+  // 3. 核心桶缺口/超配 → 維持原比例計算（不受上述影響）
+  const rawTargetCore = totalBase*tCore/100;
+  const rawTargetSat  = totalBase*tSat/100;
+  const rawTargetCash = totalBase*tCash/100;
+  let rawGapCore = rawTargetCore - coreVal;
+  let rawGapSat  = rawTargetSat  - satVal;
+  let rawGapCash = rawTargetCash - cashVal;
+
+  // 衛星/現金桶互補
+  let satToCash=0, cashToSat=0;
+  if(rawGapSat < 0 && rawGapCash > 0){
+    // 衛星超配：將超配量轉移給現金桶缺口
+    const transfer = Math.min(Math.abs(rawGapSat), rawGapCash);
+    satToCash = transfer;
+    rawGapSat  += transfer;  // 衛星超配縮小（超配量減少）
+    rawGapCash -= transfer;  // 現金缺口縮小
+  } else if(rawGapCash < 0 && rawGapSat > 0){
+    // 現金超配：將超配量轉移給衛星桶缺口
+    const transfer = Math.min(Math.abs(rawGapCash), rawGapSat);
+    cashToSat  = transfer;
+    rawGapCash += transfer;  // 現金超配縮小
+    rawGapSat  -= transfer;  // 衛星缺口縮小
+  }
+
+  // 新資金：缺口優先
+  let allocCore=0,allocSat=0,allocCash=0;
+  if(newFunds>0){
+    const need={core:Math.max(0,rawGapCore),sat:Math.max(0,rawGapSat),cash:Math.max(0,rawGapCash)};
+    const totalNeed=need.core+need.sat+need.cash;
+    if(totalNeed<=0){
+      allocCore=newFunds*tCore/100; allocSat=newFunds*tSat/100; allocCash=newFunds*tCash/100;
+    } else if(newFunds>=totalNeed){
+      const rem=newFunds-totalNeed;
+      allocCore=need.core+rem*tCore/100; allocSat=need.sat+rem*tSat/100; allocCash=need.cash+rem*tCash/100;
+    } else {
+      allocCore=newFunds*need.core/totalNeed; allocSat=newFunds*need.sat/totalNeed; allocCash=newFunds*need.cash/totalNeed;
+    }
+  }
+  const targetCore=coreVal+rawGapCore+allocCore;
+  const targetSat =satVal +rawGapSat +allocSat;
+  const targetCash=cashVal+rawGapCash+allocCash;
+  const gapCore=targetCore-coreVal, gapSat=targetSat-satVal, gapCash=targetCash-cashVal;
+
+  return {tCore,tSat,tCash,newFunds,tSum,yrIdx,
+          coreVal,satVal,cashVal,usflowVal,totalBase,grandTotal,
+          allocCore,allocSat,allocCash,
+          targetCore,targetSat,targetCash,gapCore,gapSat,gapCash,ct,
+          satToCash,cashToSat};
+}
+
+// ── 共用渲染（overview卡、缺口圖、個股表）──
+function _renderRebalanceUI(prefix, d){
+  const {tCore,tSat,tCash,newFunds,yrIdx,
+         coreVal,satVal,cashVal,usflowVal,totalBase,grandTotal,
+         allocCore,allocSat,allocCash,
+         targetCore,targetSat,targetCash,gapCore,gapSat,gapCash,ct,
+         satToCash=0,cashToSat=0}=d;
+
+  // ── 總覽卡 ──
+  const rbOv=document.getElementById(`${prefix}-overview`);rbOv.innerHTML='';
+  [{label:'🔵 核心桶',cur:coreVal,target:targetCore,gap:gapCore,color:'var(--core-c)',tc:tCore},
+   {label:'🟡 衛星桶',cur:satVal, target:targetSat, gap:gapSat, color:'var(--sat-c)', tc:tSat},
+   {label:'🟢 現金桶',cur:cashVal,target:targetCash,gap:gapCash,color:'var(--cash-c)',tc:tCash},
+   {label:'💵 美股現金流',cur:usflowVal,target:null,gap:null,color:'var(--usflow-c)',tc:null}
+  ].forEach(b=>{
+    const curPct=(totalBase>0?b.cur/totalBase*100:0).toFixed(1);
+    const card=document.createElement('div');
+    card.style.cssText='background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 15px';
+    if(b.gap!==null) card.style.borderColor=b.gap>totalBase*0.005?'rgba(248,113,113,.3)':b.gap<-totalBase*0.005?'rgba(74,222,154,.3)':'rgba(74,222,154,.2)';
+    card.innerHTML=`
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${b.label}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:${b.color}">${fmtI(b.cur)}</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:2px;font-family:'DM Mono',monospace">現況 ${curPct}%${b.tc!==null?' ／ 目標 '+b.tc+'%':'（獨立）'}</div>
+      ${b.gap!==null?`<div style="font-size:11px;font-family:'DM Mono',monospace;margin-top:5px;color:${b.gap>totalBase*0.005?'var(--red)':b.gap<-totalBase*0.005?'var(--teal)':'var(--green)'}">
+        ${b.gap>totalBase*0.005?'缺口 +':b.gap<-totalBase*0.005?'超配 ':'✓ '}${b.gap>totalBase*0.005||b.gap<-totalBase*0.005?fmtI(Math.abs(b.gap)):'在範圍內'}
+      </div>`:''}`;
+    rbOv.appendChild(card);
+  });
+  const totCard=document.createElement('div');
+  totCard.style.cssText='background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 15px';
+  totCard.innerHTML=`<div style="font-size:11px;color:var(--muted);margin-bottom:6px">📊 ${YR_LABELS[yrIdx]} 總資產（含美股）</div>
+    <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text)">${fmtI(grandTotal)}</div>
+    <div style="font-size:10px;color:var(--dim);margin-top:2px;font-family:'DM Mono',monospace">433框架內 ${fmtI(totalBase)}${newFunds>0?` ＋新增 ${fmtI(newFunds)}`:''}</div>`;
+  rbOv.appendChild(totCard);
+
+  // 互補說明列
+  if(satToCash>0||cashToSat>0){
+    const noteDiv=document.createElement('div');
+    noteDiv.style.cssText='grid-column:1/-1;padding:10px 14px;background:rgba(245,200,66,.07);border:1px solid rgba(245,200,66,.25);border-radius:8px;font-size:11px;font-family:\'DM Mono\',monospace';
+    noteDiv.innerHTML=satToCash>0
+      ? `🔄 <span style="color:var(--sat-c)">衛星桶超配 ${fmtI(satToCash)}</span> → 自動轉入補足 <span style="color:var(--cash-c)">現金桶缺口</span>，衛星桶不強制減倉`
+      : `🔄 <span style="color:var(--cash-c)">現金桶超配 ${fmtI(cashToSat)}</span> → 自動轉入補足 <span style="color:var(--sat-c)">衛星桶缺口</span>，現金桶不強制減倉`;
+    rbOv.appendChild(noteDiv);
+  }
+
+  // ── 缺口圖 ──
+  const chart=document.getElementById(`${prefix}-gap-chart`);
+  const chartBuckets=[
+    {label:'核心桶',cur:coreVal,target:targetCore,gap:gapCore,color:'#60a5f8',alloc:allocCore},
+    {label:'衛星桶',cur:satVal, target:targetSat, gap:gapSat, color:'#c084fc',alloc:allocSat},
+    {label:'現金桶',cur:cashVal,target:targetCash,gap:gapCash,color:'#4ade9a',alloc:allocCash},
+  ];
+  const maxVal=Math.max(coreVal,satVal,cashVal,targetCore,targetSat,targetCash)||1;
+  chart.innerHTML=chartBuckets.map(b=>{
+    const curW=(b.cur/maxVal*100).toFixed(1);
+    const tgtW=(b.target/maxVal*100).toFixed(1);
+    const isNeedFill=b.gap>totalBase*0.005, isOver=b.gap<-totalBase*0.005;
+    const gapLabel=isNeedFill?`需補入 +${fmtI(b.gap)}${b.alloc>0?' (新資金 '+fmtI(b.alloc)+')':''}`:
+                   isOver?`超配 ${fmtI(Math.abs(b.gap))}（暫不減倉）`:'✓ 在範圍內';
+    const gapColor=isNeedFill?'var(--red)':isOver?'var(--teal)':'var(--green)';
+    return `<div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px">
+        <span style="color:var(--muted);font-weight:500">${b.label}</span>
+        <span style="font-family:'DM Mono',monospace;color:${gapColor}">${gapLabel}</span>
+      </div>
+      <div style="position:relative;height:24px;background:var(--surface2);border-radius:5px;overflow:hidden">
+        <div style="position:absolute;left:0;top:0;height:100%;width:${curW}%;background:${b.color};opacity:.5;border-radius:5px;transition:.4s"></div>
+        ${b.alloc>0?`<div style="position:absolute;left:${curW}%;top:0;height:100%;width:${Math.min((b.alloc/maxVal*100),100-parseFloat(curW)).toFixed(1)}%;background:${b.color};opacity:.22;border-left:1px dashed ${b.color};transition:.4s"></div>`:''}
+        <div style="position:absolute;left:0;top:0;height:100%;width:${tgtW}%;border:2px solid ${b.color};border-radius:5px;transition:.4s;pointer-events:none"></div>
+        <div style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;font-family:'DM Mono',monospace;color:var(--text);white-space:nowrap">現況 ${fmtI(b.cur)} → 目標 ${fmtI(b.target)}</div>
+      </div>
+    </div>`;
+  }).join('')+`<div style="font-size:10px;color:var(--dim);margin-top:6px">█ 深色=現況　░ 淡色=新增資金　□ 框線=目標</div>`+
+  (newFunds>0?`<div style="font-size:11px;color:var(--amber);font-family:'DM Mono',monospace;margin-top:6px">新增資金 ${fmtI(newFunds)} 缺口優先分配：核心+${fmtI(allocCore)} ／ 衛星+${fmtI(allocSat)} ／ 現金+${fmtI(allocCash)}</div>`:'');
+
+  // ── 個股表 ──
+  const tbody=document.getElementById(`${prefix}-tbody`);tbody.innerHTML='';
+  const bucketGaps={core:gapCore,sat:gapSat,cash:gapCash};
+  const bucketTargets={core:targetCore,sat:targetSat,cash:targetCash};
+  ['core','sat','cash','usflow'].forEach(cat=>{
+    const bi=BKL[cat];
+    const catHoldings=holdings.filter(h=>h[0]===cat);
+    const catTotal=ct[cat][yrIdx]||1;
+    const gap=bucketGaps[cat];
+    catHoldings.forEach(h=>{
+      const [,ticker,shares,,,,baseRet]=h;
+      const curSh=getShares(ticker,shares);
+      const curP=getPrice(ticker,h[3]);
+      const mktVals=calcVals(getInitVal(ticker,shares,h[3]),userRates[ticker]!==undefined?userRates[ticker]:baseRet,ticker);
+      const mktVal=mktVals[yrIdx];
+      const pctOfTotal=(totalBase>0?mktVal/totalBase*100:0).toFixed(1);
+      const pctOfBucket=(catTotal>0?mktVal/catTotal*100:0).toFixed(1);
+      let targetMkt=mktVal,gapMkt=0,suggestion='',sugStyle='';
+      if(cat!=='usflow'&&gap!==undefined){
+        targetMkt=mktVal+gap*(mktVal/catTotal);
+        gapMkt=targetMkt-mktVal;
+        const addSh=curP>0?Math.round(Math.abs(gapMkt)/curP):0;
+        if(Math.abs(gapMkt)<totalBase*0.005){suggestion='✓ 無需調整';sugStyle='color:var(--green)';}
+        else if(gapMkt>0){suggestion=`加碼 ≈ ${addSh>0?addSh.toLocaleString()+'股':'NT$'+fmtI(gapMkt)}`;sugStyle='color:var(--red)';}
+        else{suggestion=`可減倉 ≈ ${addSh>0?addSh.toLocaleString()+'股':'NT$'+fmtI(Math.abs(gapMkt))}`;sugStyle='color:var(--teal)';}
+      } else {suggestion='獨立配置，不調整';sugStyle='color:var(--dim)';}
+      const tr=document.createElement('tr');tr.style.borderBottom='1px solid var(--border)';
+      tr.innerHTML=`
+        <td><span class="bk ${bi.cls}">${bi.label}</span></td>
+        <td><span class="ticker">${ticker}</span></td>
+        <td class="num">${fmtM(mktVal)}</td>
+        <td class="num" style="color:var(--muted)">${pctOfTotal}%</td>
+        <td class="num" style="color:${bi.color}">${cat!=='usflow'?pctOfBucket+'%':'—'}</td>
+        <td class="num">${cat!=='usflow'?fmtM(targetMkt):'—'}</td>
+        <td class="num" style="${sugStyle};font-weight:500">${cat!=='usflow'?(gapMkt>=0?'+':'')+fmtM(gapMkt):'—'}</td>
+        <td class="sug" style="${sugStyle}">${suggestion}</td>`;
+      tbody.appendChild(tr);
+    });
+    const subTr=document.createElement('tr');subTr.className='subtotal';
+    subTr.innerHTML=`
+      <td colspan="2" style="color:${bi.color};font-size:11px">${bi.label} 小計</td>
+      <td class="num" style="color:${bi.color}">${fmtI(ct[cat][yrIdx])}</td>
+      <td class="num" style="color:var(--muted)">${(totalBase>0?ct[cat][yrIdx]/totalBase*100:0).toFixed(1)}%</td>
+      <td></td>
+      <td class="num" style="color:${bi.color}">${cat!=='usflow'?fmtI(bucketTargets[cat]||0):'—'}</td>
+      <td class="num" style="color:${cat!=='usflow'?(gap>totalBase*0.005?'var(--red)':gap<-totalBase*0.005?'var(--teal)':'var(--green)'):'var(--dim)'}">
+        ${cat!=='usflow'?(gap>=0?'+':'')+fmtI(gap):'—'}
+      </td>
+      <td class="sug" style="color:${cat!=='usflow'?(gap>totalBase*0.005?'var(--red)':gap<-totalBase*0.005?'var(--teal)':'var(--green)'):'var(--dim)'}">
+        ${cat!=='usflow'?(Math.abs(gap)<totalBase*0.02?'✓ 在範圍內':gap>0?'需補入資金':'可轉倉至缺口桶'):'獨立不納入'}
+      </td>`;
+    tbody.appendChild(subTr);
+  });
+}
+
+// ── Tab 4：433 再平衡 ──
+let rbYrIdx=0;
+function buildRbYrTabs(){
+  const wrap=document.getElementById('rb-yr-tabs');if(!wrap)return;wrap.innerHTML='';
+  YR_LABELS.forEach((lbl,i)=>{
+    const btn=document.createElement('button');
+    btn.className='yr-tab-btn'+(i===4||i===5?' is-bonus':'')+(i===rbYrIdx?' active':'');
+    btn.textContent=lbl+(i===5?' ★':'');
+    btn.onclick=()=>{rbYrIdx=i;buildRbYrTabs();renderRebalance();};
+    wrap.appendChild(btn);
+  });
+}
+function renderRebalance(){
+  buildRbYrTabs();
+  const d=_calcRebalance('rb');
+  _renderRebalanceUI('rb',d);
+}
+
+// ── Tab 6：613 再平衡 ──
+let rb613YrIdx=0;
+function buildRb613YrTabs(){
+  const wrap=document.getElementById('rb613-yr-tabs');if(!wrap)return;wrap.innerHTML='';
+  YR_LABELS.forEach((lbl,i)=>{
+    const btn=document.createElement('button');
+    btn.className='yr-tab-btn'+(i===4||i===5?' is-bonus':'')+(i===rb613YrIdx?' active':'');
+    btn.textContent=lbl+(i===5?' ★':'');
+    btn.onclick=()=>{rb613YrIdx=i;buildRb613YrTabs();renderRebalance613();};
+    wrap.appendChild(btn);
+  });
+}
+function renderRebalance613(){
+  buildRb613YrTabs();
+  const d=_calcRebalance('rb613');
+  _renderRebalanceUI('rb613',d);
+
+  // 與 433 差異對比卡
+  const d433=_calcRebalance('rb');
+  const diffCard=document.getElementById('rb613-diff-card');
+  if(diffCard){
+    const diffCore=d.gapCore-d433.gapCore, diffSat=d.gapSat-d433.gapSat, diffCash=d.gapCash-d433.gapCash;
+    diffCard.innerHTML=`
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.04em">vs 433 配置差異</div>
+      <div style="font-size:11px;font-family:'DM Mono',monospace;display:flex;flex-direction:column;gap:4px">
+        <span style="color:var(--core-c)">核心桶 ${diffCore>=0?'+':''}${fmtI(diffCore)}</span>
+        <span style="color:var(--sat-c)">衛星桶 ${diffSat>=0?'+':''}${fmtI(diffSat)}</span>
+        <span style="color:var(--cash-c)">現金桶 ${diffCash>=0?'+':''}${fmtI(diffCash)}</span>
+        <span style="font-size:10px;color:var(--dim);margin-top:4px">613 核心多配 ${fmtI(Math.abs(diffCore))}，衛星少配 ${fmtI(Math.abs(diffSat))}</span>
+      </div>`;
+  }
+}
+
+function setScenario(scen,btn){
+  curScen=scen;
+  document.querySelectorAll('.scen-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderOverview(scen);
+}
+function filterBucket(cat,btn){
+  document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  _allRows.forEach(tr=>tr.classList.toggle('hidden',cat!=='all'&&tr.dataset.cat!==cat));
+  if(_grandRow)_grandRow.classList.toggle('hidden',cat!=='all');
+}
+document.addEventListener('change',e=>{
+  // 桶別選擇修改
+  if(e.target.classList.contains('cat-select')){
+    const ticker=e.target.dataset.ticker;
+    const newCat=e.target.value;
+    const h=holdings.find(h=>h[1]===ticker);
+    if(h&&newCat!==h[0]){
+      catCache[ticker]=newCat;
+      e.target.style.borderColor='var(--amber)';
+      e.target.style.color='var(--amber)';
+    } else {
+      delete catCache[ticker];
+      e.target.style.borderColor='var(--border2)';
+      e.target.style.color='var(--text)';
+    }
+    saveCatCache();
+    renderHoldings();
+    renderOverview(curScen);
+    return;
+  }
+  // 年化報酬率修改
+  if(e.target.classList.contains('rate-input')){
+    const ticker=e.target.dataset.ticker,newPct=parseFloat(e.target.value),def=parseFloat(e.target.dataset.default);
+    if(isNaN(newPct)||newPct<0||newPct>100)return;
+    if(Math.abs(newPct-def)>0.01){userRates[ticker]=newPct/100;e.target.classList.add('changed');}
+    else{delete userRates[ticker];e.target.classList.remove('changed');}
+    renderHoldings();
+    updateOverrideBar();
+    return;
+  }
+  // 股數修改
+  if(e.target.classList.contains('shares-input')){
+    const ticker=e.target.dataset.ticker;
+    const def=parseInt(e.target.dataset.default);
+    const v=parseInt(e.target.value);
+    if(isNaN(v)||v<0) return;
+    if(v!==def){
+      saveShares(ticker,v);
+      e.target.style.borderColor='var(--blue)';
+      e.target.style.color='var(--blue)';
+    } else {
+      delete sharesCache[ticker];
+      try{ localStorage.setItem(SHARES_KEY, JSON.stringify(sharesCache)); }catch(err){}
+      e.target.style.borderColor='var(--border2)';
+      e.target.style.color='var(--text)';
+    }
+    renderHoldings();
+    renderOverview(curScen);
+    const el=document.getElementById('save-status');
+    if(el){ el.textContent='✓ 股數已更新'; el.style.color='var(--blue)';
+      clearTimeout(el._t2); el._t2=setTimeout(()=>{el.textContent='資料已儲存於本機';el.style.color='var(--dim)';},2000); }
+    return;
+  }
+  // 現金配息輸入
+  if(e.target.classList.contains('div-input')){
+    const ticker=e.target.dataset.ticker,yrIdx=parseInt(e.target.dataset.yridx);
+    const d=getDivData(ticker,yrIdx);
+    const v=e.target.value.trim();
+    d.div=v===''?'':v;
+    e.target.classList.toggle('filled',v!=='');
+    saveDividendData();
+    renderHoldings();
+    renderCashflow();
+    return;
+  }
+  // 配股輸入
+  if(e.target.classList.contains('stock-input')){
+    const ticker=e.target.dataset.ticker,yrIdx=parseInt(e.target.dataset.yridx);
+    const d=getDivData(ticker,yrIdx);
+    const v=e.target.value.trim();
+    d.stock=v===''?'':v;
+    e.target.classList.toggle('filled',v!=='');
+    saveDividendData();
+    renderHoldings();
+    renderCashflow();
+    return;
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&(
+    e.target.classList.contains('rate-input')||
+    e.target.classList.contains('div-input')||
+    e.target.classList.contains('stock-input')||
+    e.target.classList.contains('shares-input')
+  ))e.target.blur();
+});
+document.addEventListener('click',e=>{
+  if(!e.target.classList.contains('reset-btn'))return;
+  const ticker=e.target.dataset.ticker,def=e.target.dataset.default;
+  const inp=document.getElementById('rate-'+ticker);
+  if(inp){inp.value=def;inp.classList.remove('changed');}
+  delete userRates[ticker];recalcHoldings();updateOverrideBar();
+});
+
+// ── 負債頁：元大質押欄位 ──
+function initDebtInputs(){
+  const loanEl=document.getElementById('debt-pledge-loan');
+  const rateEl=document.getElementById('debt-pledge-rate');
+  if(loanEl) loanEl.value=debtCache.pledgeLoan;
+  if(rateEl) rateEl.value=debtCache.pledgeRate;
+  updateDebtPledgeSummary();
+}
+
+function onDebtPledgeChange(){
+  const loan=parseFloat(document.getElementById('debt-pledge-loan')?.value)||0;
+  const rate=parseFloat(document.getElementById('debt-pledge-rate')?.value)||0;
+  debtCache.pledgeLoan=loan;
+  debtCache.pledgeRate=rate;
+  saveDebtCache();
+  updateDebtPledgeSummary();
+  // 若質押頁已開啟，同步借款欄位
+  const plLoan=document.getElementById('pl-loan');
+  const plRate=document.getElementById('pl-rate');
+  if(plLoan) plLoan.value=loan;
+  if(plRate) plRate.value=rate;
+  calcPledge();
+}
+
+function updateDebtPledgeSummary(){
+  const loan=debtCache.pledgeLoan||0;
+  const rate=debtCache.pledgeRate||0;
+  const monthly=(loan*rate/100/12).toFixed(0);
+  const el=document.getElementById('debt-pledge-summary');
+  if(el) el.innerHTML=`月付 NT$${parseInt(monthly).toLocaleString()} ／ 年利息 NT$${(loan*rate/100/10000).toFixed(2)}萬`;
+  // 也更新整合摘要
+  const sub=document.getElementById('debt-summary-sub');
+  const totalAnnual=13000000*0.023+4000000*0.0295+3200000*0.024+(loan*rate/100);
+  if(sub) sub.innerHTML=`年利息NT$${(totalAnnual/10000).toFixed(1)}萬<br>（含質押更新值）`;
+}
+
+// ── 持股頁：桶別 select ──
+const BUCKET_OPTIONS=['core','sat','cash','usflow'];
+const catCache = {}; // ticker -> overridden cat
+const CAT_KEY = 'clec_cat_v1';
+try{ const s=localStorage.getItem(CAT_KEY); if(s) Object.assign(catCache,JSON.parse(s)); }catch(e){}
+function saveCatCache(){try{localStorage.setItem(CAT_KEY,JSON.stringify(catCache));}catch(e){}}
+function getHoldingCat(ticker,defaultCat){ return catCache[ticker]!==undefined?catCache[ticker]:defaultCat; }
+
+// 初始化
+renderOverview('base');
+renderHoldings();
+renderCashflow();
+initDebtInputs();
+// 顯示股價最後更新時間
+(()=>{
+  try{
+    const t=localStorage.getItem('clec_price_updated');
+    if(t){ const el=document.getElementById('price-last-update'); if(el){el.textContent='最後更新：'+t;} }
+  }catch(e){}
+})();
+// 顯示初始儲存狀態
+(()=>{
+  const el=document.getElementById('save-status');
+  if(!el)return;
+  try{
+    const saved=localStorage.getItem(STORAGE_KEY);
+    if(saved){
+      const parsed=JSON.parse(saved);
+      const count=Object.values(parsed).reduce((s,yr)=>s+Object.values(yr).filter(v=>v.div!==''||v.stock!=='').length,0);
+      el.textContent=`資料已儲存於本機（${count}筆記錄）`;
+      el.style.color='var(--dim)';
+    } else {
+      el.textContent='已載入2025預設數據';
+      el.style.color='var(--dim)';
+    }
+  } catch(e){}
+})();
+</script>
+</body>
+</html>
