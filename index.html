@@ -1516,8 +1516,9 @@ function renderOverview(scen){
     +'<td class="num" style="color:var(--green);font-size:13px;font-weight:500">'+(grand[0]>0?(grand[OVERVIEW_YEARS]/grand[0]).toFixed(2):'—')+'×</td>';
   ob.appendChild(gtr);
 
-  // ── 折線圖 ──
-  (function drawGrowthChart() {
+  // ── 折線圖（延遲繪製，避免 web-font 阻塞 CDP paint）──
+  const _grand = grand.slice(), _debts = DEBTS.slice();
+  setTimeout(function drawGrowthChart() {
     const canvas = document.getElementById('growth-chart');
     if (!canvas) return;
     const dpr = window.devicePixelRatio || 1;
@@ -1527,6 +1528,8 @@ function renderOverview(scen){
     canvas.height = H * dpr;
     const ctx = canvas.getContext('2d');
     ctx.scale(dpr, dpr);
+    // alias so rest of function keeps working
+    const grand = _grand, DEBTS = _debts;
 
     const years = grand.length;
     const padL = 52, padR = 16, padT = 16, padB = 28;
@@ -1548,7 +1551,7 @@ function renderOverview(scen){
       ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + w, y); ctx.stroke();
       const label = 'NT$' + Math.round((minV + range * t) / 10000) + '萬';
       ctx.fillStyle = 'rgba(255,255,255,0.25)';
-      ctx.font = '9px DM Mono, monospace';
+      ctx.font = '9px monospace';
       ctx.textAlign = 'right';
       ctx.fillText(label, padL - 4, y + 3);
     });
@@ -1587,7 +1590,7 @@ function renderOverview(scen){
 
     // X 軸年份
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.font = '9px DM Mono, monospace';
+    ctx.font = '9px monospace';
     ctx.textAlign = 'center';
     grand.forEach((_, i) => {
       if (i % 1 === 0) ctx.fillText(2026 + i, xOf(i), padT + h + 14);
@@ -1612,11 +1615,11 @@ function renderOverview(scen){
       ctx.beginPath(); ctx.moveTo(lx, legendY); ctx.lineTo(lx + 18, legendY); ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = 'rgba(255,255,255,0.5)';
-      ctx.font = '9px DM Mono, monospace';
+      ctx.font = '9px monospace';
       ctx.textAlign = 'left';
       ctx.fillText(label, lx + 22, legendY + 3);
     });
-  })();
+  }, 200);
 }
 
 // ── 年度切換狀態 ──
@@ -3931,9 +3934,10 @@ window._appReady = false;
 window._doInitRender = function(){
   if(window._appReady) return;
   window._appReady = true;
+  // 分批渲染，每批間讓瀏覽器有機會繪製
   renderOverview('base');
-  renderHoldings();
-  renderCashflow();
+  setTimeout(function(){ renderHoldings(); }, 0);
+  setTimeout(function(){ renderCashflow(); }, 0);
   // 顯示股價最後更新時間
   try{
     const t=localStorage.getItem('clec_price_updated');
@@ -3969,8 +3973,8 @@ window._doInitRender = function(){
   function unlock(){
     document.getElementById('lock-screen').style.display='none';
     document.getElementById('main-content').style.display='block';
-    // 延遲 render：等 DOM 可見後再執行 heavy JS
-    if(window._doInitRender) setTimeout(window._doInitRender, 0);
+    // 延遲 render：等 DOM 可見後再執行 heavy JS（分批避免 main-thread 阻塞）
+    if(window._doInitRender) setTimeout(window._doInitRender, 50);
   }
   // 檢查 sessionStorage（同一個瀏覽器視窗不用重複輸入）
   if(sessionStorage.getItem('clec_auth')==='ok') unlock();
