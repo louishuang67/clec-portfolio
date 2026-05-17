@@ -1373,7 +1373,7 @@ function renderOverview(scen){
      s:'淨資產 NT$'+Math.round((grand[OVERVIEW_YEARS]-DEBTS[OVERVIEW_YEARS])/10000)+'萬'}
   ].forEach(k=>{
     const d=document.createElement('div');d.className='skpi';
-    d.innerHTML=`<div class="skpi-lbl">${k.l}</div><div class="skpi-val" style="color:${k.c}">NT$${fmtI(k.v)}</div>${k.s?`<div class="skpi-sub">${k.s}</div>`:''}`;
+    d.innerHTML=`<div class="skpi-lbl">${k.l}</div><div class="skpi-val" style="color:${k.c}">${fmtI(k.v)}</div>${k.s?`<div class="skpi-sub">${k.s}</div>`:''}`;
     kr.appendChild(d);
   });
 
