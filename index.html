@@ -299,7 +299,6 @@ tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-we
 </div>
 
 <div class="tab-nav">
-  <
   <button class="tab-btn active" onclick="switchTab('overview',this)">📊 總覽</button>
   <button class="tab-btn" onclick="switchTab('holdings',this)">📋 現況持股</button>
   <button class="tab-btn" onclick="switchTab('cashflow',this)">💰 現金流 &amp; 負債</button>
@@ -529,7 +528,7 @@ tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-we
     <!-- 月還款合計（動態） -->
     <div class="di" style="border-color:rgba(248,113,113,.3)">
       <div class="di-lbl">月還款合計</div>
-      <div class="di-val">NT$11.66萬</div>
+      <div class="di-val" id="debt-monthly-total">NT$11.66萬</div>
       <div class="di-sub" id="debt-summary-sub">年利息NT$53.7萬<br>加權利率2.46%</div>
     </div>
   </div>
@@ -956,6 +955,20 @@ function saveDebtCache(){
   try{ localStorage.setItem(DEBT_KEY,JSON.stringify(debtCache)); }catch(e){}
 }
 
+// 動態計算年利息（m1.bal * m1.rate + m2.bal * m2.rate + m3.bal * m3.rate，本金單位萬元）
+function calcAnnualDebtInterest(){
+  const d = debtCache;
+  let annual = 0;
+  if(d.m1 && d.m1.bal) annual += d.m1.bal * 10000 * (d.m1.rate / 100);
+  else annual += 13000000 * 0.023;
+  if(d.m2 && d.m2.bal) annual += d.m2.bal * 10000 * (d.m2.rate / 100);
+  else annual += 4000000 * 0.0295;
+  if(d.m3 && d.m3.bal) annual += d.m3.bal * 10000 * (d.m3.rate / 100);
+  else annual += 3200000 * 0.024;
+  annual += (d.pledgeLoan || 1500000) * ((d.pledgeRate || 2.88) / 100);
+  return Math.round(annual);
+}
+
 // 股價快取
 let priceCache = {};
 try{ const s=localStorage.getItem(PRICE_KEY); if(s) priceCache=JSON.parse(s); }catch(e){}
@@ -1250,12 +1263,11 @@ const r3m=0.024/12,_n3=6*12,_p3=3200000;
 const _m3=_p3*(r3m*(1+r3m)**_n3)/((1+r3m)**_n3-1);
 function debtTotal(y){
   const mo=y*12;
-  const b1=_p1*(1+r1m)**mo-_m1*((1+r1m)**mo-1)/r1m;
+  const b1=Math.max(0,_p1*(1+r1m)**mo-_m1*((1+r1m)**mo-1)/r1m);
   const b3=Math.max(0,_p3*(1+r3m)**mo-_m3*((1+r3m)**mo-1)/r3m);
   return Math.round(b1+4000000+b3+1500000);
 }
 let DEBTS=Array.from({length:OVERVIEW_YEARS+1},(_,y)=>debtTotal(y));
-function rebuildDebts(){ DEBTS=Array.from({length:OVERVIEW_YEARS+1},(_,y)=>debtTotalDynamic(y)); }
 // 動態負債陣列（由 recalcDebtTotals 更新）
 
 const SCENARIOS={
@@ -1618,7 +1630,7 @@ function updateCfSummary(){
   const totalCF=totalDiv+totalStock;
   const grandVal=grand[curYrIdx]||1;
   const divYld=totalDiv>0?((totalDiv/grandVal)*100).toFixed(2):null;
-  const debtInterest=537000; // 年利息 NT$537,000
+  const debtInterest=calcAnnualDebtInterest();
   const netCF=totalDiv-debtInterest;
 
   bar.innerHTML=`
@@ -1647,7 +1659,7 @@ function updateCfSummary(){
       <div class="cf-sum-val" style="color:${totalDiv>0?(netCF>=0?'var(--green)':'var(--red)'):'var(--dim)'}">
         ${totalDiv>0?(netCF>=0?'+':'')+' NT$'+(netCF/10000).toFixed(2)+'萬':'—'}
       </div>
-      <div class="cf-sum-sub">負債年利息 NT$53.7萬</div>
+      <div class="cf-sum-sub">負債年利息 NT$${(debtInterest/10000).toFixed(1)}萬</div>
     </div>`;
 }
 
@@ -1886,7 +1898,7 @@ const CF_DEFAULTS = {
   'QQXL':    {lbl:'QQXL', val:4234, color:'#f5c842'},
   '00865B':  {lbl:'00865B債券ETF', val:2000, color:'#4ade9a'},
 };
-const DEBT_INTEREST = 537000; // 年利息
+// DEBT_INTEREST: use calcAnnualDebtInterest() for dynamic values inside render functions
 
 function buildCfYrTabs(){
   const wrap=document.getElementById('cf-yr-tabs');if(!wrap)return;
@@ -1985,7 +1997,8 @@ function renderCashflow(){
   const totalDiv=filteredItems.filter(it=>!it.isStock).reduce((s,it)=>s+it.val,0);
   const totalStock=filteredItems.filter(it=>it.isStock).reduce((s,it)=>s+it.val,0);
   const totalCF=totalDiv+totalStock;
-  const netCF=totalDiv-DEBT_INTEREST;
+  const _debtInterest=calcAnnualDebtInterest();
+  const netCF=totalDiv-_debtInterest;
   const {grand}=calcAllTotals(curScen);
   const grandVal=grand[curYrIdx]||1;
   const divYld=(totalDiv/grandVal*100).toFixed(2);
@@ -2015,8 +2028,8 @@ function renderCashflow(){
     </div>
     <div class="cf-card">
       <div class="cf-lbl">負債年利息</div>
-      <div class="cf-val" style="color:var(--red)">NT$${(DEBT_INTEREST/10000).toFixed(1)}萬</div>
-      <div class="cf-sub">月均 NT$${Math.round(DEBT_INTEREST/12).toLocaleString('zh-TW')}</div>
+      <div class="cf-val" style="color:var(--red)">NT$${(_debtInterest/10000).toFixed(1)}萬</div>
+      <div class="cf-sub">月均 NT$${Math.round(_debtInterest/12).toLocaleString('zh-TW')}</div>
     </div>
     <div class="cf-card" style="${netCF>=0?'border-color:rgba(74,222,154,.35)':'border-color:rgba(248,113,113,.3)'}">
       <div class="cf-lbl">現金配息 − 負債利息</div>
@@ -2068,12 +2081,6 @@ function clearAllOverrides(){
   updateOverrideBar();
   recalcHoldings();
 }
-
-
-// ── Tab 5：質押試算 ──
-// ── Tab 5：質押試算（多標的抵押品）──
-let pledgeRows = []; // [{ticker, shares, price, rowId}]
-let pledgeRowCounter = 0;
 
 
 // ════════════════════════════════════════
@@ -2720,7 +2727,6 @@ function renderRebalance(){
   const gapSat  = targetSat  - satVal;
   const gapCash = targetCash - cashVal;
 
-  const fmtI = v => 'NT$'+Math.round(v/10000)+'萬';
   const fmtP = v => (v>=0?'+':'')+v.toFixed(1)+'%';
 
   // ── 現況 vs 目標卡片 ──
@@ -3008,14 +3014,6 @@ document.addEventListener('click',e=>{
   delete userRates[ticker];recalcHoldings();updateOverrideBar();
 });
 
-// ── 負債頁：元大質押欄位 ──
-function initDebtInputs(){
-  const loanEl=document.getElementById('debt-pledge-loan');
-  const rateEl=document.getElementById('debt-pledge-rate');
-  if(loanEl) loanEl.value=((debtCache.pledgeLoan||PLEDGE_DATA.loan)/10000).toFixed(0); // 萬
-  if(rateEl) rateEl.value=debtCache.pledgeRate||PLEDGE_DATA.rate;
-  updateDebtPledgeSummary();
-}
 
 function onDebtPledgeChange(){
   const loanM=parseFloat(document.getElementById('debt-pledge-loan')?.value)||0; // 萬
@@ -3298,11 +3296,6 @@ function renderQQQTab(){
   }
 }
 
-// ── switchTab 擴充 ──
-const _origSwitchTab = switchTab;
-// switchTab 已在下方重新定義，無需覆蓋
-
-
 // ════════════════════════════════════
 // 💾 新分頁設定的儲存/還原
 // ════════════════════════════════════
@@ -3530,6 +3523,13 @@ function onDebtInputChange(){
     }
   });
 
+  // 更新月還款合計
+  const totalMonthly = ['m1','m2','m3'].reduce((sum, k) => {
+    return sum + calcMonthlyPayment(d[k].bal, d[k].rate, d[k].yrs, d[k].type);
+  }, 0);
+  const totalEl = document.getElementById('debt-monthly-total');
+  if(totalEl) totalEl.textContent = 'NT$' + (totalMonthly / 10000).toFixed(2) + '萬';
+
   // 存入 debtCache（供其他分頁讀取）
   Object.assign(debtCache, { m1: d.m1, m2: d.m2, m3: d.m3 });
   saveDebtCache();
@@ -3690,7 +3690,6 @@ function updateAllocSum(allocCore, allocSat, allocCash, newFunds){
   const manCash = g('rb-alloc-cash');
   const manTotal = manCore + manSat + manCash;
   const diff = newFunds - manTotal;
-  const fmtI = v => 'NT$' + Math.round(v/10000) + '萬';
   sumEl.innerHTML = '分配合計 ' + fmtI(manTotal) + ' / 新增資金 ' + fmtI(newFunds) +
     (Math.abs(diff) > 1000 ?
       ' <span style="color:var(--red)">尚有 ' + fmtI(Math.abs(diff)) + (diff>0?' 未分配':' 超額') + '</span>' :
@@ -3796,7 +3795,6 @@ initDebtInputs();
 renderOverview('base');
 renderHoldings();
 renderCashflow();
-initDebtInputs();
 // 顯示股價最後更新時間
 (()=>{
   try{
@@ -3827,7 +3825,7 @@ initDebtInputs();
 
 <script>
 (function(){
-  const HASH = '9b4c7a2e8f1d3056'; // hash of Kj28620145
+  const HASH = '9b4c7a2e8f1d3056';
   function simpleHash(s){
     let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}
     return Math.abs(h).toString(16).padStart(16,'0').slice(0,16);
@@ -3841,7 +3839,7 @@ initDebtInputs();
 
   window.checkPW = function(){
     const val = document.getElementById('pw-input').value;
-    if(simpleHash(val) === simpleHash('Kj28620145')){
+    if(simpleHash(val) === HASH){
       sessionStorage.setItem('clec_auth','ok');
       unlock();
     } else {
