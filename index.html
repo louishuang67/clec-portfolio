@@ -163,15 +163,19 @@ tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-we
 <div class="header">
   <div class="header-left">
     <h1>CLEC 投資組合全覽</h1>
-    <div class="sub">2026–2031 逐年市值預測 ／ CLEC精神版（1,000萬全投市場）</div>
+    <div class="sub"><span id="header-sub">逐年市值預測 ／ CLEC精神版</span></div>
   </div>
   <div class="kpi-row">
-    <div class="kpi"><div class="kpi-label">2026 總資產</div><div class="kpi-val" style="color:var(--blue)">NT$4,296萬</div><div class="kpi-sub">基準年</div></div>
-    <div class="kpi"><div class="kpi-label">2031 總資產</div><div class="kpi-val" style="color:var(--green)" id="kpi-2031">—</div><div class="kpi-sub" id="kpi-growth">計算中</div></div>
-    <div class="kpi"><div class="kpi-label">2031 淨資產</div><div class="kpi-val" style="color:var(--teal)" id="kpi-net">—</div><div class="kpi-sub">負債 NT$1,615萬</div></div>
+    <div class="kpi"><div class="kpi-label">2026 起始資產</div><div class="kpi-val" style="color:var(--blue)" id="kpi-start">NT$4,296萬</div><div class="kpi-sub">現況</div></div>
+    <div class="kpi"><div class="kpi-label" id="kpi-yr-label">終點 總資產</div><div class="kpi-val" style="color:var(--green)" id="kpi-2031">—</div><div class="kpi-sub" id="kpi-growth">計算中</div></div>
+    <div class="kpi"><div class="kpi-label" id="kpi-net-label">終點 淨資產</div><div class="kpi-val" style="color:var(--teal)" id="kpi-net">—</div><div class="kpi-sub" id="kpi-net-sub">負債計算中</div></div>
     <div class="kpi"><div class="kpi-label">年度現金流</div><div class="kpi-val" style="color:var(--amber)">NT$60.4萬</div><div class="kpi-sub">月均 NT$5,034</div></div>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap">
+    <button onclick="fetchAllPrices()" id="btn-auto-fetch"
+      style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(74,222,154,.4);background:rgba(74,222,154,.08);color:var(--green);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px">
+      <span id="auto-fetch-icon">⚡</span> 一鍵更新股價
+    </button>
     <button id="btn-update-price" onclick="openPricePanel()"
       style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(96,165,248,.4);background:rgba(96,165,248,.08);color:var(--blue);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px">
       <span style="font-size:13px">✎</span> 更新股價 / 配息
@@ -196,6 +200,26 @@ tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-we
       <div>
         <h2 style="font-family:'Fraunces',serif;font-size:18px;color:var(--text);font-weight:600">更新股價</h2>
         <p style="font-size:11px;color:var(--muted);margin-top:3px;font-family:'DM Mono',monospace">點標的名稱在新分頁查詢股價 → 填入右側欄位 → 確認更新　台股 NT$ / 美股 USD（自動換算）</p>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
+          <button onclick="fetchAllPrices(true)" style="font-family:'DM Mono',monospace;font-size:11px;padding:5px 14px;border-radius:6px;border:1px solid rgba(74,222,154,.4);background:rgba(74,222,154,.08);color:var(--green);cursor:pointer">
+            ⚡ 自動抓取（需 https://）
+          </button>
+          <button onclick="togglePastePanel()" style="font-family:'DM Mono',monospace;font-size:11px;padding:5px 14px;border-radius:6px;border:1px solid rgba(245,200,66,.4);background:rgba(245,200,66,.08);color:var(--amber);cursor:pointer">
+            📋 貼上股價 JSON
+          </button>
+        </div>
+        <div id="paste-panel" style="display:none;margin-top:10px;padding:10px 12px;background:var(--bg);border:1px solid var(--border2);border-radius:8px">
+          <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:6px">
+            請到 <a href="https://claude.ai" target="_blank" style="color:var(--blue)">claude.ai</a> 問：「請查詢以下股票最新股價，回傳純 JSON：00662,006208,00692,00830,2330,1231,2382,00757,00675L,00631L,00670L,00865B,2890,2884,2881,QQQI,QQQM,VTI,BRK-B,QQXL（台股NT$，美股USD）」
+          </div>
+          <textarea id="price-json-input" rows="4" placeholder='{"00662":102.5,"2330":850,"QQQM":480,...}'
+            style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:8px;outline:none;resize:vertical;box-sizing:border-box"></textarea>
+          <button onclick="applyPriceJSON()" style="margin-top:6px;font-family:'DM Mono',monospace;font-size:11px;padding:5px 14px;border-radius:6px;border:1px solid rgba(96,165,248,.4);background:rgba(96,165,248,.08);color:var(--blue);cursor:pointer">
+            ✓ 套用股價
+          </button>
+          <span id="paste-status" style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace;margin-left:8px"></span>
+        </div>
+        <span id="fetch-status" style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace;margin-top:4px;display:block"></span>
       </div>
       <button onclick="closePricePanel()" style="background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;padding:4px 12px;cursor:pointer;font-size:13px">✕ 關閉</button>
     </div>
@@ -250,9 +274,12 @@ tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-we
   <button class="tab-btn active" onclick="switchTab('overview',this)">📊 總覽</button>
   <button class="tab-btn" onclick="switchTab('holdings',this)">📋 現況持股</button>
   <button class="tab-btn" onclick="switchTab('cashflow',this)">💰 現金流 &amp; 負債</button>
-  <button class="tab-btn" onclick="switchTab('rebalance',this)">⚖️ 433 再平衡</button>
-  <button class="tab-btn" onclick="switchTab('rebalance613',this)">📐 613 再平衡</button>
+  <button class="tab-btn" onclick="switchTab('rebalance',this)">⚖️ 再平衡試算</button>
   <button class="tab-btn" onclick="switchTab('pledge',this)">🔒 質押試算</button>
+  <button class="tab-btn" onclick="switchTab('retire',this)">🎯 退休試算</button>
+  <button class="tab-btn" onclick="switchTab('backtest',this)">📊 配置回測</button>
+  <button class="tab-btn" onclick="switchTab('qqq',this)">📉 QQQ歷史</button>
+  <button class="tab-btn" onclick="switchTab('etf662',this)">🇹🇼 00662歷史</button>
 </div>
 
 <!-- ═══ TAB 1：總覽 ═══ -->
@@ -274,23 +301,34 @@ tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-we
 
   <div class="scen-kpi-row" id="scenKpis"></div>
 
-  <div class="sec-title">年度總資產 vs 淨資產</div>
+  <!-- 每3年變化總表 -->
+  <div class="sec-title" style="margin-bottom:6px;margin-top:10px">各桶逐期變化（每3年）</div>
+  <div style="overflow-x:auto;margin-bottom:20px">
+    <table id="ov-period-table" style="min-width:500px;font-size:11px"></table>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px">
+    <div class="sec-title" style="margin-bottom:0">年度總資產 vs 淨資產</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace">預測年數</span>
+      <input id="ov-years" type="range" min="6" max="30" step="1" value="6"
+        style="width:100px;accent-color:var(--blue)"
+        oninput="OVERVIEW_YEARS=parseInt(this.value);YR_LABELS=getYrLabels();
+                 DEBTS=Array.from({length:OVERVIEW_YEARS+1},(_,y)=>debtTotalDynamic(y));
+                 document.getElementById('ov-years-lbl').textContent=this.value+'年';
+                 renderOverview(curScen||'base');"/>
+      <span id="ov-years-lbl" style="font-size:11px;color:var(--blue);font-family:'DM Mono',monospace;min-width:32px">6年</span>
+    </div>
+  </div>
   <div class="sum-grid" id="sumGrid"></div>
 
   <div class="sec-title">各桶市值趨勢</div>
   <div class="table-wrap">
-    <table id="overviewTable">
-      <thead><tr>
-        <th style="min-width:78px">桶別</th>
-        <th class="yr-head">2026</th><th class="yr-head">2027</th><th class="yr-head">2028</th>
-        <th class="yr-head">2029</th><th class="yr-head">2030</th>
-        <th class="yr-head" style="background:rgba(74,222,154,.06)">2031★</th>
-        <th style="text-align:right;min-width:88px">6年倍數</th>
-      </tr></thead>
+    <div style="overflow-x:auto"><table id="overviewTable" style="min-width:600px">
+      <thead id="overviewHead"><tr></tr></thead>
       <tbody id="overviewBody"></tbody>
-    </table>
+    </table></div>
   </div>
-  <div class="note-bar">⚠️ 第5年（2031）加入NT$1,000萬全投市場：核心+400萬 / 衛星+400萬 / QQQI+150萬 / 現金備用+50萬。現金桶與美股現金流組的報酬率在三個情境中維持不變，僅核心桶與衛星桶隨情境調整。非投資建議。</div>
+  <div class="note-bar">⚠️ 各情境採不同核心桶與衛星桶年化報酬率估算。現金桶與美股現金流組報酬率在三個情境中維持不變。本試算為個人財務規劃工具，非投資建議。</div>
 </div>
 
 <!-- ═══ TAB 2：現況持股 ═══ -->
@@ -375,23 +413,68 @@ tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-we
   <!-- 負債現況（可編輯） -->
   <div class="sec-title red">負債現況</div>
   <div class="debt-meta" id="debt-meta-grid">
-    <!-- 分期房貸 -->
-    <div class="di">
+    <!-- 分期房貸（可編輯） -->
+    <div class="di" style="border-color:rgba(248,113,113,.25)">
       <div class="di-lbl">分期房貸</div>
-      <div class="di-val" style="color:var(--red)">NT$1,300萬</div>
-      <div class="di-sub">2.3%／30年剩26年<br>等額攤還 月付NT$55,398</div>
+      <div id="di-m1-val" style="font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--red);margin-bottom:4px">NT$1,300萬</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px">
+        <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">貸款餘額(萬)</div>
+          <input id="di-m1-bal" type="number" value="1300" min="0" step="10" oninput="onDebtInputChange()"
+            style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--red);font-family:'DM Mono',monospace;font-size:11px;padding:2px 5px;outline:none;text-align:right"/></div>
+        <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">利率(%)</div>
+          <input id="di-m1-rate" type="number" value="2.3" min="0" max="20" step="0.01" oninput="onDebtInputChange()"
+            style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:11px;padding:2px 5px;outline:none;text-align:right"/></div>
+        <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">剩餘年數</div>
+          <input id="di-m1-yrs" type="number" value="26" min="1" max="40" step="1" oninput="onDebtInputChange()"
+            style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:2px 5px;outline:none;text-align:right"/></div>
+        <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">類型</div>
+          <select id="di-m1-type" onchange="onDebtInputChange()"
+            style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:2px 4px;outline:none">
+            <option value="amort">等額攤還</option><option value="io">只付息</option></select></div>
+      </div>
+      <div id="di-m1-sub" style="font-size:10px;color:var(--dim)">月付 NT$55,398</div>
     </div>
-    <!-- 理財房貸 -->
-    <div class="di">
+    <!-- 理財房貸（可編輯） -->
+    <div class="di" style="border-color:rgba(248,113,113,.25)">
       <div class="di-lbl">理財房貸</div>
-      <div class="di-val" style="color:var(--red)">NT$400萬</div>
-      <div class="di-sub">2.95%／7年1約剩4年<br>只付息 月付NT$9,833 預計續約</div>
+      <div id="di-m2-val" style="font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--red);margin-bottom:4px">NT$400萬</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px">
+        <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">貸款餘額(萬)</div>
+          <input id="di-m2-bal" type="number" value="400" min="0" step="10" oninput="onDebtInputChange()"
+            style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--red);font-family:'DM Mono',monospace;font-size:11px;padding:2px 5px;outline:none;text-align:right"/></div>
+        <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">利率(%)</div>
+          <input id="di-m2-rate" type="number" value="2.95" min="0" max="20" step="0.01" oninput="onDebtInputChange()"
+            style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:11px;padding:2px 5px;outline:none;text-align:right"/></div>
+        <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">剩餘年數</div>
+          <input id="di-m2-yrs" type="number" value="4" min="1" max="40" step="1" oninput="onDebtInputChange()"
+            style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:2px 5px;outline:none;text-align:right"/></div>
+        <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">類型</div>
+          <select id="di-m2-type" onchange="onDebtInputChange()"
+            style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:2px 4px;outline:none">
+            <option value="io" selected>只付息</option><option value="amort">等額攤還</option></select></div>
+      </div>
+      <div id="di-m2-sub" style="font-size:10px;color:var(--dim)">月付 NT$9,833（只付息）</div>
     </div>
-    <!-- 信貸 -->
-    <div class="di">
+    <!-- 信貸（可編輯） -->
+    <div class="di" style="border-color:rgba(248,113,113,.25)">
       <div class="di-lbl">信貸</div>
-      <div class="di-val" style="color:var(--red)">NT$320萬</div>
-      <div class="di-sub">2.4%／7年剩6年<br>等額攤還 月付NT$47,766 2031還清</div>
+      <div id="di-m3-val" style="font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--red);margin-bottom:4px">NT$320萬</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px">
+        <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">貸款餘額(萬)</div>
+          <input id="di-m3-bal" type="number" value="320" min="0" step="10" oninput="onDebtInputChange()"
+            style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--red);font-family:'DM Mono',monospace;font-size:11px;padding:2px 5px;outline:none;text-align:right"/></div>
+        <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">利率(%)</div>
+          <input id="di-m3-rate" type="number" value="2.4" min="0" max="20" step="0.01" oninput="onDebtInputChange()"
+            style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:11px;padding:2px 5px;outline:none;text-align:right"/></div>
+        <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">剩餘年數</div>
+          <input id="di-m3-yrs" type="number" value="6" min="1" max="40" step="1" oninput="onDebtInputChange()"
+            style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:2px 5px;outline:none;text-align:right"/></div>
+        <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">類型</div>
+          <select id="di-m3-type" onchange="onDebtInputChange()"
+            style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:2px 4px;outline:none">
+            <option value="amort" selected>等額攤還</option><option value="io">只付息</option></select></div>
+      </div>
+      <div id="di-m3-sub" style="font-size:10px;color:var(--dim)">月付 NT$47,766</div>
     </div>
     <!-- 元大質押（可編輯，連動質押頁） -->
     <div class="di" id="di-pledge" style="border-color:rgba(96,165,248,.3)">
@@ -399,8 +482,8 @@ tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-we
         <div class="di-lbl">元大質押 <span style="font-size:9px;color:var(--blue);font-family:'DM Mono',monospace">● 連動質押頁</span></div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
-        <span style="font-size:10px;color:var(--dim)">借款</span>
-        <input id="debt-pledge-loan" type="number" min="0" step="100000"
+        <span style="font-size:10px;color:var(--dim)">借款 (萬)</span>
+        <input id="debt-pledge-loan" type="number" min="0" step="10"
           style="width:80px;background:var(--surface2);border:1px solid rgba(96,165,248,.35);border-radius:4px;color:var(--red);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;padding:2px 5px;outline:none;text-align:right"
           oninput="onDebtPledgeChange()"/>
         <span style="font-size:10px;color:var(--dim)">元</span>
@@ -424,286 +507,409 @@ tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-we
 
   <div class="sec-title red">負債逐年精算</div>
   <div class="debt-table-wrap">
-    <table class="debt-table">
-      <thead><tr>
-        <th>負債項目</th>
-        <th class="yr-head">2026</th><th class="yr-head">2027</th><th class="yr-head">2028</th>
-        <th class="yr-head">2029</th><th class="yr-head">2030</th>
-        <th class="yr-head" style="background:rgba(74,222,154,.06)">2031★</th>
-        <th>備註</th>
-      </tr></thead>
-      <tbody>
-        <tr><td>分期房貸</td>
-          <td class="num">1,300萬</td><td class="num">1,263萬</td><td class="num">1,225萬</td>
-          <td class="num">1,187萬</td><td class="num">1,147萬</td><td class="num">1,065萬</td>
-          <td class="sug">等額攤還，6年還本約NT$235萬</td></tr>
-        <tr><td>理財房貸</td>
-          <td class="num">400萬</td><td class="num">400萬</td><td class="num">400萬</td>
-          <td class="num">400萬</td><td class="num">400萬</td><td class="num">400萬</td>
-          <td class="sug"><span class="tag tag-watch">續約</span>CLEC精神：2.95%利差划算不還</td></tr>
-        <tr><td>信貸</td>
-          <td class="num">320萬</td><td class="num">270萬</td><td class="num">218萬</td>
-          <td class="num">166萬</td><td class="num">112萬</td><td class="num zero">還清</td>
-          <td class="sug">2031年底自然還清</td></tr>
-        <tr><td>元大質押</td>
-          <td class="num">150萬</td><td class="num">150萬</td><td class="num">150萬</td>
-          <td class="num">150萬</td><td class="num">150萬</td><td class="num">150萬</td>
-          <td class="sug"><span class="tag tag-hold">維持</span>質押比3.5%，遠低於20%上限</td></tr>
-        <tr class="subtotal"><td style="color:var(--text)">合計負債</td>
-          <td class="num total-debt">2,170萬</td><td class="num total-debt">2,083萬</td><td class="num total-debt">1,994萬</td>
-          <td class="num total-debt">1,902萬</td><td class="num total-debt">1,809萬</td>
-          <td class="num total-debt" style="background:rgba(74,222,154,.06)">1,615萬</td><td></td></tr>
-      </tbody>
-    </table>
+    <div style="overflow-x:auto"><table class="debt-table" id="debt-dyn-table">
+      <thead id="debt-dyn-head"></thead>
+      <tbody id="debt-dyn-body"></tbody>
+    </table></div>
   </div>
-  <div class="note-bar">⚠️ CLEC精神：理財房貸2.95%遠低於NASDAQ100預期報酬12~15%，不提前還款符合利差套利邏輯。5年後1,000萬入賬全部投入市場。配息欄位若已在「現況持股」頁填入實際數字，此頁自動同步顯示；未填入則顯示系統估算值（以灰色標注）。</div>
+  <div class="note-bar">⚠️ CLEC精神：理財房貸2.95%遠低於NASDAQ100預期報酬12~15%，不提前還款符合利差套利邏輯。配息欄位若已在「現況持股」頁填入實際數字，此頁自動同步顯示；未填入則顯示系統估算值（以灰色標注）。</div>
 </div>
 
 <!-- ═══ TAB 4：433 再平衡 ═══ -->
 <div class="tab-panel" id="tab-rebalance">
 
-  <!-- 說明列 -->
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)">
-    <div>
-      <div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--text)">433 配置再平衡試算</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:3px;font-family:'DM Mono',monospace">以現有持股市值為基礎，計算目標配置 40/30/30 各桶缺口，並給出操作建議</div>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <span style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace">計算基準年：</span>
-      <div id="rb-yr-tabs" style="display:flex;gap:4px"></div>
-    </div>
-  </div>
+<div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">⚖️ 配置再平衡試算</div>
+<div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:14px">以現有持股市值為基礎，計算達到目標配置所需的操作</div>
 
-  <!-- 可調整目標比例 -->
-  <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:flex-end">
-    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 16px">
-      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.04em">目標配置比例（可調整）</div>
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:5px">
-          <span style="font-size:11px;color:var(--core-c)">🔵 核心桶</span>
-          <input id="rb-target-core" type="number" min="0" max="100" step="1" value="40"
-            style="width:52px;background:var(--surface2);border:1px solid rgba(96,165,248,.4);border-radius:4px;color:var(--blue);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:center;padding:3px 4px;outline:none"
-            oninput="renderRebalance()"/>
-          <span style="font-size:11px;color:var(--dim)">%</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:5px">
-          <span style="font-size:11px;color:var(--sat-c)">🟡 衛星桶</span>
-          <input id="rb-target-sat" type="number" min="0" max="100" step="1" value="30"
-            style="width:52px;background:var(--surface2);border:1px solid rgba(192,132,252,.4);border-radius:4px;color:var(--purple);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:center;padding:3px 4px;outline:none"
-            oninput="renderRebalance()"/>
-          <span style="font-size:11px;color:var(--dim)">%</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:5px">
-          <span style="font-size:11px;color:var(--cash-c)">🟢 現金桶</span>
-          <input id="rb-target-cash" type="number" min="0" max="100" step="1" value="30"
-            style="width:52px;background:var(--surface2);border:1px solid rgba(74,222,154,.4);border-radius:4px;color:var(--green);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:center;padding:3px 4px;outline:none"
-            oninput="renderRebalance()"/>
-          <span style="font-size:11px;color:var(--dim)">%</span>
-        </div>
-        <div id="rb-target-sum" style="font-size:11px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:4px"></div>
-      </div>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 16px">
-      <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'DM Mono',monospace">新增資金（可填）</div>
-      <div style="display:flex;align-items:center;gap:5px">
-        <span style="font-size:11px;color:var(--dim)">NT$</span>
-        <input id="rb-new-funds" type="number" min="0" step="100000" value="0" placeholder="0"
-          style="width:100px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:13px;text-align:right;padding:3px 6px;outline:none"
-          oninput="renderRebalance()"/>
-        <span style="font-size:11px;color:var(--dim)">元（再平衡時可加入）</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- 現況 vs 目標 總覽 -->
-  <div class="sec-title">現況 vs 目標配置</div>
-  <div id="rb-overview" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:20px"></div>
-
-  <!-- 缺口視覺化 -->
-  <div class="sec-title">各桶缺口圖</div>
-  <div id="rb-gap-chart" style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;margin-bottom:20px"></div>
-
-  <!-- 個股操作建議 -->
-  <div class="sec-title">個股再平衡建議</div>
-  <div class="table-wrap">
-    <table id="rb-table" style="min-width:780px">
-      <thead><tr>
-        <th style="min-width:60px">桶別</th>
-        <th style="min-width:72px">標的</th>
-        <th class="yr-head" style="min-width:80px">現有市值</th>
-        <th class="yr-head" style="min-width:72px">佔總資產%</th>
-        <th class="yr-head" style="min-width:72px">佔桶內%</th>
-        <th class="yr-head" style="min-width:90px">目標市值</th>
-        <th class="yr-head" style="min-width:90px">缺口金額</th>
-        <th style="min-width:160px">建議操作</th>
-      </tr></thead>
-      <tbody id="rb-tbody"></tbody>
-    </table>
-  </div>
-  <div class="note-bar">⚠️ 新增資金採「缺口優先」策略：先補最大缺口的桶，超配的桶不強制減倉。美股現金流組獨立於 433 框架，不納入再平衡計算。再平衡建議僅供規劃，非投資建議。</div>
+<!-- 模式切換 -->
+<div style="display:flex;gap:8px;margin-bottom:14px">
+  <button id="rb-mode-433" onclick="setRbMode('433',this)"
+    style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 16px;border-radius:6px;
+           border:1px solid var(--blue);background:rgba(96,165,248,.15);color:var(--blue);cursor:pointer">
+    433 模式（40/30/30）
+  </button>
+  <button id="rb-mode-613" onclick="setRbMode('613',this)"
+    style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 16px;border-radius:6px;
+           border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer">
+    613 模式（60/10/30）
+  </button>
 </div>
 
-<!-- ═══ TAB 6：613 再平衡 ═══ -->
-<div class="tab-panel" id="tab-rebalance613">
-
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)">
-    <div>
-      <div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--text)">613 配置再平衡試算</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:3px;font-family:'DM Mono',monospace">成長型配置：核心60% ／ 衛星10% ／ 現金30%　適合牛市末期或高成長期</div>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <span style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace">計算基準年：</span>
-      <div id="rb613-yr-tabs" style="display:flex;gap:4px"></div>
-    </div>
-  </div>
-
-  <!-- 613 目標比例（固定 60/10/30，顯示說明） -->
-  <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:flex-end">
-    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 16px">
-      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.04em">目標配置比例（可調整）</div>
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:5px">
-          <span style="font-size:11px;color:var(--core-c)">🔵 核心桶</span>
-          <input id="rb613-target-core" type="number" min="0" max="100" step="1" value="60"
-            style="width:52px;background:var(--surface2);border:1px solid rgba(96,165,248,.4);border-radius:4px;color:var(--blue);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:center;padding:3px 4px;outline:none"
-            oninput="renderRebalance613()"/>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;align-items:start">
+  <!-- 左：目標比例 + 新增資金 -->
+  <div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:10px">目標配置比例（可調整）</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:60px;font-size:11px;color:var(--blue)">🔵 核心</span>
+          <input id="rb-t-core" type="number" min="0" max="100" step="5" value="40" oninput="renderRebalance()"
+            style="width:60px;background:var(--surface2);border:1px solid rgba(96,165,248,.4);border-radius:4px;
+                   color:var(--blue);font-family:'DM Mono',monospace;font-size:13px;text-align:center;padding:3px;outline:none">
           <span style="font-size:11px;color:var(--dim)">%</span>
         </div>
-        <div style="display:flex;align-items:center;gap:5px">
-          <span style="font-size:11px;color:var(--sat-c)">🟡 衛星桶</span>
-          <input id="rb613-target-sat" type="number" min="0" max="100" step="1" value="10"
-            style="width:52px;background:var(--surface2);border:1px solid rgba(192,132,252,.4);border-radius:4px;color:var(--purple);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:center;padding:3px 4px;outline:none"
-            oninput="renderRebalance613()"/>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:60px;font-size:11px;color:var(--purple)">🟡 衛星</span>
+          <input id="rb-t-sat" type="number" min="0" max="100" step="5" value="30" oninput="renderRebalance()"
+            style="width:60px;background:var(--surface2);border:1px solid rgba(192,132,252,.4);border-radius:4px;
+                   color:var(--purple);font-family:'DM Mono',monospace;font-size:13px;text-align:center;padding:3px;outline:none">
           <span style="font-size:11px;color:var(--dim)">%</span>
         </div>
-        <div style="display:flex;align-items:center;gap:5px">
-          <span style="font-size:11px;color:var(--cash-c)">🟢 現金桶</span>
-          <input id="rb613-target-cash" type="number" min="0" max="100" step="1" value="30"
-            style="width:52px;background:var(--surface2);border:1px solid rgba(74,222,154,.4);border-radius:4px;color:var(--green);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;text-align:center;padding:3px 4px;outline:none"
-            oninput="renderRebalance613()"/>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:60px;font-size:11px;color:var(--green)">🟢 現金</span>
+          <input id="rb-t-cash" type="number" min="0" max="100" step="5" value="30" oninput="renderRebalance()"
+            style="width:60px;background:var(--surface2);border:1px solid rgba(74,222,154,.4);border-radius:4px;
+                   color:var(--green);font-family:'DM Mono',monospace;font-size:13px;text-align:center;padding:3px;outline:none">
           <span style="font-size:11px;color:var(--dim)">%</span>
         </div>
-        <div id="rb613-target-sum" style="font-size:11px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:4px"></div>
+        <div style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace" id="rb-t-sum-hint"></div>
       </div>
     </div>
-    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 16px">
-      <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'DM Mono',monospace">新增資金（可填）</div>
-      <div style="display:flex;align-items:center;gap:5px">
-        <span style="font-size:11px;color:var(--dim)">NT$</span>
-        <input id="rb613-new-funds" type="number" min="0" step="100000" value="0" placeholder="0"
-          style="width:100px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:13px;text-align:right;padding:3px 6px;outline:none"
-          oninput="renderRebalance613()"/>
-        <span style="font-size:11px;color:var(--dim)">元</span>
+
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:8px">新增資金（萬）</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input id="rb-new-funds" type="number" min="0" step="10" value="0" oninput="renderRebalance()"
+          style="width:100px;background:var(--surface2);border:1px solid rgba(245,200,66,.4);border-radius:4px;
+                 color:var(--amber);font-family:'DM Mono',monospace;font-size:15px;text-align:right;padding:4px 8px;outline:none">
+        <span style="font-size:11px;color:var(--amber);font-weight:500">萬</span>
       </div>
+      <div style="font-size:10px;color:var(--dim);margin-top:6px">新增資金優先補足缺口桶，達標後依比例分配</div>
     </div>
-    <!-- 與 433 差異對比 -->
-    <div id="rb613-diff-card" style="background:var(--surface);border:1px solid rgba(96,165,248,.25);border-radius:10px;padding:12px 16px;flex:1;min-width:200px"></div>
+
+    <!-- 計算基準年 -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 14px">
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:8px">計算基準年</div>
+      <div id="rb-yr-tabs" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+    </div>
   </div>
 
-  <div class="sec-title">現況 vs 目標配置</div>
-  <div id="rb613-overview" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:20px"></div>
-
-  <div class="sec-title">各桶缺口圖</div>
-  <div id="rb613-gap-chart" style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;margin-bottom:20px"></div>
-
-  <div class="sec-title">個股再平衡建議</div>
-  <div class="table-wrap">
-    <table id="rb613-table" style="min-width:780px">
-      <thead><tr>
-        <th style="min-width:60px">桶別</th>
-        <th style="min-width:72px">標的</th>
-        <th class="yr-head" style="min-width:80px">現有市值</th>
-        <th class="yr-head" style="min-width:72px">佔總資產%</th>
-        <th class="yr-head" style="min-width:72px">佔桶內%</th>
-        <th class="yr-head" style="min-width:90px">目標市值</th>
-        <th class="yr-head" style="min-width:90px">缺口金額</th>
-        <th style="min-width:160px">建議操作</th>
-      </tr></thead>
-      <tbody id="rb613-tbody"></tbody>
-    </table>
+  <!-- 右：現況 vs 目標 -->
+  <div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:10px">現況 vs 目標配置</div>
+      <div id="rb-overview" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px">
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:10px">各桶缺口圖</div>
+      <div id="rb-gap-chart"></div>
+    </div>
   </div>
-  <div class="note-bar">⚠️ 613 配置適合看好大盤長期走勢、願意提高核心比重的時期。核心桶60%代表大量資金集中於 NASDAQ100/台股ETF，波動較 433 大。衛星桶降至10%，減少正2槓桿曝險。新增資金採缺口優先策略。非投資建議。</div>
+</div>
+
+<!-- 新增資金分配 -->
+<div id="rb-alloc-section" style="background:var(--surface);border:1px solid rgba(245,200,66,.3);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:none">
+  <div style="font-size:11px;color:var(--amber);font-family:'DM Mono',monospace;margin-bottom:10px">💰 新增資金分配建議</div>
+  <div id="rb-alloc-detail" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px"></div>
+  <div id="rb-alloc-sum" style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace"></div>
+</div>
+
+<!-- 個股再平衡建議 -->
+<div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:16px;overflow-x:auto">
+  <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:10px">個股再平衡建議</div>
+  <table style="min-width:700px">
+    <thead><tr>
+      <th>桶別</th><th>標的</th>
+      <th style="text-align:right">現有市值</th>
+      <th style="text-align:right">佔總資產%</th>
+      <th style="text-align:right">佔桶內%</th>
+      <th style="text-align:right">目標市值</th>
+      <th style="text-align:right">缺口</th>
+      <th>建議操作</th>
+    </tr></thead>
+    <tbody id="rb-tbody"></tbody>
+  </table>
+</div>
+
+<div class="note-bar">📌 新增資金採「缺口優先」策略：先補最大缺口的桶，超配的桶不強制減倉。美股現金流組獨立於 433 框架，不納入再平衡計算。再平衡建議僅供規劃，非投資建議。</div>
 </div>
 
 <!-- ═══ TAB 5：質押試算 ═══ -->
 <div class="tab-panel" id="tab-pledge">
-  <div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">元大質押安全試算</div>
-  <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:16px">維持率 = 抵押品總市值 ÷ 借款金額 × 100%　　警戒線 130%　　斷頭線 120%</div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;align-items:start">
+<div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">🔒 元大質押安全試算</div>
+<div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:16px">維持率 = 抵押品總市值 ÷ 借款金額 × 100%　警戒線130%　斷頭線120%</div>
 
-    <!-- 左欄：現有抵押品（多標的） -->
-    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em">現有抵押品設定（可多筆）</div>
-        <button onclick="addPledgeRow()" style="font-size:10px;padding:2px 9px;border-radius:4px;border:1px solid rgba(96,165,248,.4);background:rgba(96,165,248,.08);color:var(--blue);cursor:pointer;font-family:'DM Mono',monospace">+ 新增標的</button>
-      </div>
-      <div id="pl-collateral-rows" style="display:flex;flex-direction:column;gap:8px"></div>
-      <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
-        <div style="display:flex;justify-content:space-between;align-items:baseline">
-          <div style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace">抵押品總市值</div>
-          <div id="pl-maint-badge" style="font-size:11px;font-family:'DM Mono',monospace"></div>
-        </div>
-        <div id="pl-total-mkt" style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text);margin-top:2px">—</div>
-        <div id="pl-maint-detail" style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace;margin-top:3px"></div>
-      </div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:start">
+
+  <!-- 左：抵押品設定 -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em">現有抵押品（可多筆）</div>
+      <button onclick="addPledgeRow()" style="font-size:10px;padding:3px 10px;border-radius:5px;border:1px solid rgba(96,165,248,.4);background:rgba(96,165,248,.08);color:var(--blue);cursor:pointer;font-family:'DM Mono',monospace">+ 新增標的</button>
     </div>
+    <div id="pl-collateral-rows" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace">抵押品總市值</div>
+        <div id="pl-maint-badge" style="font-size:11px;font-family:'DM Mono',monospace"></div>
+      </div>
+      <div id="pl-total-mkt" style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--text);margin-top:2px">—</div>
+    </div>
+  </div>
 
-    <!-- 右欄：借款設定 + 即時結果 -->
+  <!-- 右：借款設定 -->
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px">
+    <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:12px">借款設定（連動負債頁）</div>
     <div style="display:flex;flex-direction:column;gap:10px">
-      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:10px;font-family:'DM Mono',monospace;letter-spacing:.04em">借款設定</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div>
-            <div style="font-size:10px;color:var(--dim);margin-bottom:3px">借款金額（NT$）</div>
-            <input id="pl-loan" type="number" min="0" step="100000" oninput="calcPledge()"
-              style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--red);font-family:'DM Mono',monospace;font-size:13px;padding:4px 7px;outline:none"/>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div>
-              <div style="font-size:10px;color:var(--dim);margin-bottom:3px">利率（年）</div>
-              <div style="display:flex;align-items:center;gap:4px">
-                <input id="pl-rate" type="number" min="0" max="20" step="0.01" value="2.88" oninput="calcPledge()"
-                  style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;padding:4px 6px;outline:none"/>
-                <span style="font-size:10px;color:var(--dim)">%</span>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:var(--dim);margin-bottom:3px">成數上限</div>
-              <div style="display:flex;align-items:center;gap:4px">
-                <input id="pl-ratio-limit" type="number" min="10" max="80" step="1" value="60" oninput="calcPledge()"
-                  style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;padding:4px 6px;outline:none"/>
-                <span style="font-size:10px;color:var(--dim)">%</span>
-              </div>
-            </div>
-          </div>
+      <div>
+        <div style="font-size:10px;color:var(--dim);margin-bottom:4px">借款金額（NT$萬）</div>
+        <input id="pl-loan" type="number" min="0" step="10" placeholder="144"
+          style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.4);border-radius:6px;
+                 color:var(--red);font-family:'DM Mono',monospace;font-size:16px;font-weight:500;
+                 padding:6px 10px;outline:none;text-align:right"
+          oninput="onPledgeLoanChange()"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <div style="font-size:10px;color:var(--dim);margin-bottom:4px">利率（年%）</div>
+          <input id="pl-rate" type="number" min="0" max="20" step="0.01" placeholder="2.88"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;
+                   color:var(--muted);font-family:'DM Mono',monospace;font-size:14px;
+                   padding:5px 8px;outline:none;text-align:right"
+            oninput="onPledgeRateChange()"/>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--dim);margin-bottom:4px">成數上限（%）</div>
+          <input id="pl-ratio-limit" type="number" min="0" max="100" step="5" value="60"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;
+                   color:var(--muted);font-family:'DM Mono',monospace;font-size:14px;
+                   padding:5px 8px;outline:none;text-align:right"
+            oninput="calcPledge()"/>
         </div>
       </div>
+    </div>
 
-      <!-- 即時計算結果 -->
-      <div id="pl-result" style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.04em">即時計算結果</div>
-        <div style="color:var(--dim);font-size:12px">請填入左側欄位</div>
+    <!-- 即時計算結果 -->
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:8px">即時計算結果</div>
+      <div id="pl-result">
+        <div style="color:var(--dim);font-size:12px">請填入抵押品與借款金額</div>
       </div>
     </div>
   </div>
-
-  <!-- 股價下跌模擬 -->
-  <div class="sec-title">股價下跌模擬</div>
-  <div id="pl-simulation" style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;margin-bottom:20px">
-    <div style="color:var(--dim);font-size:12px">請先填入上方資料</div>
-  </div>
-
-  <!-- 補繳/補股試算 -->
-  <div class="sec-title">補繳 / 補股計算</div>
-  <div id="pl-topup" style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;margin-bottom:20px">
-    <div style="color:var(--dim);font-size:12px">請先填入上方資料</div>
-  </div>
-
-  <div id="pl-note" class="note-bar"></div>
 </div>
 
+<!-- 維持率儀表板 -->
+<div id="pl-maint-detail" style="margin-bottom:16px"></div>
+
+<!-- 股價下跌模擬 -->
+<div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:14px">
+  <div class="sec-title" style="margin-bottom:12px">股價下跌模擬</div>
+  <div id="pl-simulation">
+    <div style="color:var(--dim);font-size:12px;padding:8px">請先填入抵押品與借款金額</div>
+  </div>
+</div>
+
+<!-- 補繳 / 補股計算 -->
+<div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:14px">
+  <div class="sec-title" style="margin-bottom:12px">補繳 / 補股計算</div>
+  <div id="pl-topup">
+    <div style="color:var(--dim);font-size:12px;padding:8px">請先填入抵押品與借款金額</div>
+  </div>
+</div>
+
+<!-- 底部說明 -->
+<div class="note-bar" id="pl-note">⚠️ 請填入抵押品設定與借款金額後計算</div>
+</div>
+
+
+<!-- ═══ TAB 7：退休金試算 ═══ -->
+<div class="tab-panel" id="tab-retire">
+  <div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">退休金試算 — CLEC 50倍法則</div>
+  <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:18px">目標應有總資產 = 年淨提領 × 目標倍數（建議50倍）＋緊急預備金＋保留生活費</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;align-items:start">
+    <div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:12px">
+        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:10px">基本資訊</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">目前年齡</span><input id="rt-age" type="number" value="45" min="20" max="80" oninput="calcRetire()" style="width:72px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">目標退休年齡</span><input id="rt-retire-age" type="number" value="55" min="30" max="80" oninput="calcRetire()" style="width:72px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">通膨率（%）</span><input id="rt-inflation" type="number" value="3" min="0" max="10" step="0.5" oninput="calcRetire()" style="width:72px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:12px">
+        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:10px">生活費設定（NT$萬/月）</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">目前月生活費</span><input id="rt-monthly" type="number" value="8" min="2" max="50" step="0.5" oninput="calcRetire()" style="width:72px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--green);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">月勞退金</span><input id="rt-pension" type="number" value="3" min="0" max="20" step="0.5" oninput="calcRetire()" style="width:72px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--teal);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">緊急預備金（萬）</span><input id="rt-emergency" type="number" value="144" min="0" max="500" oninput="calcRetire()" style="width:72px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--blue);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">保留生活費（年）</span><input id="rt-reserve-yr" type="number" value="3" min="1" max="10" oninput="calcRetire()" style="width:72px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--blue);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px">
+        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:10px">退休前資產設定</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">現有投資資產（萬）</span><input id="rt-current" type="number" value="4296" min="0" oninput="calcRetire()" style="width:88px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">每年再投入（萬）</span><input id="rt-yearly-add" type="number" value="60" min="0" oninput="calcRetire()" style="width:88px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">資產配置 Beta</span><input id="rt-beta" type="number" value="1.2" min="0.5" max="2" step="0.1" oninput="calcRetire()" style="width:72px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--purple);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">目標倍數</span><input id="rt-multiplier" type="number" value="50" min="20" max="100" oninput="calcRetire()" style="width:72px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--purple);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">退休年月生活費</div><div id="rt-r-retire-living" style="font-family:'DM Mono',monospace;font-size:15px;color:var(--amber)">—</div><div style="font-size:10px;color:var(--dim)">含通膨</div></div>
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">年淨提領</div><div id="rt-r-annual-draw" style="font-family:'DM Mono',monospace;font-size:15px;color:var(--amber)">—</div><div style="font-size:10px;color:var(--dim)">扣除勞退後</div></div>
+        <div style="background:var(--surface);border:1px solid rgba(192,132,252,.3);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">目標應有總資產</div><div id="rt-r-target" style="font-family:'DM Mono',monospace;font-size:15px;color:var(--purple)">—</div><div style="font-size:10px;color:var(--dim)">×倍數+預備金</div></div>
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">退休前預估資產</div><div id="rt-r-projected" style="font-family:'DM Mono',monospace;font-size:15px;color:var(--blue)">—</div><div style="font-size:10px;color:var(--dim)">複利試算</div></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:11px;color:var(--muted)">退休目標達成率</div>
+          <div id="rt-r-rate-pct" style="font-family:'DM Mono',monospace;font-size:14px;color:var(--green)">—</div>
+        </div>
+        <div style="height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-bottom:8px">
+          <div id="rt-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--blue),var(--green));border-radius:4px;transition:.5s"></div>
+        </div>
+        <div id="rt-r-gap" style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace">—</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px">
+        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:10px">逐年資產成長路徑</div>
+        <div id="rt-growth-table" style="display:flex;flex-direction:column;gap:3px;max-height:240px;overflow-y:auto;font-family:'DM Mono',monospace"></div>
+      </div>
+    </div>
+  </div>
+  <div class="note-bar">📌 以 QQQ/00662 歷史25年年化報酬9.49%為基準，Beta=1.2時估算約11.2%。目標倍數50為對抗2000年-84.5%、2008年-59.6%等史詩級股災設計。非投資建議。</div>
+</div>
+
+<!-- ═══ TAB 8：資產配置回測 ═══ -->
+<div class="tab-panel" id="tab-backtest">
+  <div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">資產配置回測 — QQQ / QLD / 現金組合</div>
+  <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:18px">來源：大道至簡投資法 V2.7 試算表 ‧ 回測期間 1999/03–2024/12（25.74 年）</div>
+  <div style="display:grid;grid-template-columns:260px 1fr;gap:16px;margin-bottom:20px;align-items:start">
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px">
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:12px">自訂組合參數</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:10px;color:var(--dim)">QQQ 比率</span><span style="font-size:10px;color:var(--blue)" id="bt-qqq-lbl">60%</span></div>
+          <input id="bt-qqq" type="range" min="0" max="100" step="10" value="60" oninput="updateBtSliders();calcBacktest()" style="width:100%;accent-color:var(--blue)">
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:10px;color:var(--dim)">QLD（正2）比率</span><span style="font-size:10px;color:var(--purple)" id="bt-qld-lbl">20%</span></div>
+          <input id="bt-qld" type="range" min="0" max="100" step="10" value="20" oninput="updateBtSliders();calcBacktest()" style="width:100%;accent-color:var(--purple)">
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:10px;color:var(--dim)">現金比率</span><span style="font-size:10px;color:var(--green)" id="bt-cash-lbl">20%</span></div>
+          <input id="bt-cash" type="range" min="0" max="100" step="10" value="20" oninput="updateBtSliders();calcBacktest()" style="width:100%;accent-color:var(--green)">
+        </div>
+        <div style="padding-top:6px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:10px;color:var(--dim)">是否質押</span>
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" id="bt-pledge" onchange="calcBacktest()" style="accent-color:var(--amber)"><span style="font-size:10px;color:var(--muted)">是</span></label>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:10px;color:var(--dim)">年提領率（%）</span>
+            <input id="bt-drawrate" type="number" value="2" step="0.5" min="0" max="10" oninput="calcBacktest()" style="width:60px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--red);font-family:'DM Mono',monospace;font-size:11px;text-align:center;padding:2px 4px;outline:none">
+          </div>
+        </div>
+        <div style="text-align:center;padding:6px;background:var(--surface2);border-radius:6px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">Beta = <span id="bt-beta-val" style="color:var(--amber)">1.00</span> &nbsp;｜&nbsp; 總計 <span id="bt-total-pct" style="color:var(--text)">100%</span></div>
+      </div>
+    </div>
+    <div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+        <div style="background:var(--surface);border:1px solid rgba(74,222,154,.3);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">估算年化報酬</div><div id="bt-r-cagr" style="font-family:'DM Mono',monospace;font-size:17px;color:var(--green)">—</div><div style="font-size:10px;color:var(--dim)">結餘年化%</div></div>
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">估算結餘倍數</div><div id="bt-r-mult" style="font-family:'DM Mono',monospace;font-size:17px;color:var(--blue)">—</div><div style="font-size:10px;color:var(--dim)">×初始資產</div></div>
+        <div style="background:var(--surface);border:1px solid rgba(245,200,66,.3);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">最接近案例</div><div id="bt-r-match" style="font-family:'DM Mono',monospace;font-size:17px;color:var(--amber)">—</div><div style="font-size:10px;color:var(--dim)">V2.7 案例</div></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 14px">
+        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:8px">V2.7 試算表完整案例（點選可套用參數）</div>
+        <div style="overflow-x:auto">
+          <table style="min-width:600px;font-size:11px">
+            <thead><tr><th>案例</th><th>類別</th><th>QQQ</th><th>QLD</th><th>現金</th><th>質押</th><th>再平衡</th><th style="text-align:right">年化%</th><th style="text-align:right">倍數</th><th style="text-align:right">Beta</th></tr></thead>
+            <tbody id="bt-cases-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note-bar">📊 <b>計算說明</b>：本頁採「查表法」——從 22 個預設案例中找出最接近您設定的配置方案，顯示該方案在 1999–2024 年（25年）QQQ/QLD 實際歷史回測的年化報酬（CAGR）與倍數。與 xlsx 試算表的差異：xlsx 是針對您輸入的精確比例直接計算，本頁為快速查表估算，結果接近但可能有 ±0.5% 差距。建議搭配 xlsx 做精確計算。</div>
+</div>
+
+<!-- ═══ TAB 9：QQQ 歷史 ═══ -->
+<div class="tab-panel" id="tab-qqq">
+  <div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">QQQ 25 年歷史年化報酬</div>
+  <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:18px">來源：大道至簡投資法 V2.7 試算表「001歷史資料(年)」‧ 1999–2025（2025為估算）</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px">
+    <div style="background:var(--surface);border:1px solid rgba(74,222,154,.3);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">25年累積報酬</div><div style="font-family:'DM Mono',monospace;font-size:17px;color:var(--green)">+1,044%</div><div style="font-size:10px;color:var(--dim)">1999→2025（27年）</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">年化報酬（平均）</div><div style="font-family:'DM Mono',monospace;font-size:17px;color:var(--blue)">9.49%</div><div style="font-size:10px;color:var(--dim)">QQQ 歷史回測</div></div>
+    <div style="background:var(--surface);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">最大單年跌幅</div><div style="font-family:'DM Mono',monospace;font-size:17px;color:var(--red)">-41.9%</div><div style="font-size:10px;color:var(--dim)">2008 金融海嘯</div></div>
+    <div style="background:var(--surface);border:1px solid rgba(245,200,66,.3);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">最佳單年表現</div><div style="font-family:'DM Mono',monospace;font-size:17px;color:var(--amber)">+79.3%</div><div style="font-size:10px;color:var(--dim)">1999 科技泡沫</div></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+    <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:12px">逐年報酬率視覺化（綠=漲 紅=跌）‧ 滑鼠移上查看數值</div>
+    <div id="qqq-chart" style="display:flex;align-items:flex-end;gap:4px;height:130px;padding-bottom:2px;overflow-x:auto"></div>
+    <div id="qqq-chart-labels" style="display:flex;gap:4px;margin-top:6px;overflow-x:auto"></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:16px;overflow-x:auto">
+    <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:10px">逐年收盤價與漲跌幅（資料來自 xlsx）</div>
+    <table style="min-width:560px">
+      <thead><tr><th>年份</th><th style="text-align:right">年末收盤</th><th style="text-align:right">年漲跌（年末÷年初）</th><th style="text-align:right">QLD 同期</th><th>重大事件</th></tr></thead>
+      <tbody id="qqq-tbody"></tbody>
+    </table>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+    <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:10px">QQQ 滾動年化報酬統計（最佳 / 平均 / 最差）</div>
+    <table>
+      <thead><tr><th>持有期間</th><th style="text-align:right">最佳</th><th style="text-align:right">平均</th><th style="text-align:right">最差</th><th style="text-align:right">正報酬保證</th></tr></thead>
+      <tbody>
+        <tr><td>1 年</td><td class="num" style="color:var(--green)">+105.3%</td><td class="num">+11.2%</td><td class="num" style="color:var(--red)">-64.5%</td><td class="num" style="color:var(--red)">不保證</td></tr>
+        <tr><td>5 年</td><td class="num" style="color:var(--green)">+27.2%</td><td class="num">+12.3%</td><td class="num" style="color:var(--red)">-19.4%</td><td class="num" style="color:var(--red)">不保證</td></tr>
+        <tr><td>10 年</td><td class="num" style="color:var(--green)">+21.9%</td><td class="num">+12.9%</td><td class="num" style="color:var(--red)">-8.7%</td><td class="num" style="color:var(--red)">不保證</td></tr>
+        <tr><td>15 年</td><td class="num" style="color:var(--green)">+16.6%</td><td class="num">+10.4%</td><td class="num" style="color:var(--amber)">+3.4%</td><td class="num" style="color:var(--green)">✓ 歷史正報酬</td></tr>
+        <tr><td>20 年</td><td class="num" style="color:var(--green)">+12.2%</td><td class="num">+9.5%</td><td class="num" style="color:var(--green)">+6.1%</td><td class="num" style="color:var(--green)">✓ 歷史正報酬</td></tr>
+        <tr><td>25 年</td><td class="num" style="color:var(--green)">+9.7%</td><td class="num">+9.2%</td><td class="num" style="color:var(--green)">+8.7%</td><td class="num" style="color:var(--green)">✓ 歷史正報酬</td></tr>
+        <tr><td>26 年（至2025）</td><td class="num" style="color:var(--green)">+10.1%</td><td class="num">+9.5%</td><td class="num" style="color:var(--green)">+9.0%</td><td class="num" style="color:var(--green)">✓ 歷史正報酬</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note-bar">📌 年漲跌% 以年初開盤→年末收盤計算，資料來自 xlsx「5.資產配置回測」漲跌欄位。QLD 為2倍槓桿，跌幅同樣2倍放大。持有15年以上歷史從未出現負報酬，但過去績效不代表未來。非投資建議。</div>
+</div>
+
+
+<!-- ═══ TAB 10：00662 歷史 ═══ -->
+<div class="tab-panel" id="tab-etf662">
+  <div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">00662 富邦 NASDAQ 18 年歷史</div>
+  <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:18px">上市 2007年 ‧ 追蹤 NASDAQ100 ‧ NT$ 計價 ‧ 2025 為估算值</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px">
+    <div style="background:var(--surface);border:1px solid rgba(74,222,154,.3);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">18年累積報酬</div><div style="font-family:'DM Mono',monospace;font-size:17px;color:var(--green)">+457%</div><div style="font-size:10px;color:var(--dim)">2007→2025（真實）</div></div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">年化報酬（估算）</div><div style="font-family:'DM Mono',monospace;font-size:17px;color:var(--blue)">~8.2%</div><div style="font-size:10px;color:var(--dim)">含匯率影響</div></div>
+    <div style="background:var(--surface);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">最大單年跌幅</div><div style="font-family:'DM Mono',monospace;font-size:17px;color:var(--red)">-56.8%</div><div style="font-size:10px;color:var(--dim)">2008 金融海嘯</div></div>
+    <div style="background:var(--surface);border:1px solid rgba(245,200,66,.3);border-radius:10px;padding:11px 14px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">最佳單年表現</div><div style="font-family:'DM Mono',monospace;font-size:17px;color:var(--amber)">+88.3%</div><div style="font-size:10px;color:var(--dim)">2009 QE救市</div></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+    <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:12px">逐年報酬率（綠=漲 紅=跌）‧ 滑鼠移上查看數值</div>
+    <div id="etf662-chart" style="display:flex;align-items:flex-end;gap:6px;height:130px;padding-bottom:2px"></div>
+    <div id="etf662-labels" style="display:flex;gap:6px;margin-top:6px"></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:16px;overflow-x:auto">
+    <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:10px">逐年收盤價與漲跌幅</div>
+    <table style="min-width:480px">
+      <thead><tr><th>年份</th><th style="text-align:right">年末收盤</th><th style="text-align:right">年初收盤</th><th style="text-align:right">年漲跌（年末÷年初）</th><th>重大事件</th></tr></thead>
+      <tbody id="etf662-tbody"></tbody>
+    </table>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+    <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:10px">00662 持有期間勝率（歷史估算）</div>
+    <table>
+      <thead><tr><th>持有期間</th><th style="text-align:right">最佳</th><th style="text-align:right">平均</th><th style="text-align:right">最差</th><th style="text-align:right">正報酬</th></tr></thead>
+      <tbody>
+        <tr><td>1 年</td><td class="num" style="color:var(--green)">+68.6%</td><td class="num">+9.1%</td><td class="num" style="color:var(--red)">-55.9%</td><td class="num" style="color:var(--red)">不保證</td></tr>
+        <tr><td>3 年</td><td class="num" style="color:var(--green)">+35.2%</td><td class="num">+10.3%</td><td class="num" style="color:var(--red)">-18.4%</td><td class="num" style="color:var(--red)">不保證</td></tr>
+        <tr><td>5 年</td><td class="num" style="color:var(--green)">+25.1%</td><td class="num">+11.8%</td><td class="num" style="color:var(--amber)">-3.2%</td><td class="num" style="color:var(--amber)">多數正報酬</td></tr>
+        <tr><td>10 年</td><td class="num" style="color:var(--green)">+18.7%</td><td class="num">+11.2%</td><td class="num" style="color:var(--green)">+4.8%</td><td class="num" style="color:var(--green)">✓ 歷史正報酬</td></tr>
+        <tr><td>18 年（至2025）</td><td class="num" style="color:var(--green)">+18.7%</td><td class="num">+10.8%</td><td class="num" style="color:var(--green)">+5.1%</td><td class="num" style="color:var(--green)">✓ 歷史正報酬</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note-bar">📌 00662 資料為估算值（以 QQQ 走勢搭配 USD/TWD 匯率換算），僅供趨勢參考。實際報酬因匯率、管理費、追蹤誤差而異。追蹤 NASDAQ100，與 QQQ 相關性 >0.98。持有 10 年以上歷史上均正報酬，但過去績效不代表未來。非投資建議。</div>
+</div>
 <script>
+// ── 動態年份設定（必須在最頂部，避免 TDZ）──
+let OVERVIEW_YEARS = 6;
+function getYrLabels(){ return Array.from({length:OVERVIEW_YEARS},(_,i)=>String(2026+i)); }
+let YR_LABELS = getYrLabels();
+
 const FX=31.45;
 
 // ── 股價快取系統 ──
@@ -770,19 +976,19 @@ function openPricePanel(){
     const tr = document.createElement('tr');
     tr.style.borderBottom = '1px solid var(--border)';
     tr.innerHTML = `
-      <td style="padding:7px 10px;font-family:'DM Mono',monospace;font-weight:500">
+      <td style="padding:7px 10px;font-family:monospace;font-weight:500">
         <a href="${ref}" target="_blank" style="color:var(--blue);text-decoration:none"
            title="點擊在新分頁查詢">${ticker} ↗</a>
       </td>
       <td style="padding:7px 10px;font-size:10px;color:var(--dim)">${isTW?'台股':'美股'}</td>
-      <td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;color:var(--muted)">
+      <td style="padding:7px 10px;text-align:right;font-family:monospace;color:var(--muted)">
         ${unit} ${displayP}
         <div style="font-size:9px;color:var(--dim);margin-top:1px">${curSh.toLocaleString()} 股</div>
       </td>
       <td style="padding:7px 10px;text-align:center">
         <input id="price-inp-${ticker}" type="number" min="0" step="${isUS?'0.01':'0.1'}"
           placeholder="${displayP}"
-          style="width:90px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 5px;outline:none"
+          style="width:90px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:monospace;font-size:12px;text-align:center;padding:3px 5px;outline:none"
           title="${isUS?'USD，自動×31.45換算NT$':'NT$收盤價'}"
           oninput="tempPrices['${ticker}']=this.value"
           onkeydown="if(event.key==='Enter'){const next=this.closest('tr').nextElementSibling?.querySelector('input');if(next)next.focus();else document.getElementById('btn-apply-price').focus();}"/>
@@ -836,15 +1042,55 @@ async function fetchTwseAll(){
 
 // ── 匯出 / 匯入備份 ──
 function exportAllData(){
+  // 收集所有可人工輸入欄位
+  const _getInputs = ids => {
+    const r={};
+    ids.forEach(id=>{ const el=document.getElementById(id); if(el) r[id]=el.type==='checkbox'?el.checked:el.value; });
+    return r;
+  };
   const payload = {
-    _version: 2,
+    _version: 4,
     _exported: new Date().toISOString(),
-    prices:    priceCache,
-    shares:    sharesCache,
-    dividends: dividendData,
-    userRates: userRates,
-    cats:      catCache,
-    debt:      debtCache,
+    // ── 持股相關 ──
+    prices:      priceCache,
+    shares:      sharesCache,
+    dividends:   dividendData,
+    userRates:   userRates,
+    cats:        catCache,
+    // ── 負債 ──
+    debt:        debtCache,
+    debtInputs:  _getInputs(['di-m1-bal','di-m1-rate','di-m1-yrs','di-m1-type',
+                              'di-m2-bal','di-m2-rate','di-m2-yrs','di-m2-type',
+                              'di-m3-bal','di-m3-rate','di-m3-yrs','di-m3-type']),
+    // ── 股價時間戳 ──
+    priceUpdated: (()=>{ try{ return localStorage.getItem('clec_price_updated')||''; }catch(e){ return ''; } })(),
+    // ── 退休/回測設定 ──
+    retire:   (()=>{ try{ const v=localStorage.getItem(RT_KEY); return v?JSON.parse(v):{}; }catch(e){ return {}; } })(),
+    backtest: (()=>{ try{ const v=localStorage.getItem(BT_KEY); return v?JSON.parse(v):{}; }catch(e){ return {}; } })(),
+    // ── 再平衡設定 ──
+    rebalance: _getInputs(['rb-target-core','rb-target-sat','rb-target-cash','rb-new-funds',
+                            'rb-alloc-core','rb-alloc-sat','rb-alloc-cash',
+                            'rb613-target-core','rb613-target-sat','rb613-target-cash','rb613-new-funds']),
+    // ── 質押設定 ──
+    pledgeInputs: (()=>{
+      const basic = _getInputs(['pl-loan','pl-rate','pl-ratio-limit']);
+      // 同時存 collateral rows 的資料
+      const rows = document.getElementById('pl-collateral-rows');
+      const collRows = [];
+      if(rows){ rows.querySelectorAll('[id^="pl-row-"]').forEach(row=>{
+        const id=row.id.replace('pl-row-','');
+        const sel=row.querySelector('select');
+        collRows.push({
+          ticker: sel?sel.value:'',
+          sh: document.getElementById('pl-sh-'+id)?.value||'0',
+          pr: document.getElementById('pl-pr-'+id)?.value||'0',
+          loan: document.getElementById('pl-loan-'+id)?.value||'0',
+        });
+      }); }
+      return {...basic, _collRows: collRows};
+    })(),
+    // ── 總覽年數 ──
+    ovYears: OVERVIEW_YEARS,
   };
   const json = JSON.stringify(payload, null, 2);
   const blob = new Blob([json], {type:'application/json'});
@@ -883,6 +1129,58 @@ function importAllData(input){
       if(data.userRates) Object.assign(userRates, data.userRates);
       if(data.cats)  Object.assign(catCache,  data.cats);
       if(data.debt)  Object.assign(debtCache, data.debt);
+      if(data.priceUpdated){ try{ localStorage.setItem('clec_price_updated', data.priceUpdated); }catch(e){} }
+      if(data.retire)   { try{ localStorage.setItem(RT_KEY, JSON.stringify(data.retire));   loadRetireSettings(data.retire);   }catch(e){} }
+      if(data.backtest) { try{ localStorage.setItem(BT_KEY, JSON.stringify(data.backtest)); loadBacktestSettings(data.backtest); updateBtSliders(); calcBacktest(); }catch(e){} }
+      // 還原負債輸入
+      if(data.debtInputs){
+        Object.entries(data.debtInputs).forEach(([id,v])=>{
+          const el=document.getElementById(id);
+          if(el){ if(el.tagName==='SELECT') el.value=v; else el.value=v; }
+        });
+        // 確保 debt-pledge-loan 用萬單位（debtCache 存元，顯示萬）
+        const dlEl=document.getElementById('debt-pledge-loan');
+        if(dlEl&&debtCache.pledgeLoan) dlEl.value=((debtCache.pledgeLoan)/10000).toFixed(0);
+        const drEl=document.getElementById('debt-pledge-rate');
+        if(drEl&&debtCache.pledgeRate) drEl.value=debtCache.pledgeRate;
+        onDebtInputChange();
+        updateDebtPledgeSummary();
+      }
+      // 還原再平衡設定
+      if(data.rebalance){ Object.entries(data.rebalance).forEach(([id,v])=>{ const el=document.getElementById(id); if(el) el.value=v; }); }
+      // 還原質押設定
+      if(data.pledgeInputs){
+        // 先填基本欄位
+        ['pl-loan','pl-rate','pl-ratio-limit'].forEach(id=>{
+          const v=data.pledgeInputs[id]; const el=document.getElementById(id);
+          if(el&&v!==undefined) el.value=v;
+        });
+        // 同步 debtCache
+        const lm=parseFloat(data.pledgeInputs['pl-loan'])||0;
+        const rv=parseFloat(data.pledgeInputs['pl-rate'])||0;
+        if(lm) debtCache.pledgeLoan=lm*10000;
+        if(rv) debtCache.pledgeRate=rv;
+        // 還原 collateral rows
+        if(data.pledgeInputs._collRows&&data.pledgeInputs._collRows.length>0){
+          const rowsEl=document.getElementById('pl-collateral-rows');
+          if(rowsEl){
+            rowsEl.innerHTML=''; _pledgeRowId=0;
+            data.pledgeInputs._collRows.forEach(r=>{
+              addPledgeRow(r.ticker);
+              const curId=_pledgeRowId;
+              const shEl=document.getElementById('pl-sh-'+curId);
+              const prEl=document.getElementById('pl-pr-'+curId);
+              const lnEl=document.getElementById('pl-loan-'+curId);
+              if(shEl) shEl.value=r.sh;
+              if(prEl) prEl.value=r.pr;
+              if(lnEl) lnEl.value=r.loan;
+            });
+          }
+        }
+        calcPledge();
+      }
+      // 還原總覽年數
+      if(data.ovYears){ OVERVIEW_YEARS=parseInt(data.ovYears)||30; YR_LABELS=getYrLabels(); DEBTS=Array.from({length:OVERVIEW_YEARS+1},(_,y)=>debtTotalDynamic(y)); const sl=document.getElementById('ov-years'); if(sl){ sl.value=OVERVIEW_YEARS; document.getElementById('ov-years-lbl').textContent=OVERVIEW_YEARS+'年'; } }
 
       try{ localStorage.setItem(PRICE_KEY,   JSON.stringify(priceCache));   }catch(err){}
       try{ localStorage.setItem(SHARES_KEY,  JSON.stringify(sharesCache));  }catch(err){}
@@ -927,7 +1225,9 @@ function debtTotal(y){
   const b3=Math.max(0,_p3*(1+r3m)**mo-_m3*((1+r3m)**mo-1)/r3m);
   return Math.round(b1+4000000+b3+1500000);
 }
-const DEBTS=[0,1,2,3,4,5].map(y=>debtTotal(y));
+let DEBTS=Array.from({length:OVERVIEW_YEARS+1},(_,y)=>debtTotal(y));
+function rebuildDebts(){ DEBTS=Array.from({length:OVERVIEW_YEARS+1},(_,y)=>debtTotalDynamic(y)); }
+// 動態負債陣列（由 recalcDebtTotals 更新）
 
 const SCENARIOS={
   bear:{core:0.08,sat:0.12,label:'保守',note:'核心8% / 衛星12%'},
@@ -946,7 +1246,7 @@ const holdings=[
   ["core","1231",   20000, 91.10,0.50,32000,    0.06,"hold","防禦性配息股，低Beta穩定現金流"],
   ["core","2382",    2000,321.50,1.20,31200,    0.12,"hold","廣達AI伺服器受惠，年配$15.6"],
   ["sat", "00757",  50000,107.60,1.20,    0,    0.15,"hold","FANG+追蹤，科技巨頭曝險"],
-  ["sat", "00675L",  8700,185.60,2.00,    0,    0.20,"add", "主力正2，第5年1000萬入賬優先加碼"],
+  ["sat", "00675L",  8700,185.60,2.00,    0,    0.20,"add", "主力正2，正2衛星核心，崩盤加碼首選"],
   ["sat", "00631L", 22000, 23.47,2.00,    0,    0.20,"hold","台50正2，流動性最佳，續持"],
   ["sat", "00670L",  9000,143.65,2.00,    0,    0.20,"hold","NASDAQ正2，與00675L互補"],
   ["cash","美金定存",   1,7114028,0.00,213418,  0.03,"hold","美金3%定存，現金流最大貢獻者"],
@@ -954,19 +1254,19 @@ const holdings=[
   ["cash","2890",   23000, 22.40,0.70,20930,    0.05,"hold","永豐金，配息穩健，金融股壓艙石"],
   ["cash","2884",   13000, 28.75,0.70,19500,    0.05,"hold","玉山金，數位金融布局受惠"],
   ["cash","2881",    4715, 90.90,0.80,20039,    0.06,"hold","富邦金，綜合金融龍頭"],
-  ["usflow","QQQI",   244, 52*FX,0.90,Math.round(244*7.48*FX),0.12,"add","月配ETF核心，目標3,068股月配6萬，第5年入賬150萬加碼"],
+  ["usflow","QQQI",   244, 52*FX,0.90,Math.round(244*7.48*FX),0.12,"add","月配ETF核心，目標3,068股月配6萬"],
   ["usflow","QQQM",    25,254*FX,1.00,Math.round(25*1.00*FX), 0.13,"hold","NASDAQ100低費用版，核心美股持倉"],
   ["usflow","VTI",     48,252*FX,1.00,Math.round(48*4.00*FX), 0.10,"hold","全美市場ETF，分散個股風險"],
   ["usflow","BRK-B",   26,530*FX,0.80,0,                      0.10,"hold","波克夏，不配息複利機器，防禦型核心"],
   ["usflow","QQXL",    56, 42*FX,1.20,Math.round(56*2.40*FX), 0.15,"watch","NASDAQ槓桿配息，留意規模風險"],
 ];
-const BONUS={"00675L":4000000,"QQQI":1500000};
-const BONUS_YEAR=5;
+const BONUS={};
+const BONUS_YEAR=99;
 const BKL={core:{label:"核心桶",cls:"bk-core",color:"var(--core-c)"},sat:{label:"衛星桶",cls:"bk-sat",color:"var(--sat-c)"},cash:{label:"現金桶",cls:"bk-cash",color:"var(--cash-c)"},usflow:{label:"美股現金流",cls:"bk-usflow",color:"var(--usflow-c)"}};
 const TI={hold:{cls:"tag-hold",txt:"持續持有"},add:{cls:"tag-add",txt:"建議加碼"},watch:{cls:"tag-watch",txt:"留意觀察"},trim:{cls:"tag-trim",txt:"考慮調節"}};
 
-function fmtM(v){return (v/10000).toFixed(1)+"萬"}
-function fmtI(v){return Math.round(v/10000)+"萬"}
+function fmtM(v){return "NT$"+(v/10000).toFixed(1)+"萬"}
+function fmtI(v){return "NT$"+Math.round(v/10000)+"萬"}
 
 function effectiveRate(ticker,baseRet,scen){
   if(userRates[ticker]!==undefined) return userRates[ticker];
@@ -978,7 +1278,8 @@ function effectiveRate(ticker,baseRet,scen){
 
 function calcVals(initVal,ret,name){
   let v=initVal,vals=[Math.round(v)];
-  for(let y=1;y<=5;y++){v=v*(1+ret);if(y===BONUS_YEAR&&BONUS[name])v+=BONUS[name];vals.push(Math.round(v));}
+  const yrs=OVERVIEW_YEARS||30;
+  for(let y=1;y<=yrs;y++){v=v*(1+ret);if(y===BONUS_YEAR&&BONUS[name])v+=BONUS[name];vals.push(Math.round(v));}
   return vals;
 }
 
@@ -988,20 +1289,23 @@ function yrCells(vals,ticker,overrideColor,useId){
     const idAttr=useId?` id="yr-${ticker}-${i}"`:'';
     if(i===0) return `<td${idAttr} class="yr" style="background:rgba(255,255,255,.03)"><div class="yr-main"${c?` style="color:${c}"`:''}>${fmtM(v)}</div><div class="yr-delta zero">基準年</div></td>`;
     const prev=vals[i-1],diff=v-prev,pct=prev>0?diff/prev*100:0,s=diff>=0?'+':'';
-    const bonus=(i===5&&BONUS[ticker])?'<span style="color:var(--amber)"> ★</span>':'';
+    const bonus='';
     return `<td${idAttr} class="yr${best?' best':''}"><div class="yr-main"${c?` style="color:${c}"`:''}>${fmtM(v)}</div><div class="yr-delta">${s}${(diff/10000).toFixed(1)}萬 ${s}${pct.toFixed(1)}%${bonus}</div></td>`;
   }).join('');
 }
 
 function calcAllTotals(scen){
   const cats=['core','sat','cash','usflow'];
-  const ct={core:[0,0,0,0,0,0],sat:[0,0,0,0,0,0],cash:[0,0,0,0,0,0],usflow:[0,0,0,0,0,0]};
+  const yrs=OVERVIEW_YEARS||30;
+  const empty=()=>Array.from({length:yrs+1},()=>0);
+  const ct={core:empty(),sat:empty(),cash:empty(),usflow:empty()};
   holdings.forEach(h=>{
     const [defaultCat,ticker,shares,price,,,baseRet]=h;
     const cat=getHoldingCat(ticker,defaultCat);
-    const vals=calcVals(getInitVal(ticker,shares,price),effectiveRate(ticker,baseRet,scen),ticker);    ct[cat]=ct[cat].map((v,i)=>v+vals[i]);
+    const vals=calcVals(getInitVal(ticker,shares,price),effectiveRate(ticker,baseRet,scen),ticker);
+    ct[cat]=ct[cat].map((v,i)=>v+(vals[i]||0));
   });
-  const grand=[0,0,0,0,0,0];
+  const grand=empty();
   cats.forEach(c=>ct[c].forEach((v,i)=>grand[i]+=v));
   return {ct,grand};
 }
@@ -1010,54 +1314,140 @@ function calcAllTotals(scen){
 function renderOverview(scen){
   const {ct,grand}=calcAllTotals(scen);
   const sc=SCENARIOS[scen];
-  document.getElementById('kpi-2031').textContent='NT$'+fmtI(grand[5]);
-  document.getElementById('kpi-growth').textContent='6年成長 +'+((grand[5]/grand[0]-1)*100).toFixed(0)+'%';
-  document.getElementById('kpi-net').textContent='NT$'+Math.round((grand[5]-DEBTS[5])/10000)+'萬';
+  // 同步 header
+  const _subEl=document.getElementById('header-sub');
+  if(_subEl) _subEl.textContent='2026–'+(2026+OVERVIEW_YEARS)+' 逐年市值預測 ／ CLEC精神版';
+  const _startEl=document.getElementById('kpi-start');
+  if(_startEl) _startEl.textContent=fmtI(grand[0]);
+  // 同步 header KPI 標籤年份
+  const _yrLbl=document.getElementById('kpi-yr-label');
+  if(_yrLbl) _yrLbl.textContent=(2026+OVERVIEW_YEARS)+'年 總資產';
+  const _netLbl=document.getElementById('kpi-net-label');
+  if(_netLbl) _netLbl.textContent=(2026+OVERVIEW_YEARS)+'年 淨資產';
+  const _netSb=document.getElementById('kpi-net-sub');
+  if(_netSb) _netSb.textContent='負債 NT$'+Math.round((DEBTS[OVERVIEW_YEARS]||0)/10000)+'萬';
+  document.getElementById('kpi-2031').textContent=fmtI(grand[OVERVIEW_YEARS]||grand[grand.length-1]);
+  document.getElementById('kpi-growth').textContent=OVERVIEW_YEARS+'年成長 +'+((( grand[OVERVIEW_YEARS]||grand[grand.length-1])/grand[0]-1)*100).toFixed(0)+'%';
+  document.getElementById('kpi-net').textContent='NT$'+Math.round(((grand[OVERVIEW_YEARS]||grand[grand.length-1])-(DEBTS[OVERVIEW_YEARS]||0))/10000)+'萬';
   document.getElementById('scen-note').textContent='目前：'+sc.label+'情境（'+sc.note+'）';
 
   const kr=document.getElementById('scenKpis');kr.innerHTML='';
-  [{l:'2026 起始',v:grand[0],c:'var(--blue)'},{l:'2028 第3年',v:grand[2],c:'var(--muted)'},{l:'2030 第5年★',v:grand[4],c:'var(--amber)',s:'1000萬入賬後'},{l:'2031 終點',v:grand[5],c:'var(--green)',s:'淨資產 NT$'+Math.round((grand[5]-DEBTS[5])/10000)+'萬'}].forEach(k=>{
+  [
+    {l:'2026 現況',v:grand[0],c:'var(--blue)'},
+    {l:(2026+Math.min(5,OVERVIEW_YEARS))+'年（+'+Math.min(5,OVERVIEW_YEARS)+'年）',
+     v:grand[Math.min(5,OVERVIEW_YEARS)],c:'var(--amber)',
+     s:Math.min(5,OVERVIEW_YEARS)>=4?'':''},
+    {l:(2026+Math.min(10,OVERVIEW_YEARS))+'年（+'+Math.min(10,OVERVIEW_YEARS)+'年）',
+     v:grand[Math.min(10,OVERVIEW_YEARS)],c:'var(--muted)'},
+    {l:(2026+OVERVIEW_YEARS)+'年終點',
+     v:grand[OVERVIEW_YEARS],c:'var(--green)',
+     s:'淨資產 NT$'+Math.round((grand[OVERVIEW_YEARS]-DEBTS[OVERVIEW_YEARS])/10000)+'萬'}
+  ].forEach(k=>{
     const d=document.createElement('div');d.className='skpi';
     d.innerHTML=`<div class="skpi-lbl">${k.l}</div><div class="skpi-val" style="color:${k.c}">NT$${fmtI(k.v)}</div>${k.s?`<div class="skpi-sub">${k.s}</div>`:''}`;
     kr.appendChild(d);
   });
 
-  const sg=document.getElementById('sumGrid');sg.innerHTML='';
-  [0,1,2,3,4,5].forEach(i=>{
-    const yr=2026+i,asset=grand[i],net=asset-DEBTS[i];
-    const card=document.createElement('div');card.className='sum-card'+(i===5?' hi':'');
-    card.innerHTML=`<div class="sum-yr">${yr}${i===4?' ★1000萬入賬':''}</div><div class="sum-asset">NT$${Math.round(asset/10000)}萬</div><div class="sum-net">淨資產 NT$${Math.round(net/10000)}萬</div><div class="sum-debt-txt">負債 NT$${Math.round(DEBTS[i]/10000)}萬</div>`;
-    sg.appendChild(card);
-  });
+  // ── 每 N 年變化總表 ──
+  const pt=document.getElementById('ov-period-table');if(!pt) return;
+  const step=3;
+  const ptCols=[];
+  for(let y=0;y<=OVERVIEW_YEARS;y+=step){ if(!ptCols.includes(y)) ptCols.push(y); }
+  if(!ptCols.includes(OVERVIEW_YEARS)) ptCols.push(OVERVIEW_YEARS);
+  pt.innerHTML='<thead><tr>'
+    +'<th>年份</th>'
+    +ptCols.map(y=>'<th style="text-align:right">'+(2026+y)+'</th>').join('')
+    +'<th style="text-align:right">'+OVERVIEW_YEARS+'年總增長</th></tr></thead>'
+    +'<tbody>'
+    +['core','sat','cash','usflow'].map(cat=>{
+       const binfo=BKL[cat],vals=ct[cat];
+       return '<tr><td><span class="bk '+binfo.cls+'">'+binfo.label+'</span></td>'
+         +ptCols.map((y,i)=>{
+            const v=vals[y]||0;
+            const prev=i>0?(vals[ptCols[i-1]]||0):0;
+            const diff=i>0?v-prev:0;
+            const sg=diff>=0?'+':'';
+            return '<td style="text-align:right;font-family:monospace;font-size:11px;color:'+binfo.color+'">'
+              +(i===0?fmtI(v):
+                sg+'NT$'+(diff/10000).toFixed(0)+'萬<br><span style="font-size:9px;color:var(--dim)">'+sg+(prev>0?((diff/prev)*100).toFixed(1):0)+'%</span>')
+              +'</td>';
+         }).join('')
+         +'<td style="text-align:right;font-family:monospace;font-size:11px;color:var(--green)">'+(vals[0]>0?((vals[OVERVIEW_YEARS]/vals[0]-1)*100).toFixed(0)+'%':'—')+'</td></tr>';
+    }).join('')
+    +'<tr class="subtotal"><td>合計</td>'
+    +ptCols.map((y,i)=>{
+       const v=grand[y]||0,prev=i>0?(grand[ptCols[i-1]]||0):0,diff=i>0?v-prev:0;
+       const sg=diff>=0?'+':'';
+       return '<td style="text-align:right;font-family:monospace;font-size:11px;color:var(--text)">'+(i===0?fmtI(v):sg+(diff/10000).toFixed(0)+'萬')+'</td>';
+    }).join('')
+    +'<td style="text-align:right;font-family:monospace;font-size:11px;color:var(--green)">'+(grand[0]>0?((grand[OVERVIEW_YEARS]/grand[0]-1)*100).toFixed(0)+'%':'—')+'</td></tr>'
+    +'</tbody>';
 
+  const sg=document.getElementById('sumGrid');sg.innerHTML='';
+  renderDebtTable();
+  // 樣式：每10年一個分隔
+  for(let i=0;i<=OVERVIEW_YEARS;i++){
+    if(!grand[i]) continue;
+    const yr=2026+i,asset=grand[i],net=asset-DEBTS[i];
+    const isLast=(i===OVERVIEW_YEARS);
+    const isMilestone=(i===0||i===5||i===10||i===15||i===20||i===25||i===30);
+    const card=document.createElement('div');
+    card.className='sum-card'+(isLast?' hi':isMilestone?' milestone':'');
+    const bonusNote = i===OVERVIEW_YEARS?' ★終點':'';
+    card.innerHTML=`<div class="sum-yr">${yr}（+${i}年）${bonusNote}</div><div class="sum-asset">NT$${Math.round(asset/10000)}萬</div><div class="sum-net">淨資產 NT$${Math.round(net/10000)}萬</div><div class="sum-debt-txt">負債 NT$${Math.round(DEBTS[i]/10000)}萬</div>`;
+    sg.appendChild(card);
+  }
+
+  // ── 動態產生 overviewTable header ──
+  const oh = document.getElementById('overviewHead');
+  if(oh){
+    // 固定顯示欄：目前(0)、+1、+2、+3、然後每5年里程碑
+    const showCols = [0,1,2,3];
+    for(let y=5;y<=OVERVIEW_YEARS;y+=5) if(!showCols.includes(y)) showCols.push(y);
+    if(!showCols.includes(OVERVIEW_YEARS)) showCols.push(OVERVIEW_YEARS);
+    showCols.sort((a,b)=>a-b);
+    // 存到全域供 tbody 使用
+    window._ovCols = showCols;
+    oh.innerHTML='<tr><th style="min-width:78px">桶別</th>'
+      +showCols.map(i=>{
+        const yr=2026+i,isLast=i===OVERVIEW_YEARS;
+        return '<th class="yr-head" style="'+(isLast?'background:rgba(74,222,154,.06)':'')+'">'
+          +yr+(i===4?' ✦':isLast?' ★':'')+'</th>';
+      }).join('')
+      +'<th style="text-align:right;min-width:80px">'+OVERVIEW_YEARS+'年倍數</th></tr>';
+  }
+  const cols = window._ovCols || [0,1,2,3,5,10,15,20,25,30].filter(i=>i<=OVERVIEW_YEARS);
   const ob=document.getElementById('overviewBody');ob.innerHTML='';
   ['core','sat','cash','usflow'].forEach(cat=>{
-    const binfo=BKL[cat],vals=ct[cat],mult=(vals[5]/vals[0]).toFixed(2);
+    const binfo=BKL[cat],vals=ct[cat];
+    const mult=vals[0]>0?(vals[OVERVIEW_YEARS]/vals[0]).toFixed(2):'—';
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td><span class="bk ${binfo.cls}">${binfo.label}</span></td>`
-      +vals.map((v,i)=>{
-        if(i===0) return `<td class="yr" style="background:rgba(255,255,255,.03)"><div class="yr-main" style="color:${binfo.color}">${fmtI(v)}</div><div class="yr-delta zero">基準</div></td>`;
-        const prev=vals[i-1],diff=v-prev,pct=prev>0?diff/prev*100:0,s=diff>=0?'+':'';
-        return `<td class="yr${i===5?' best':''}"><div class="yr-main" style="color:${binfo.color}">${fmtI(v)}</div><div class="yr-delta">${s}${(diff/10000).toFixed(0)}萬 ${s}${pct.toFixed(1)}%</div></td>`;
+    tr.innerHTML='<td><span class="bk '+binfo.cls+'">'+binfo.label+'</span></td>'
+      +cols.map((ci,idx)=>{
+        const v=vals[ci]||0,isLast=ci===OVERVIEW_YEARS;
+        if(idx===0) return '<td class="yr" style="background:rgba(255,255,255,.03)'+( isLast?';background:rgba(74,222,154,.06)':'')+'"><div class="yr-main" style="color:'+binfo.color+'">'+fmtI(v)+'</div><div class="yr-delta zero">基準</div></td>';
+        const prev=vals[cols[idx-1]]||0,diff=v-prev,pct=prev>0?diff/prev*100:0,sg=diff>=0?'+':'';
+        return '<td class="yr'+(isLast?' best':'')+'"><div class="yr-main" style="color:'+binfo.color+'">'+fmtI(v)+'</div><div class="yr-delta">'+sg+'NT$'+(diff/10000).toFixed(0)+'萬</div></td>';
       }).join('')
-      +`<td class="num" style="color:var(--green);font-size:13px;font-weight:500">${mult}×</td>`;
+      +'<td class="num" style="color:var(--green);font-size:13px;font-weight:500">'+mult+'×</td>';
     ob.appendChild(tr);
   });
   const gtr=document.createElement('tr');gtr.className='subtotal';
-  gtr.innerHTML=`<td style="color:var(--text);font-size:12px;font-weight:500">總資產合計</td>`
-    +grand.map((v,i)=>{
-      const best=i===5,color=best?'var(--green)':'var(--text)';
-      if(i===0) return `<td class="yr" style="background:rgba(255,255,255,.02)"><div class="yr-main" style="color:${color};font-size:12px">${fmtI(v)}</div><div class="yr-delta zero" style="color:var(--dim)">基準</div></td>`;
-      const prev=grand[i-1],diff=v-prev,pct=prev>0?diff/prev*100:0,s=diff>=0?'+':'';
-      return `<td class="yr${best?' best':''}"><div class="yr-main" style="color:${color};font-size:12px">${fmtI(v)}</div><div class="yr-delta">${s}${(diff/10000).toFixed(0)}萬 ${s}${pct.toFixed(1)}%</div></td>`;
+  gtr.innerHTML='<td style="color:var(--text);font-size:12px;font-weight:500">總資產合計</td>'
+    +cols.map((ci,idx)=>{
+      const v=grand[ci]||0,isLast=ci===OVERVIEW_YEARS;
+      const color=isLast?'var(--green)':'var(--text)';
+      if(idx===0) return '<td class="yr" style="background:rgba(255,255,255,.03)"><div class="yr-main" style="color:'+color+'">'+fmtI(v)+'</div><div class="yr-delta zero">基準</div></td>';
+      const prev=grand[cols[idx-1]]||0,diff=v-prev,sg=diff>=0?'+':'';
+      return '<td class="yr'+(isLast?' best':'')+'"><div class="yr-main" style="color:'+color+'">'+fmtI(v)+'</div><div class="yr-delta">'+sg+'NT$'+(diff/10000).toFixed(0)+'萬</div></td>';
     }).join('')
-    +`<td class="num" style="color:var(--green);font-size:13px;font-weight:500">${(grand[5]/grand[0]).toFixed(2)}×</td>`;
+    +'<td class="num" style="color:var(--green);font-size:13px;font-weight:500">'+(grand[0]>0?(grand[OVERVIEW_YEARS]/grand[0]).toFixed(2):'—')+'×</td>';
   ob.appendChild(gtr);
 }
 
 // ── 年度切換狀態 ──
 let curYrIdx=0;
-const YR_LABELS=['2026','2027','2028','2029','2030','2031'];
+// OVERVIEW_YEARS 已移至頂部
 // dividendData[ticker][yrIdx] = {div:'', stock:''}
 // ── 2025 實際配息預設值（來源：各公司公告）──
 // div = 每股現金配息 NT$，stock = 配股比例（股/股）
@@ -1150,7 +1540,7 @@ function buildYrTabs(){
   const wrap=document.getElementById('yr-tabs');if(!wrap)return;
   wrap.innerHTML='';
   YR_LABELS.forEach((lbl,i)=>{
-    const isBonus=i===5;
+    const isBonus=false;
     const btn=document.createElement('button');
     btn.className='yr-tab-btn'+(isBonus?' is-bonus':'')+(i===curYrIdx?' active':'');
     btn.textContent=lbl+(isBonus?' ★':'');
@@ -1240,7 +1630,11 @@ function renderHoldings(){
   _allRows=[];
   const catOrder=['core','sat','cash','usflow'],catH={};
   catOrder.forEach(c=>catH[c]=[]);
-  holdings.forEach(h=>catH[h[0]].push(h));
+  // 用 getHoldingCat 讀取覆蓋後的桶別
+  holdings.forEach(h=>{
+    const effectiveCat = getHoldingCat(h[1], h[0]);
+    catH[effectiveCat].push(h);
+  });
   const catTot={};
 
   catOrder.forEach(cat=>{
@@ -1305,7 +1699,7 @@ function renderHoldings(){
       }
 
       // 市值欄：上行市值，下行較前年增長
-      const isBonus=curYrIdx===5&&BONUS[ticker];
+      const isBonus=false;
       const bonusBadge=isBonus?'<span style="font-size:9px;color:var(--amber);margin-left:2px">★</span>':'';
       let deltaHtml='';
       if(curYrIdx===0){
@@ -1314,7 +1708,7 @@ function renderHoldings(){
         const diff=mktVal-prevMktVal;
         const pct=(diff/prevMktVal*100);
         const s=diff>=0?'+':'';
-        deltaHtml=`<div class="yr-delta">${s}${(diff/10000).toFixed(1)}萬 ${s}${pct.toFixed(1)}%${isBonus?' <span style="color:var(--amber)">+入賬</span>':''}</div>`;
+        deltaHtml=`<div class="yr-delta">${s}${(diff/10000).toFixed(1)}萬 ${s}${pct.toFixed(1)}%</div>`;
       }
 
       const sharesChanged = sharesCache[ticker] !== undefined;
@@ -1326,21 +1720,21 @@ function renderHoldings(){
       tr.innerHTML=`
         <td style="padding:5px 8px">
           <select data-ticker="${ticker}" class="cat-select"
-            style="background:var(--surface2);border:1px solid ${catChanged?'var(--amber)':'var(--border2)'};border-radius:5px;color:${catChanged?'var(--amber)':'var(--text)'};font-family:'DM Mono',monospace;font-size:10px;padding:2px 4px;outline:none;cursor:pointer;width:70px">
+            style="background:var(--surface2);border:1px solid ${catChanged?'var(--amber)':'var(--border2)'};border-radius:5px;color:${catChanged?'var(--amber)':'var(--text)'};font-family:monospace;font-size:10px;padding:2px 4px;outline:none;cursor:pointer;width:70px">
             ${BUCKET_OPTIONS.map(b=>`<option value="${b}"${b===effectiveCat?' selected':''}>${BKL[b].label}</option>`).join('')}
           </select>
         </td>
         <td><span class="ticker">${ticker}</span></td>
         <td style="text-align:right;padding:5px 8px">
           ${ticker==='美金定存'
-            ? `<span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim)">1</span>`
+            ? `<span style="font-family:monospace;font-size:11px;color:var(--dim)">1</span>`
             : `<div style="display:flex;align-items:center;justify-content:flex-end;gap:3px">
                 <input class="shares-input${sharesChanged?' changed':''}" id="shares-${ticker}"
                   type="number" min="0" step="1"
                   value="${curShares}"
                   data-default="${shares}"
                   data-ticker="${ticker}"
-                  style="width:72px;background:var(--surface2);border:1px solid ${sharesChanged?'var(--blue)':'var(--border2)'};border-radius:4px;color:${sharesChanged?'var(--blue)':'var(--text)'};font-family:'DM Mono',monospace;font-size:11px;text-align:right;padding:2px 5px;outline:none"
+                  style="width:72px;background:var(--surface2);border:1px solid ${sharesChanged?'var(--blue)':'var(--border2)'};border-radius:4px;color:${sharesChanged?'var(--blue)':'var(--text)'};font-family:monospace;font-size:11px;text-align:right;padding:2px 5px;outline:none"
                   title="修改持有股數，Enter確認即時重算"/>
                 <span style="font-size:10px;color:var(--dim)">股</span>
               </div>
@@ -1368,13 +1762,13 @@ function renderHoldings(){
           ${deltaHtml}
         </td>
         <td style="text-align:center;padding:5px 10px">
-          <div style="font-size:9px;color:var(--dim);margin-bottom:2px;font-family:'DM Mono',monospace">${divUnit}</div>
+          <div style="font-size:9px;color:var(--dim);margin-bottom:2px;font-family:monospace">${divUnit}</div>
           <input class="div-input${divRaw!==null?' filled':''}"
             id="div-${ticker}-${curYrIdx}" type="number" min="0" step="${ticker==='美金定存'?'1000':['QQQI','QQQM','VTI','QQXL'].includes(ticker)?'0.01':'0.01'}"
             value="${divRaw!==null?divRaw:''}" placeholder="${ticker==='美金定存'?'213418':'0.00'}"
             data-ticker="${ticker}" data-yridx="${curYrIdx}"
             title="${divHint}"/>
-          <div style="font-size:10px;margin-top:2px;min-height:14px;font-family:'DM Mono',monospace;color:${divTotal!==null?'var(--green)':'var(--dim)'}">
+          <div style="font-size:10px;margin-top:2px;min-height:14px;font-family:monospace;color:${divTotal!==null?'var(--green)':'var(--dim)'}">
             ${divTotalLabel}
           </div>
         </td>
@@ -1384,7 +1778,7 @@ function renderHoldings(){
             value="${stockRatio!==null?stockRatio:''}" placeholder="0.000"
             data-ticker="${ticker}" data-yridx="${curYrIdx}"
             title="填配股比例（如每股配0.05股填0.05），Enter確認"/>
-          <div style="font-size:10px;margin-top:2px;min-height:14px;font-family:'DM Mono',monospace;color:${stockMktVal!==null?'var(--amber)':'var(--dim)'}">
+          <div style="font-size:10px;margin-top:2px;min-height:14px;font-family:monospace;color:${stockMktVal!==null?'var(--amber)':'var(--dim)'}">
             ${stockMktVal!==null?'≈NT$'+(stockMktVal/10000).toFixed(2)+'萬':''}
           </div>
         </td>
@@ -1485,6 +1879,7 @@ function buildCfYrTabs(){
 
 function renderCashflow(){
   buildCfYrTabs();
+  renderDebtTable();
 
   // ── 收集資料：優先用手填，否則用估算 ──
   const items=[];
@@ -1618,7 +2013,7 @@ function renderCashflow(){
     return `
       <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;padding:4px 8px;background:${bg};border-radius:4px">
         <span style="color:var(--muted)">${tag}${it.lbl}</span>
-        <span style="font-family:'DM Mono',monospace;font-weight:500;color:var(--text)">NT$${(it.val/10000).toFixed(1)}萬</span>
+        <span style="font-family:monospace;font-weight:500;color:var(--text)">NT$${(it.val/10000).toFixed(1)}萬</span>
       </div>
       <div style="height:8px;border-radius:3px;margin-bottom:8px;background:${it.color};opacity:${it.isReal?0.85:0.35};width:${pct}%;transition:width .3s"></div>`;
   }).join('');
@@ -1644,181 +2039,324 @@ function clearAllOverrides(){
   updateOverrideBar();
   recalcHoldings();
 }
-function switchTab(name,btn){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tab-'+name).classList.add('active');
-  if(name==='cashflow')  renderCashflow();
-  if(name==='rebalance') renderRebalance();
-  if(name==='pledge')    initPledge();
-}
+
 
 // ── Tab 5：質押試算 ──
 // ── Tab 5：質押試算（多標的抵押品）──
 let pledgeRows = []; // [{ticker, shares, price, rowId}]
 let pledgeRowCounter = 0;
 
-function initPledge(){
-  const h0=holdings.find(h=>h[1]===PLEDGE_DATA.ticker);
-  const curSh0=h0?getShares(PLEDGE_DATA.ticker,h0[2]):0;
-  const curP0 =h0?getPrice(PLEDGE_DATA.ticker,h0[3]):0;
-  const mktNow=curSh0*curP0;
-  const maintNow=PLEDGE_DATA.loan>0?(mktNow/PLEDGE_DATA.loan*100):0;
-  const noteEl=document.getElementById('pl-note');
-  if(noteEl) noteEl.innerHTML=`⚠️ 負債頁現況：元大質押借款 <b style="color:var(--red)">NT$${(PLEDGE_DATA.loan/10000).toFixed(0)}萬</b> ／ 利率 ${PLEDGE_DATA.rate}% ／ 抵押標的 ${PLEDGE_DATA.ticker}（${curSh0.toLocaleString()}股 × NT$${curP0.toFixed(1)} = NT$${(mktNow/10000).toFixed(1)}萬）／ <b>目前維持率 <span style="color:${maintNow>=200?'var(--green)':maintNow>=130?'var(--amber)':'var(--red)'}">${maintNow.toFixed(1)}%</span></b>。警戒線130%、斷頭線120%為元大融資標準，實際以合約為準。`;
-  const loanEl=document.getElementById('pl-loan');
-  const rateEl=document.getElementById('pl-rate');
-  const ratioEl=document.getElementById('pl-ratio-limit');
-  if(loanEl) loanEl.value=debtCache.pledgeLoan||PLEDGE_DATA.loan;
-  if(rateEl) rateEl.value=debtCache.pledgeRate||PLEDGE_DATA.rate;
-  if(ratioEl) ratioEl.value=PLEDGE_DATA.ratioLim;
-  const rows=document.getElementById('pl-collateral-rows');
-  if(rows&&rows.children.length===0) addPledgeRow(PLEDGE_DATA.ticker);
+
+// ════════════════════════════════════════
+// 🔒 質押試算 — 完整重寫
+// ════════════════════════════════════════
+let _pledgeRowId = 0;
+
+// ── 借款金額變更（萬 → 元 存入 debtCache）──
+function onPledgeLoanChange(){
+  const m = parseFloat(document.getElementById('pl-loan')?.value) || 0;
+  debtCache.pledgeLoan = m * 10000; // 存元
+  saveDebtCache();
+  // 同步回負債頁
+  const dlEl = document.getElementById('debt-pledge-loan');
+  if(dlEl) dlEl.value = m;
   calcPledge();
 }
 
-let _pledgeRowId=0;
+function onPledgeRateChange(){
+  const r = parseFloat(document.getElementById('pl-rate')?.value) || 0;
+  debtCache.pledgeRate = r;
+  saveDebtCache();
+  const drEl = document.getElementById('debt-pledge-rate');
+  if(drEl) drEl.value = r;
+  calcPledge();
+}
+
+// ── 新增抵押品行 ──
 function addPledgeRow(defaultTicker){
-  const rows=document.getElementById('pl-collateral-rows');if(!rows)return;
-  const id=++_pledgeRowId;
-  const ticker=defaultTicker||holdings.filter(h=>h[1]!=='美金定存')[0]?.[1]||'';
-  const h=holdings.find(h=>h[1]===ticker);
-  const curSh=h?getShares(ticker,h[2]):0;
-  const curP =h?getPrice(ticker,h[3]):0;
-  const opts=holdings.filter(h=>h[1]!=='美金定存').map(h=>{
-    const t=h[1];return `<option value="${t}"${t===ticker?' selected':''}>${t}</option>`;
+  const rows = document.getElementById('pl-collateral-rows');
+  if(!rows) return;
+  const id = ++_pledgeRowId;
+  const ticker = defaultTicker || holdings.filter(h=>h[1]!=='美金定存')[0]?.[1] || '';
+  const h = holdings.find(h=>h[1]===ticker);
+  const curSh = h ? getShares(ticker, h[2]) : 0;
+  const curP  = h ? getPrice(ticker, h[3])  : 0;
+
+  const opts = holdings.filter(h=>h[1]!=='美金定存').map(h=>{
+    const t=h[1];
+    return `<option value="${t}"${t===ticker?' selected':''}>${t}</option>`;
   }).join('');
-  const div=document.createElement('div');
-  div.id=`pl-row-${id}`;
-  div.style.cssText='display:grid;grid-template-columns:100px 90px 90px 28px;gap:6px;align-items:center';
-  div.innerHTML=`
+
+  const div = document.createElement('div');
+  div.id = `pl-row-${id}`;
+  div.style.cssText = 'display:grid;grid-template-columns:110px 90px 90px 80px 28px;gap:6px;align-items:center;padding:8px 10px;background:var(--bg);border-radius:6px;border:1px solid var(--border)';
+  div.innerHTML = `
     <select data-row="${id}" onchange="onPledgeRowChange(${id})"
-      style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:3px 5px;outline:none">${opts}</select>
+      style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;
+             color:var(--text);font-family:monospace;font-size:11px;padding:3px 5px;outline:none">${opts}</select>
     <div>
-      <div style="font-size:9px;color:var(--dim);margin-bottom:1px">抵押股數</div>
+      <div style="font-size:9px;color:var(--dim);margin-bottom:2px">抵押股數</div>
       <input id="pl-sh-${id}" type="number" min="0" step="1000" value="${curSh}"
-        style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:12px;padding:3px 5px;outline:none;text-align:right"
+        style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;
+               color:var(--amber);font-family:monospace;font-size:12px;padding:3px 5px;outline:none;text-align:right"
         oninput="calcPledge()"/>
     </div>
     <div>
-      <div style="font-size:9px;color:var(--dim);margin-bottom:1px">股價 <span style="color:rgba(74,222,154,.7)">●自動</span></div>
+      <div style="font-size:9px;color:rgba(74,222,154,.8);margin-bottom:2px">股價（自動）</div>
       <input id="pl-pr-${id}" type="number" min="0" step="0.1" value="${curP.toFixed(2)}"
-        style="width:100%;background:var(--surface2);border:1px solid rgba(74,222,154,.3);border-radius:4px;color:var(--green);font-family:'DM Mono',monospace;font-size:12px;padding:3px 5px;outline:none;text-align:right"
+        style="width:100%;background:var(--surface2);border:1px solid rgba(74,222,154,.3);border-radius:4px;
+               color:var(--green);font-family:monospace;font-size:12px;padding:3px 5px;outline:none;text-align:right"
+        oninput="calcPledge()"/>
+    </div>
+    <div>
+      <div style="font-size:9px;color:var(--dim);margin-bottom:2px">個別借貸(萬)</div>
+      <input id="pl-loan-${id}" type="number" min="0" step="10" placeholder="0"
+        style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;
+               color:var(--red);font-family:monospace;font-size:12px;padding:3px 5px;outline:none;text-align:right"
         oninput="calcPledge()"/>
     </div>
     <button onclick="removePledgeRow(${id})"
-      style="background:transparent;border:1px solid var(--border2);border-radius:4px;color:var(--dim);cursor:pointer;font-size:13px;padding:2px 5px;line-height:1"
-      onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--dim)'">×</button>`;
-  rows.appendChild(div);calcPledge();
-}
-
-function onPledgeRowChange(id){
-  const sel=document.querySelector(`[data-row="${id}"]`);if(!sel)return;
-  const ticker=sel.value;
-  const h=holdings.find(h=>h[1]===ticker);if(!h)return;
-  const shEl=document.getElementById(`pl-sh-${id}`);
-  const prEl=document.getElementById(`pl-pr-${id}`);
-  if(shEl) shEl.value=getShares(ticker,h[2]);
-  if(prEl) prEl.value=getPrice(ticker,h[3]).toFixed(2);
+      style="background:transparent;border:1px solid var(--border2);border-radius:4px;
+             color:var(--dim);cursor:pointer;font-size:13px;padding:2px 5px">×</button>`;
+  rows.appendChild(div);
   calcPledge();
 }
 
 function removePledgeRow(id){
-  const el=document.getElementById(`pl-row-${id}`);if(el)el.remove();calcPledge();
+  const el = document.getElementById(`pl-row-${id}`);
+  if(el) el.remove();
+  calcPledge();
 }
 
-function calcPledge(){
-  const rows=document.getElementById('pl-collateral-rows');if(!rows)return;
-  let totalMkt=0;const collItems=[];
-  rows.querySelectorAll('[id^="pl-row-"]').forEach(row=>{
-    const id=row.id.replace('pl-row-','');
-    const sel=row.querySelector('select');
-    const sh=parseFloat(document.getElementById(`pl-sh-${id}`)?.value)||0;
-    const pr=parseFloat(document.getElementById(`pl-pr-${id}`)?.value)||0;
-    const ticker=sel?sel.value:'';
-    const mkt=sh*pr; totalMkt+=mkt;
-    collItems.push({ticker,sh,pr,mkt});
-  });
-  const totMktEl=document.getElementById('pl-total-mkt');
-  if(totMktEl) totMktEl.innerHTML=totalMkt>0?`NT$${(totalMkt/10000).toFixed(2)}萬`:'<span style="color:var(--dim)">—</span>';
-  // 維持率徽章（左側面板即時）
-  if(loan>0&&totalMkt>0){
-    const mr=totalMkt/loan*100;
-    const mc=mr>=200?'var(--green)':mr>=130?'var(--amber)':mr>=120?'#f97316':'var(--red)';
-    const badge=document.getElementById('pl-maint-badge');
-    if(badge) badge.innerHTML=`維持率 <b style="color:${mc}">${mr.toFixed(1)}%</b>`;
-    const det=document.getElementById('pl-maint-detail');
-    if(det) det.innerHTML=`借款 NT$${(loan/10000).toFixed(0)}萬　質押比 ${(loan/totalMkt*100).toFixed(1)}%`;
-  } else {
-    const badge=document.getElementById('pl-maint-badge');
-    if(badge) badge.innerHTML='';
+function onPledgeRowChange(id){
+  const sel = document.querySelector(`#pl-row-${id} select`);
+  if(!sel) return;
+  const ticker = sel.value;
+  const h = holdings.find(h=>h[1]===ticker);
+  if(h){
+    const shEl = document.getElementById(`pl-sh-${id}`);
+    const prEl = document.getElementById(`pl-pr-${id}`);
+    if(shEl) shEl.value = getShares(ticker, h[2]);
+    if(prEl) prEl.value = getPrice(ticker, h[3]).toFixed(2);
   }
-  const loan=parseFloat(document.getElementById('pl-loan')?.value)||0;
-  const rate=parseFloat(document.getElementById('pl-rate')?.value)||2.88;
-  const ratioLim=parseFloat(document.getElementById('pl-ratio-limit')?.value)||60;
-  if(totalMkt<=0||loan<=0){
-    ['pl-result','pl-simulation','pl-topup'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<div style="color:var(--dim);font-size:12px">請填入資料</div>';});
+  calcPledge();
+}
+
+// ── 初始化質押頁 ──
+function initPledge(){
+  // 填入借款設定（從 debtCache 讀，萬單位顯示）
+  const loanEl  = document.getElementById('pl-loan');
+  const rateEl  = document.getElementById('pl-rate');
+  const ratioEl = document.getElementById('pl-ratio-limit');
+  const loanM   = (debtCache.pledgeLoan || PLEDGE_DATA.loan) / 10000; // 元→萬
+  const rateV   = debtCache.pledgeRate  || PLEDGE_DATA.rate;
+
+  if(loanEl)  loanEl.value  = loanM.toFixed(0);
+  if(rateEl)  rateEl.value  = rateV;
+  if(ratioEl) ratioEl.value = PLEDGE_DATA.ratioLim;
+
+  // 初始化 collateral rows
+  const rows = document.getElementById('pl-collateral-rows');
+  if(rows && rows.children.length === 0){
+    addPledgeRow(PLEDGE_DATA.ticker);
+  } else if(rows){
+    // 同步股價
+    rows.querySelectorAll('[id^="pl-row-"]').forEach(row=>{
+      const id  = row.id.replace('pl-row-','');
+      const sel = row.querySelector('select');
+      if(!sel) return;
+      const h = holdings.find(h=>h[1]===sel.value);
+      if(h){
+        const prEl = document.getElementById(`pl-pr-${id}`);
+        if(prEl) prEl.value = getPrice(h[1], h[3]).toFixed(2);
+      }
+    });
+  }
+  calcPledge();
+}
+
+// ── 主計算函數 ──
+function calcPledge(){
+  const rows = document.getElementById('pl-collateral-rows');
+  if(!rows) return;
+
+  // ① 計算抵押品總市值 + 逐筆借貸
+  let totalMkt  = 0;
+  let totalLoan = 0;
+  const collItems = [];
+
+  rows.querySelectorAll('[id^="pl-row-"]').forEach(row=>{
+    const id     = row.id.replace('pl-row-','');
+    const sel    = row.querySelector('select');
+    const sh     = parseFloat(document.getElementById(`pl-sh-${id}`)?.value)    || 0;
+    const pr     = parseFloat(document.getElementById(`pl-pr-${id}`)?.value)    || 0;
+    const loanM  = parseFloat(document.getElementById(`pl-loan-${id}`)?.value)  || 0;
+    const ticker = sel ? sel.value : '';
+    const mkt    = sh * pr;
+    const loanV  = loanM * 10000; // 萬→元
+    totalMkt  += mkt;
+    totalLoan += loanV;
+    const rowMaint = loanV > 0 ? (mkt / loanV * 100) : null;
+    collItems.push({ticker, sh, pr, mkt, loan: loanV, rowMaint});
+  });
+
+  // ② 整體借款（借款設定欄，萬→元）
+  const loanInputM = parseFloat(document.getElementById('pl-loan')?.value) || 0;
+  const loanInput  = loanInputM * 10000; // 元
+  // 優先用逐筆加總，若無則用整體
+  const loan = totalLoan > 0 ? totalLoan : loanInput;
+  const rate     = parseFloat(document.getElementById('pl-rate')?.value)        || (debtCache.pledgeRate || 2.88);
+  const ratioLim = parseFloat(document.getElementById('pl-ratio-limit')?.value) || 60;
+
+  // ③ 更新抵押品總市值顯示
+  const totalMktEl = document.getElementById('pl-total-mkt');
+  const badgeEl    = document.getElementById('pl-maint-badge');
+  if(totalMktEl) totalMktEl.textContent = `NT$${(totalMkt/10000).toFixed(2)}萬`;
+
+  // ④ 資料不足 → 顯示提示
+  if(totalMkt <= 0 || loan <= 0){
+    const hint = totalMkt <= 0 ? '請填入抵押股數' : '請填入借款金額（萬）';
+    ['pl-result','pl-simulation','pl-topup'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.innerHTML = `<div style="color:var(--dim);font-size:12px;padding:10px">${hint}</div>`;
+    });
+    if(badgeEl) badgeEl.textContent = '';
+    updatePledgeNote(totalMkt, loan, rate, 0);
     return;
   }
-  const maintenRate=totalMkt/loan*100;
-  const pledgeRatio=loan/totalMkt*100;
-  const maxLoan=totalMkt*ratioLim/100;
-  const annualInt=loan*rate/100;
-  const isSafe=maintenRate>=200,isWarn=maintenRate>=130&&maintenRate<200;
-  const isDanger=maintenRate>=120&&maintenRate<130,isBust=maintenRate<120;
-  const sColor=isSafe?'var(--green)':isWarn?'var(--amber)':isDanger?'#f97316':'var(--red)';
-  const sText=isSafe?'🟢 安全':isWarn?'🟡 注意':isDanger?'🟠 警戒':'🔴 危險！接近斷頭';
-  const detail=collItems.length>1?collItems.map(c=>`<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--dim);font-family:'DM Mono',monospace;margin-bottom:2px"><span>${c.ticker} ${c.sh.toLocaleString()}股×${c.pr.toFixed(1)}</span><span>NT$${(c.mkt/10000).toFixed(2)}萬</span></div>`).join(''):'';
-  document.getElementById('pl-result').innerHTML=`
-    <div style="font-size:10px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace">即時計算結果</div>
-    ${detail?`<div style="margin-bottom:8px;padding:6px 8px;background:var(--bg);border-radius:5px">${detail}</div>`:''}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div><div style="font-size:10px;color:var(--dim)">抵押品總市值</div><div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--text)">NT$${(totalMkt/10000).toFixed(2)}萬</div></div>
-      <div><div style="font-size:10px;color:var(--dim)">維持率</div><div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:${sColor}">${maintenRate.toFixed(1)}%</div></div>
-      <div><div style="font-size:10px;color:var(--dim)">質押比例</div><div style="font-family:'DM Mono',monospace;font-size:13px;color:${pledgeRatio>ratioLim?'var(--red)':'var(--muted)'}">${pledgeRatio.toFixed(2)}%（上限${ratioLim}%）</div></div>
-      <div><div style="font-size:10px;color:var(--dim)">可再借上限</div><div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--green)">NT$${((maxLoan-loan)/10000).toFixed(1)}萬</div></div>
-      <div><div style="font-size:10px;color:var(--dim)">年利息</div><div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--red)">NT$${(annualInt/10000).toFixed(2)}萬</div></div>
-      <div><div style="font-size:10px;color:var(--dim)">月利息</div><div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--red)">NT$${(annualInt/12).toFixed(0)}</div></div>
-    </div>
-    <div style="margin-top:10px;padding:8px 10px;border-radius:6px;background:${isBust?'rgba(248,113,113,.1)':isDanger?'rgba(249,115,22,.1)':isWarn?'rgba(245,200,66,.08)':'rgba(74,222,154,.08)'};font-family:'DM Mono',monospace;font-size:12px;color:${sColor}">${sText}</div>`;
-  // 下跌模擬（多標的同步跌幅）
-  const warnDrop=Math.max(0,(1-130*loan/totalMkt/100)*100);
-  const dangerDrop=Math.max(0,(1-120*loan/totalMkt/100)*100);
-  const rows2=[5,10,15,20,25,30,40,50].map(pct=>{
-    const simMkt=totalMkt*(1-pct/100);const simRate=simMkt/loan*100;
-    const bg=simRate<120?'rgba(248,113,113,.12)':simRate<130?'rgba(249,115,22,.08)':simRate<160?'rgba(245,200,66,.06)':'';
-    const col=simRate<120?'var(--red)':simRate<130?'#f97316':simRate<160?'var(--amber)':'var(--muted)';
-    return `<tr style="background:${bg}"><td style="padding:6px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">-${pct}%</td><td style="padding:6px 10px;font-family:'DM Mono',monospace;font-size:11px">NT$${(simMkt/10000).toFixed(1)}萬</td><td style="padding:6px 10px;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:${col}">${simRate.toFixed(1)}%</td><td style="padding:6px 10px;font-size:11px;color:${col}">${simRate<120?'🔴 斷頭':simRate<130?'🟠 警戒':simRate<160?'🟡 注意':'✓'}</td></tr>`;
+
+  // ⑤ 維持率計算
+  const maintenRate  = totalMkt / loan * 100;
+  const pledgeRatio  = loan / totalMkt * 100;
+  const maxLoan      = totalMkt * ratioLim / 100;
+  const annInterest  = loan * rate / 100;
+  const monthPay     = annInterest / 12;
+  const maintColor   = maintenRate >= 200 ? 'var(--green)' : maintenRate >= 130 ? 'var(--amber)' : maintenRate >= 120 ? '#f97316' : 'var(--red)';
+  const warnDrop     = Math.max(0, (1 - 130 * loan / totalMkt / 100) * 100);
+  const dangerDrop   = Math.max(0, (1 - 120 * loan / totalMkt / 100) * 100);
+
+  // ⑥ badge
+  if(badgeEl){
+    badgeEl.innerHTML = `<span style="font-size:12px;font-weight:500;color:${maintColor}">${maintenRate.toFixed(1)}%</span>`;
+  }
+
+  // ⑦ 即時計算結果
+  const detailRows = collItems.filter(c=>c.rowMaint!==null).map(c=>{
+    const mc = c.rowMaint>=200?'var(--green)':c.rowMaint>=130?'var(--amber)':c.rowMaint>=120?'#f97316':'var(--red)';
+    return `<div style="display:flex;justify-content:space-between;font-size:10px;padding:3px 0;border-bottom:1px solid var(--border);font-family:monospace">
+      <span style="color:var(--muted)">${c.ticker} ${c.sh.toLocaleString()}股 × NT$${c.pr}</span>
+      <span style="color:var(--dim)">NT$${(c.mkt/10000).toFixed(1)}萬</span>
+      <span style="color:var(--red)">借${(c.loan/10000).toFixed(0)}萬</span>
+      <b style="color:${mc}">${c.rowMaint.toFixed(1)}%</b>
+    </div>`;
   }).join('');
-  document.getElementById('pl-simulation').innerHTML=`
-    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-family:'DM Mono',monospace">所有抵押品同步跌：警戒線觸發跌 <span style="color:var(--amber)">${warnDrop.toFixed(1)}%</span>　斷頭線觸發跌 <span style="color:var(--red)">${dangerDrop.toFixed(1)}%</span></div>
-    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:300px">
-      <thead><tr style="background:var(--bg)"><th style="padding:6px 10px;text-align:left;font-size:10px;color:var(--dim);font-family:'DM Mono',monospace">跌幅</th><th style="padding:6px 10px;text-align:left;font-size:10px;color:var(--dim);font-family:'DM Mono',monospace">總市值</th><th style="padding:6px 10px;text-align:left;font-size:10px;color:var(--dim);font-family:'DM Mono',monospace">維持率</th><th style="padding:6px 10px;text-align:left;font-size:10px;color:var(--dim);font-family:'DM Mono',monospace">狀態</th></tr></thead>
-      <tbody>${rows2}</tbody></table></div>`;
-  // 補繳/補股
-  const topupEl=document.getElementById('pl-topup');
-  if(maintenRate>=130){
-    topupEl.innerHTML=`<div style="color:var(--green);font-family:'DM Mono',monospace;font-size:12px">✓ 維持率 ${maintenRate.toFixed(1)}%，無需補繳。距警戒線還有 ${(maintenRate-130).toFixed(1)} 個百分點。</div>`;
-  } else {
-    const cashNeeded=Math.max(0,loan-totalMkt/1.6);
-    const mktNeeded=Math.max(0,loan*1.6-totalMkt);
-    topupEl.innerHTML=`
-      <div style="font-size:11px;color:var(--red);font-family:'DM Mono',monospace;margin-bottom:12px">⚠️ 維持率 ${maintenRate.toFixed(1)}% 低於 ${maintenRate<120?'斷頭線120%':'警戒線130%'}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div style="background:var(--surface2);border-radius:8px;padding:12px">
-          <div style="font-size:10px;color:var(--muted);margin-bottom:6px">方案A：還款（減借款）</div>
-          <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--amber)">NT$${(cashNeeded/10000).toFixed(2)}萬</div>
-          <div style="font-size:10px;color:var(--dim);margin-top:3px">還後維持率回到160%</div>
-        </div>
-        <div style="background:var(--surface2);border-radius:8px;padding:12px">
-          <div style="font-size:10px;color:var(--muted);margin-bottom:6px">方案B：補提抵押品市值</div>
-          <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--blue)">NT$${(mktNeeded/10000).toFixed(2)}萬</div>
-          <div style="font-size:10px;color:var(--dim);margin-top:3px">補後維持率回到160%</div>
-        </div>
+
+  const resultEl = document.getElementById('pl-result');
+  if(resultEl) resultEl.innerHTML = `
+    ${detailRows}
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px">
+      <div style="background:var(--surface2);border-radius:6px;padding:8px 10px">
+        <div style="font-size:9px;color:var(--dim);margin-bottom:2px">整體維持率</div>
+        <div style="font-family:monospace;font-size:18px;font-weight:700;color:${maintColor}">${maintenRate.toFixed(1)}%</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:6px;padding:8px 10px">
+        <div style="font-size:9px;color:var(--dim);margin-bottom:2px">質押比</div>
+        <div style="font-family:monospace;font-size:18px;font-weight:500;color:var(--text)">${pledgeRatio.toFixed(1)}%</div>
+        <div style="font-size:9px;color:var(--dim)">上限${ratioLim}%</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:6px;padding:8px 10px">
+        <div style="font-size:9px;color:var(--dim);margin-bottom:2px">月息</div>
+        <div style="font-family:monospace;font-size:15px;color:var(--amber)">NT$${(monthPay/10000).toFixed(1)}萬</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;padding:6px 10px;background:var(--surface2);border-radius:6px;font-size:10px;color:var(--dim);font-family:monospace">
+      警戒線觸發跌幅 <b style="color:var(--amber)">${warnDrop.toFixed(1)}%</b> ／
+      斷頭線觸發跌幅 <b style="color:var(--red)">${dangerDrop.toFixed(1)}%</b> ／
+      可再借額度 <b style="color:var(--blue)">NT$${((maxLoan-loan)/10000).toFixed(0)}萬</b>
+    </div>`;
+
+  // ⑧ 股價下跌模擬
+  const simEl = document.getElementById('pl-simulation');
+  if(simEl){
+    const rows2 = [5,10,15,20,25,30,40,50].map(pct=>{
+      const simMkt  = totalMkt * (1 - pct/100);
+      const simRate = simMkt / loan * 100;
+      const col     = simRate < 120 ? 'var(--red)' : simRate < 130 ? '#f97316' : simRate < 160 ? 'var(--amber)' : 'var(--muted)';
+      const bg      = simRate < 120 ? 'rgba(248,113,113,.08)' : simRate < 130 ? 'rgba(249,115,22,.08)' : '';
+      const tag     = simRate < 120 ? '🔴 斷頭' : simRate < 130 ? '🟠 警戒' : simRate < 160 ? '🟡 注意' : '✓';
+      return `<tr style="background:${bg}">
+        <td style="padding:5px 10px;font-family:monospace;color:var(--red)">-${pct}%</td>
+        <td style="padding:5px 10px;font-family:monospace;text-align:right">NT$${(simMkt/10000).toFixed(1)}萬</td>
+        <td style="padding:5px 10px;font-family:monospace;font-weight:500;text-align:right;color:${col}">${simRate.toFixed(1)}%</td>
+        <td style="padding:5px 10px;font-size:11px;color:${col}">${tag}</td>
+      </tr>`;
+    }).join('');
+    simEl.innerHTML = `
+      <div style="font-size:10px;color:var(--muted);font-family:monospace;margin-bottom:8px">
+        警戒觸發跌 <b style="color:var(--amber)">${warnDrop.toFixed(1)}%</b>　斷頭觸發跌 <b style="color:var(--red)">${dangerDrop.toFixed(1)}%</b>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:320px;font-size:12px">
+          <thead><tr style="border-bottom:1px solid var(--border2)">
+            <th style="padding:5px 10px;text-align:left">跌幅</th>
+            <th style="padding:5px 10px;text-align:right">剩餘市值</th>
+            <th style="padding:5px 10px;text-align:right">維持率</th>
+            <th style="padding:5px 10px">狀態</th>
+          </tr></thead>
+          <tbody>${rows2}</tbody>
+        </table>
       </div>`;
   }
+
+  // ⑨ 補繳 / 補股計算
+  const topupEl = document.getElementById('pl-topup');
+  if(topupEl){
+    if(maintenRate >= 130){
+      topupEl.innerHTML = `<div style="color:var(--green);font-family:monospace;font-size:13px;padding:6px">
+        ✓ 維持率 ${maintenRate.toFixed(1)}%，目前安全。距警戒線還有跌幅空間 <b>${warnDrop.toFixed(1)}%</b>。
+      </div>`;
+    } else {
+      const target160Mkt  = loan * 1.6;
+      const target130Mkt  = loan * 1.3;
+      const cashNeeded    = target160Mkt - totalMkt; // 補現金
+      const mktNeeded     = target130Mkt - totalMkt; // 補至130%
+      const avgPr         = collItems.length>0 ? totalMkt/collItems.reduce((s,c)=>s+c.sh,0) : 0;
+      const sharesNeeded  = avgPr>0 ? Math.ceil(cashNeeded/avgPr/1000)*1000 : 0;
+      topupEl.innerHTML = `
+        <div style="color:var(--red);font-family:monospace;font-size:12px;margin-bottom:10px">
+          ⚠️ 維持率 ${maintenRate.toFixed(1)}% 低於警戒線 130%，請立即處理！
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:var(--surface2);border-radius:8px;padding:12px">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:6px">方案A：補繳現金（回到160%）</div>
+            <div style="font-family:monospace;font-size:16px;color:var(--amber)">NT$${(cashNeeded/10000).toFixed(2)}萬</div>
+            <div style="font-size:10px;color:var(--dim);margin-top:3px">補後維持率 160%</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:12px">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:6px">方案B：補提抵押品（到130%）</div>
+            <div style="font-family:monospace;font-size:16px;color:var(--blue)">NT$${(mktNeeded/10000).toFixed(2)}萬</div>
+            <div style="font-size:10px;color:var(--dim);margin-top:3px">≈ ${sharesNeeded.toLocaleString()} 股（均價估算）</div>
+          </div>
+        </div>`;
+    }
+  }
+
+  // ⑩ 底部 note
+  updatePledgeNote(totalMkt, loan, rate, maintenRate);
 }
+
+function updatePledgeNote(totalMkt, loan, rate, maintenRate){
+  const noteEl = document.getElementById('pl-note');
+  if(!noteEl) return;
+  const mc = maintenRate>=200?'var(--green)':maintenRate>=130?'var(--amber)':maintenRate>0?'var(--red)':'var(--dim)';
+  noteEl.innerHTML = loan>0&&totalMkt>0
+    ? `⚠️ 借款設定：質押借款 <b style="color:var(--red)">NT$${(loan/10000).toFixed(0)}萬</b> ／ 利率 ${rate}%`
+      +` ／ 抵押品總市值 <b style="color:var(--blue)">NT$${(totalMkt/10000).toFixed(1)}萬</b>`
+      +` ／ <b>目前維持率 <span style="color:${mc}">${maintenRate.toFixed(1)}%</span></b>`
+      +`（維持率=抵押品市值÷借款×100%，警戒線130%，斷頭線120%，實際以合約為準）`
+    : '⚠️ 請填入現有抵押品設定與借款金額後計算';
+}
+
 function updatePledgeDefaults(){ onPledgeRowChange(1); }
 function switchTab(name,btn){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -1827,8 +2365,11 @@ function switchTab(name,btn){
   document.getElementById('tab-'+name).classList.add('active');
   if(name==='cashflow')     renderCashflow();
   if(name==='rebalance')    renderRebalance();
-  if(name==='rebalance613') renderRebalance613();
   if(name==='pledge')       initPledge();
+  if(name==='retire')       calcRetire();
+  if(name==='backtest')     initBacktest();
+  if(name==='qqq')          renderQQQTab();
+  if(name==='etf662')       renderETF662Tab();
 }
 
 // ── 共用再平衡計算核心 ──
@@ -1837,7 +2378,13 @@ function _calcRebalance(prefix){
   const tCore = parseFloat(document.getElementById(`${prefix}-target-core`)?.value)||40;
   const tSat  = parseFloat(document.getElementById(`${prefix}-target-sat`)?.value)||30;
   const tCash = parseFloat(document.getElementById(`${prefix}-target-cash`)?.value)||30;
-  const newFunds = parseFloat(document.getElementById(`${prefix}-new-funds`)?.value)||0;
+  const newFunds = (parseFloat(document.getElementById(`${prefix}-new-funds`)?.value)||0) * 10000;
+  // 手動分配：若 rb-alloc-panel 有填值則覆蓋自動分配
+  const _manCore = (parseFloat(document.getElementById(`${prefix}-alloc-core`)?.value)||0)*10000;
+  const _manSat  = (parseFloat(document.getElementById(`${prefix}-alloc-sat`)?.value)||0)*10000;
+  const _manCash = (parseFloat(document.getElementById(`${prefix}-alloc-cash`)?.value)||0)*10000;
+  const _manTotal = _manCore + _manSat + _manCash;
+  const _useManual = _manTotal > 0;
   const tSum = tCore+tSat+tCash;
   const yrIdx = prefix==='rb' ? rbYrIdx : rb613YrIdx;
 
@@ -1849,7 +2396,8 @@ function _calcRebalance(prefix){
   }
 
   const {ct} = calcAllTotals(curScen);
-  const coreVal=ct.core[yrIdx], satVal=ct.sat[yrIdx], cashVal=ct.cash[yrIdx], usflowVal=ct.usflow[yrIdx];
+  const _safeYr=Math.min(yrIdx, (ct.core.length||1)-1);
+  const coreVal=ct.core[_safeYr]||0, satVal=ct.sat[_safeYr]||0, cashVal=ct.cash[_safeYr]||0, usflowVal=ct.usflow[_safeYr]||0;
   const totalBase=coreVal+satVal+cashVal;
   const grandTotal=totalBase+usflowVal;
 
@@ -1881,24 +2429,24 @@ function _calcRebalance(prefix){
   }
 
   // 新資金：缺口優先
-  let allocCore=0,allocSat=0,allocCash=0;
+    let allocCore=0,allocSat=0,allocCash=0;
   if(newFunds>0){
-    const need={core:Math.max(0,rawGapCore),sat:Math.max(0,rawGapSat),cash:Math.max(0,rawGapCash)};
-    const totalNeed=need.core+need.sat+need.cash;
-    if(totalNeed<=0){
-      allocCore=newFunds*tCore/100; allocSat=newFunds*tSat/100; allocCash=newFunds*tCash/100;
-    } else if(newFunds>=totalNeed){
-      const rem=newFunds-totalNeed;
-      allocCore=need.core+rem*tCore/100; allocSat=need.sat+rem*tSat/100; allocCash=need.cash+rem*tCash/100;
+    if(_useManual){
+      // 使用手動分配值
+      allocCore=_manCore; allocSat=_manSat; allocCash=_manCash;
     } else {
-      allocCore=newFunds*need.core/totalNeed; allocSat=newFunds*need.sat/totalNeed; allocCash=newFunds*need.cash/totalNeed;
+      // 自動缺口優先分配
+      const need={core:Math.max(0,rawGapCore),sat:Math.max(0,rawGapSat),cash:Math.max(0,rawGapCash)};
+      const totalNeed=need.core+need.sat+need.cash;
+      if(totalNeed<=0){
+        allocCore=newFunds*tCore/100; allocSat=newFunds*tSat/100; allocCash=newFunds*tCash/100;
+      } else {
+        allocCore=newFunds*(need.core/totalNeed);
+        allocSat=newFunds*(need.sat/totalNeed);
+        allocCash=newFunds*(need.cash/totalNeed);
+      }
     }
   }
-  const targetCore=coreVal+rawGapCore+allocCore;
-  const targetSat =satVal +rawGapSat +allocSat;
-  const targetCash=cashVal+rawGapCash+allocCash;
-  const gapCore=targetCore-coreVal, gapSat=targetSat-satVal, gapCash=targetCash-cashVal;
-
   return {tCore,tSat,tCash,newFunds,tSum,yrIdx,
           coreVal,satVal,cashVal,usflowVal,totalBase,grandTotal,
           allocCore,allocSat,allocCash,
@@ -1927,18 +2475,32 @@ function _renderRebalanceUI(prefix, d){
     if(b.gap!==null) card.style.borderColor=b.gap>totalBase*0.005?'rgba(248,113,113,.3)':b.gap<-totalBase*0.005?'rgba(74,222,154,.3)':'rgba(74,222,154,.2)';
     card.innerHTML=`
       <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${b.label}</div>
-      <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:${b.color}">${fmtI(b.cur)}</div>
-      <div style="font-size:10px;color:var(--dim);margin-top:2px;font-family:'DM Mono',monospace">現況 ${curPct}%${b.tc!==null?' ／ 目標 '+b.tc+'%':'（獨立）'}</div>
-      ${b.gap!==null?`<div style="font-size:11px;font-family:'DM Mono',monospace;margin-top:5px;color:${b.gap>totalBase*0.005?'var(--red)':b.gap<-totalBase*0.005?'var(--teal)':'var(--green)'}">
+      <div style="font-family:monospace;font-size:16px;font-weight:500;color:${b.color}">${fmtI(b.cur)}</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:2px;font-family:monospace">現況 ${curPct}%${b.tc!==null?' ／ 目標 '+b.tc+'%':'（獨立）'}</div>
+      ${b.gap!==null?`<div style="font-size:11px;font-family:monospace;margin-top:5px;color:${b.gap>totalBase*0.005?'var(--red)':b.gap<-totalBase*0.005?'var(--teal)':'var(--green)'}">
         ${b.gap>totalBase*0.005?'缺口 +':b.gap<-totalBase*0.005?'超配 ':'✓ '}${b.gap>totalBase*0.005||b.gap<-totalBase*0.005?fmtI(Math.abs(b.gap)):'在範圍內'}
-      </div>`:''}`;
+      </div>`:''}
+      ${b.tc!==null?(()=>{
+        const _alloc=b.label.includes('核心')?allocCore:b.label.includes('衛星')?allocSat:b.label.includes('現金')?allocCash:0;
+        const _cw=Math.min(100,totalBase>0?b.cur/totalBase*100:0);
+        const _aw=Math.min(100-_cw,totalBase>0?_alloc/totalBase*100:0);
+        return '<div style="margin-top:6px;height:5px;background:var(--surface2);border-radius:3px;overflow:visible;position:relative">'
+          +'<div style="position:absolute;height:100%;width:'+_cw.toFixed(1)+'%;background:'+b.color+';opacity:.8;border-radius:3px"></div>'
+          +'<div style="position:absolute;height:100%;left:'+_cw.toFixed(1)+'%;width:'+_aw.toFixed(1)+'%;background:'+b.color+';opacity:.3;border-radius:0 3px 3px 0"></div>'
+          +'<div style="position:absolute;top:-2px;left:'+b.tc+'%;width:2px;height:9px;background:white;opacity:.5;border-radius:1px"></div>'
+          +'</div>'
+          +'<div style="font-size:9px;color:var(--dim);font-family:monospace;margin-top:3px">'
+          +'現況'+_cw.toFixed(1)+'%'+(_alloc>0?' ＋加碼'+fmtI(_alloc):'')+' 目標'+b.tc+'%'
+          +'</div>';
+      })():''}
+    `;
     rbOv.appendChild(card);
   });
   const totCard=document.createElement('div');
   totCard.style.cssText='background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 15px';
   totCard.innerHTML=`<div style="font-size:11px;color:var(--muted);margin-bottom:6px">📊 ${YR_LABELS[yrIdx]} 總資產（含美股）</div>
-    <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text)">${fmtI(grandTotal)}</div>
-    <div style="font-size:10px;color:var(--dim);margin-top:2px;font-family:'DM Mono',monospace">433框架內 ${fmtI(totalBase)}${newFunds>0?` ＋新增 ${fmtI(newFunds)}`:''}</div>`;
+    <div style="font-family:monospace;font-size:16px;font-weight:500;color:var(--text)">${fmtI(grandTotal)}</div>
+    <div style="font-size:10px;color:var(--dim);margin-top:2px;font-family:monospace">433框架內 ${fmtI(totalBase)}${newFunds>0?` ＋新增 ${fmtI(newFunds)}`:''}</div>`;
   rbOv.appendChild(totCard);
 
   // 互補說明列
@@ -1953,6 +2515,12 @@ function _renderRebalanceUI(prefix, d){
 
   // ── 缺口圖 ──
   const chart=document.getElementById(`${prefix}-gap-chart`);
+  // 防護：若 totalBase 為 0 則顯示提示
+  if(!chart) return;
+  if(totalBase<=0){
+    chart.innerHTML='<div style="color:var(--dim);font-size:12px;padding:20px;text-align:center">載入中，請稍候...</div>';
+    return;
+  }
   const chartBuckets=[
     {label:'核心桶',cur:coreVal,target:targetCore,gap:gapCore,color:'#60a5f8',alloc:allocCore},
     {label:'衛星桶',cur:satVal, target:targetSat, gap:gapSat, color:'#c084fc',alloc:allocSat},
@@ -1969,17 +2537,17 @@ function _renderRebalanceUI(prefix, d){
     return `<div style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px">
         <span style="color:var(--muted);font-weight:500">${b.label}</span>
-        <span style="font-family:'DM Mono',monospace;color:${gapColor}">${gapLabel}</span>
+        <span style="font-family:monospace;color:${gapColor}">${gapLabel}</span>
       </div>
       <div style="position:relative;height:24px;background:var(--surface2);border-radius:5px;overflow:hidden">
         <div style="position:absolute;left:0;top:0;height:100%;width:${curW}%;background:${b.color};opacity:.5;border-radius:5px;transition:.4s"></div>
         ${b.alloc>0?`<div style="position:absolute;left:${curW}%;top:0;height:100%;width:${Math.min((b.alloc/maxVal*100),100-parseFloat(curW)).toFixed(1)}%;background:${b.color};opacity:.22;border-left:1px dashed ${b.color};transition:.4s"></div>`:''}
         <div style="position:absolute;left:0;top:0;height:100%;width:${tgtW}%;border:2px solid ${b.color};border-radius:5px;transition:.4s;pointer-events:none"></div>
-        <div style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;font-family:'DM Mono',monospace;color:var(--text);white-space:nowrap">現況 ${fmtI(b.cur)} → 目標 ${fmtI(b.target)}</div>
+        <div style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;font-family:monospace;color:var(--text);white-space:nowrap">現況 ${fmtI(b.cur)} → 目標 ${fmtI(b.target)}</div>
       </div>
     </div>`;
   }).join('')+`<div style="font-size:10px;color:var(--dim);margin-top:6px">█ 深色=現況　░ 淡色=新增資金　□ 框線=目標</div>`+
-  (newFunds>0?`<div style="font-size:11px;color:var(--amber);font-family:'DM Mono',monospace;margin-top:6px">新增資金 ${fmtI(newFunds)} 缺口優先分配：核心+${fmtI(allocCore)} ／ 衛星+${fmtI(allocSat)} ／ 現金+${fmtI(allocCash)}</div>`:'');
+  (newFunds>0?`<div style="font-size:11px;color:var(--amber);font-family:monospace;margin-top:6px">新增資金 ${fmtI(newFunds)} 缺口優先分配：核心+${fmtI(allocCore)} ／ 衛星+${fmtI(allocSat)} ／ 現金+${fmtI(allocCash)}</div>`:'');
 
   // ── 個股表 ──
   const tbody=document.getElementById(`${prefix}-tbody`);tbody.innerHTML='';
@@ -1987,7 +2555,7 @@ function _renderRebalanceUI(prefix, d){
   const bucketTargets={core:targetCore,sat:targetSat,cash:targetCash};
   ['core','sat','cash','usflow'].forEach(cat=>{
     const bi=BKL[cat];
-    const catHoldings=holdings.filter(h=>h[0]===cat);
+    const catHoldings=holdings.filter(h=>getHoldingCat(h[1],h[0])===cat);
     const catTotal=ct[cat][yrIdx]||1;
     const gap=bucketGaps[cat];
     catHoldings.forEach(h=>{
@@ -2004,8 +2572,8 @@ function _renderRebalanceUI(prefix, d){
         gapMkt=targetMkt-mktVal;
         const addSh=curP>0?Math.round(Math.abs(gapMkt)/curP):0;
         if(Math.abs(gapMkt)<totalBase*0.005){suggestion='✓ 無需調整';sugStyle='color:var(--green)';}
-        else if(gapMkt>0){suggestion=`加碼 ≈ ${addSh>0?addSh.toLocaleString()+'股':'NT$'+fmtI(gapMkt)}`;sugStyle='color:var(--red)';}
-        else{suggestion=`可減倉 ≈ ${addSh>0?addSh.toLocaleString()+'股':'NT$'+fmtI(Math.abs(gapMkt))}`;sugStyle='color:var(--teal)';}
+        else if(gapMkt>0){suggestion=`加碼 ≈ ${addSh>0?addSh.toLocaleString()+'股':fmtI(gapMkt)}`;sugStyle='color:var(--red)';}
+        else{suggestion=`可減倉 ≈ ${addSh>0?addSh.toLocaleString()+'股':fmtI(Math.abs(gapMkt))}`;sugStyle='color:var(--teal)';}
       } else {suggestion='獨立配置，不調整';sugStyle='color:var(--dim)';}
       const tr=document.createElement('tr');tr.style.borderBottom='1px solid var(--border)';
       tr.innerHTML=`
@@ -2037,55 +2605,270 @@ function _renderRebalanceUI(prefix, d){
 }
 
 // ── Tab 4：433 再平衡 ──
-let rbYrIdx=0;
+
+// ════════════════════════════════════════════════
+// ⚖️ 再平衡試算（全新設計 v2）
+// ════════════════════════════════════════════════
+
+let rbYrIdx = 0;
+let rbMode  = '433'; // '433' or '613'
+
+function setRbMode(mode, btn){
+  rbMode = mode;
+  document.querySelectorAll('[id^="rb-mode-"]').forEach(b=>{
+    const isActive = b.id === 'rb-mode-'+mode;
+    b.style.borderColor    = isActive ? 'var(--blue)' : 'var(--border2)';
+    b.style.background     = isActive ? 'rgba(96,165,248,.15)' : 'transparent';
+    b.style.color          = isActive ? 'var(--blue)' : 'var(--muted)';
+  });
+  // 設定預設比例
+  const presets = { '433':[40,30,30], '613':[60,10,30] };
+  const [c,st,ca] = presets[mode]||[40,30,30];
+  const sv = id => { const el=document.getElementById(id); if(el) el.value=String(arguments.length>0?arguments[0]:el.value); };
+  const set = (id,v) => { const el=document.getElementById(id); if(el) el.value=v; };
+  set('rb-t-core', c); set('rb-t-sat', st); set('rb-t-cash', ca);
+  renderRebalance();
+}
+
 function buildRbYrTabs(){
-  const wrap=document.getElementById('rb-yr-tabs');if(!wrap)return;wrap.innerHTML='';
-  YR_LABELS.forEach((lbl,i)=>{
-    const btn=document.createElement('button');
-    btn.className='yr-tab-btn'+(i===4||i===5?' is-bonus':'')+(i===rbYrIdx?' active':'');
-    btn.textContent=lbl+(i===5?' ★':'');
-    btn.onclick=()=>{rbYrIdx=i;buildRbYrTabs();renderRebalance();};
+  const wrap = document.getElementById('rb-yr-tabs');
+  if(!wrap) return;
+  const labels = getYrLabels ? getYrLabels() : YR_LABELS;
+  wrap.innerHTML = '';
+  labels.forEach((lbl,i)=>{
+    const btn = document.createElement('button');
+    const isMile = i===0||i%5===0||i===labels.length-1;
+    btn.textContent = lbl + (i===labels.length-1?' ★':'');
+    btn.style.cssText = 'font-family:monospace;font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid '
+      + (i===rbYrIdx ? 'var(--blue)' : 'var(--border)')
+      + ';background:' + (i===rbYrIdx ? 'rgba(96,165,248,.15)' : 'transparent')
+      + ';color:' + (i===rbYrIdx ? 'var(--blue)' : 'var(--dim)')
+      + (isMile ? ';font-weight:500' : '');
+    btn.onclick = ()=>{ rbYrIdx=i; buildRbYrTabs(); renderRebalance(); };
     wrap.appendChild(btn);
   });
 }
+
 function renderRebalance(){
   buildRbYrTabs();
-  const d=_calcRebalance('rb');
-  _renderRebalanceUI('rb',d);
-}
 
-// ── Tab 6：613 再平衡 ──
-let rb613YrIdx=0;
-function buildRb613YrTabs(){
-  const wrap=document.getElementById('rb613-yr-tabs');if(!wrap)return;wrap.innerHTML='';
-  YR_LABELS.forEach((lbl,i)=>{
-    const btn=document.createElement('button');
-    btn.className='yr-tab-btn'+(i===4||i===5?' is-bonus':'')+(i===rb613YrIdx?' active':'');
-    btn.textContent=lbl+(i===5?' ★':'');
-    btn.onclick=()=>{rb613YrIdx=i;buildRb613YrTabs();renderRebalance613();};
-    wrap.appendChild(btn);
+  const tCore = parseFloat(document.getElementById('rb-t-core')?.value)||40;
+  const tSat  = parseFloat(document.getElementById('rb-t-sat')?.value)||30;
+  const tCash = parseFloat(document.getElementById('rb-t-cash')?.value)||30;
+  const tSum  = tCore+tSat+tCash;
+  const hintEl = document.getElementById('rb-t-sum-hint');
+  if(hintEl) hintEl.textContent = '合計 '+tSum+'%'+(tSum!==100?' ⚠️ 請調整至100%':'');
+
+  const newFundsM = (parseFloat(document.getElementById('rb-new-funds')?.value)||0);
+  const newFunds  = newFundsM * 10000;
+
+  // 取得各桶市值
+  const {ct, grand} = calcAllTotals(curScen||'base');
+  const yr = Math.min(rbYrIdx, ct.core.length-1);
+  const coreVal    = ct.core[yr]||0;
+  const satVal     = ct.sat[yr]||0;
+  const cashVal    = ct.cash[yr]||0;
+  const usflowVal  = ct.usflow[yr]||0;
+  const totalBase  = coreVal + satVal + cashVal; // 不含美股現金流
+  const grandTotal = totalBase + usflowVal;
+
+  if(totalBase <= 0){
+    ['rb-overview','rb-gap-chart','rb-tbody'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.innerHTML='<div style="color:var(--dim);padding:12px;font-size:12px">載入中...</div>';
+    });
+    return;
+  }
+
+  // 目標市值（含新增資金後的總量）
+  const totalAfter = totalBase + newFunds;
+  const targetCore = totalAfter * tCore / 100;
+  const targetSat  = totalAfter * tSat  / 100;
+  const targetCash = totalAfter * tCash / 100;
+
+  // 缺口（正=需補入，負=超配）
+  const gapCore = targetCore - coreVal;
+  const gapSat  = targetSat  - satVal;
+  const gapCash = targetCash - cashVal;
+
+  const fmtI = v => 'NT$'+Math.round(v/10000)+'萬';
+  const fmtP = v => (v>=0?'+':'')+v.toFixed(1)+'%';
+
+  // ── 現況 vs 目標卡片 ──
+  const ovEl = document.getElementById('rb-overview');
+  if(ovEl){
+    const buckets = [
+      {label:'🔵 核心桶',cur:coreVal,target:targetCore,gap:gapCore,color:'var(--blue)'},
+      {label:'🟡 衛星桶',cur:satVal, target:targetSat, gap:gapSat, color:'var(--purple)'},
+      {label:'🟢 現金桶',cur:cashVal,target:targetCash,gap:gapCash,color:'var(--green)'},
+      {label:'💵 美股流',cur:usflowVal,target:null,gap:null,color:'var(--amber)'},
+    ];
+    ovEl.innerHTML = buckets.map(b=>{
+      const curPct = totalBase>0 ? (b.cur/totalBase*100).toFixed(1) : '0.0';
+      const isOver = b.gap!==null && b.gap < -totalBase*0.01;
+      const isNeed = b.gap!==null && b.gap >  totalBase*0.01;
+      const gapColor = isNeed?'var(--red)':isOver?'var(--teal)':'var(--green)';
+      return '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px">'
+        +'<div style="font-size:10px;color:var(--muted);margin-bottom:4px">'+b.label+'</div>'
+        +'<div style="font-family:monospace;font-size:14px;font-weight:500;color:'+b.color+'">'+fmtI(b.cur)+'</div>'
+        +'<div style="font-size:10px;color:var(--dim);margin-top:2px">'+curPct+'%'+(b.target!==null?' / 目標'+(b.target/totalAfter*100).toFixed(0)+'%':'')+'</div>'
+        +(b.gap!==null ? '<div style="font-size:10px;color:'+gapColor+';margin-top:3px;font-family:monospace">'+(isNeed?'缺口 ':isOver?'超配 ':'✓ ')+fmtI(Math.abs(b.gap))+'</div>' : '')
+        +'</div>';
+    }).join('');
+  }
+
+  // ── 缺口圖 ──
+  const chartEl = document.getElementById('rb-gap-chart');
+  if(chartEl && totalBase>0){
+    const buckets2 = [
+      {label:'核心桶',cur:coreVal,target:targetCore,gap:gapCore,color:'#60a5f8'},
+      {label:'衛星桶',cur:satVal, target:targetSat, gap:gapSat, color:'#c084fc'},
+      {label:'現金桶',cur:cashVal,target:targetCash,gap:gapCash,color:'#4ade9a'},
+    ];
+    const maxVal = Math.max(coreVal,satVal,cashVal,targetCore,targetSat,targetCash)||1;
+    chartEl.innerHTML = buckets2.map(b=>{
+      const curW  = Math.min(100, b.cur/maxVal*100);
+      const tgtW  = Math.min(100, b.target/maxVal*100);
+      const isNeed = b.gap > totalBase*0.005;
+      const isOver = b.gap < -totalBase*0.005;
+      const gapColor = isNeed?'var(--red)':isOver?'var(--teal)':'var(--green)';
+      const gapLabel = isNeed ? '需補入 '+fmtI(b.gap) : isOver ? '超配 '+fmtI(Math.abs(b.gap)) : '✓ 在範圍內';
+
+      // 分配給這桶的新增資金
+      let alloc = 0;
+      if(newFunds > 0 && b.gap > 0){
+        const totalNeed = Math.max(gapCore,0)+Math.max(gapSat,0)+Math.max(gapCash,0)||1;
+        const thisNeed  = Math.max(b.gap,0);
+        alloc = Math.min(newFunds * (thisNeed/totalNeed), b.gap);
+      }
+      const allocW = alloc>0 ? Math.min(100-curW, alloc/maxVal*100) : 0;
+
+      return '<div style="margin-bottom:14px">'
+        +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px">'
+        +'<span style="color:var(--muted);font-weight:500">'+b.label+'</span>'
+        +'<span style="font-family:monospace;color:'+gapColor+'">'+gapLabel+(alloc>0?' → 分配 '+fmtI(alloc):'')+'</span>'
+        +'</div>'
+        +'<div style="position:relative;height:22px;background:var(--surface2);border-radius:4px;overflow:hidden">'
+        +'<div style="position:absolute;left:0;top:0;height:100%;width:'+curW.toFixed(1)+'%;background:'+b.color+';opacity:.6;transition:.4s"></div>'
+        +(allocW>0?'<div style="position:absolute;left:'+curW.toFixed(1)+'%;top:0;height:100%;width:'+allocW.toFixed(1)+'%;background:'+b.color+';opacity:.25;border-left:1px dashed '+b.color+'"></div>':'')
+        +'<div style="position:absolute;top:0;left:'+tgtW.toFixed(1)+'%;width:2px;height:100%;background:white;opacity:.5"></div>'
+        +'</div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-top:3px;font-family:monospace">'
+        +'<span>現況 '+curW.toFixed(1)+'%</span><span>目標 '+tgtW.toFixed(1)+'%</span>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  // ── 新增資金分配 ──
+  const allocSec = document.getElementById('rb-alloc-section');
+  const allocDetail = document.getElementById('rb-alloc-detail');
+  const allocSumEl  = document.getElementById('rb-alloc-sum');
+  if(newFunds > 0 && allocSec){
+    allocSec.style.display = 'block';
+    const totalNeed = Math.max(gapCore,0)+Math.max(gapSat,0)+Math.max(gapCash,0);
+    let allocCore2=0, allocSat2=0, allocCash2=0;
+    if(totalNeed <= 0){
+      // 全部依比例
+      allocCore2 = newFunds*tCore/100;
+      allocSat2  = newFunds*tSat/100;
+      allocCash2 = newFunds*tCash/100;
+    } else {
+      // 缺口優先
+      const f = Math.min(newFunds, totalNeed);
+      allocCore2 = f*(Math.max(gapCore,0)/totalNeed);
+      allocSat2  = f*(Math.max(gapSat,0)/totalNeed);
+      allocCash2 = f*(Math.max(gapCash,0)/totalNeed);
+      // 剩餘依比例
+      const rem = newFunds - f;
+      if(rem > 0){ allocCore2+=rem*tCore/100; allocSat2+=rem*tSat/100; allocCash2+=rem*tCash/100; }
+    }
+    if(allocDetail){
+      allocDetail.innerHTML = [
+        {label:'🔵 核心桶',v:allocCore2,color:'var(--blue)'},
+        {label:'🟡 衛星桶',v:allocSat2,color:'var(--purple)'},
+        {label:'🟢 現金桶',v:allocCash2,color:'var(--green)'},
+      ].map(a=>'<div style="background:var(--surface2);border-radius:8px;padding:10px 12px">'
+        +'<div style="font-size:10px;color:var(--muted);margin-bottom:3px">'+a.label+'</div>'
+        +'<div style="font-family:monospace;font-size:15px;color:'+a.color+'">'+fmtI(a.v)+'</div>'
+        +'<div style="font-size:10px;color:var(--dim)">'+(totalAfter>0?(a.v/totalAfter*100).toFixed(1):'0')+'% 總資產</div>'
+        +'</div>').join('');
+    }
+    if(allocSumEl) allocSumEl.textContent = '分配合計 '+fmtI(allocCore2+allocSat2+allocCash2)+' / 新增資金 '+fmtI(newFunds);
+  } else if(allocSec){
+    allocSec.style.display = 'none';
+  }
+
+  // ── 個股再平衡建議 ──
+  const tbody = document.getElementById('rb-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+
+  const bucketGaps = {core:gapCore, sat:gapSat, cash:gapCash};
+
+  ['core','sat','cash','usflow'].forEach(cat=>{
+    const bi = BKL[cat];
+    const catHoldings = holdings.filter(h=>getHoldingCat(h[1],h[0])===cat);
+    if(catHoldings.length===0) return;
+    const catTotal = ct[cat][yr] || 1;
+    const gap = bucketGaps[cat];
+
+    // 桶別分隔行
+    const sepTr = document.createElement('tr');
+    sepTr.style.background = 'var(--surface)';
+    sepTr.innerHTML = '<td colspan="8" style="font-size:10px;color:'+bi.color+';font-family:monospace;padding:5px 12px;font-weight:500">'+bi.label+'</td>';
+    tbody.appendChild(sepTr);
+
+    catHoldings.forEach(h=>{
+      const [,ticker,,,,, baseRet]=h;
+      const curSh  = getShares(ticker,h[2]);
+      const curP   = getPrice(ticker,h[3]);
+      const ret    = userRates[ticker]!==undefined ? userRates[ticker] : baseRet;
+      const vals   = calcVals(getInitVal(ticker,h[2],h[3]), ret, ticker);
+      const mktVal = vals[yr]||0;
+      const pctTotal  = totalBase>0 ? (mktVal/totalBase*100).toFixed(1) : '0.0';
+      const pctBucket = catTotal>0  ? (mktVal/catTotal*100).toFixed(1)  : '0.0';
+
+      let targetMkt=mktVal, gapMkt=0, suggestion='', sugStyle='color:var(--dim)';
+      if(cat!=='usflow' && gap!==undefined){
+        targetMkt = mktVal + gap*(mktVal/catTotal);
+        gapMkt    = targetMkt - mktVal;
+        const addSh = curP>0 ? Math.round(Math.abs(gapMkt)/curP) : 0;
+        if(Math.abs(gapMkt) < totalBase*0.005){
+          suggestion = '✓ 無需調整'; sugStyle='color:var(--green)';
+        } else if(gapMkt>0){
+          suggestion = '加碼 '+addSh.toLocaleString()+'股（+'+fmtI(gapMkt)+'）';
+          sugStyle = 'color:var(--blue)';
+        } else {
+          suggestion = '暫不減倉（超配'+fmtI(Math.abs(gapMkt))+'）';
+          sugStyle = 'color:var(--teal)';
+        }
+      } else if(cat==='usflow'){
+        suggestion = '獨立管理';
+        sugStyle   = 'color:var(--amber)';
+      }
+
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td><span class="bk '+bi.cls+'">'+bi.label+'</span></td>'+
+        '<td style="font-family:monospace;font-weight:500">'+ticker+'</td>'+
+        '<td class="num">'+fmtI(mktVal)+'</td>'+
+        '<td class="num">'+pctTotal+'%</td>'+
+        '<td class="num">'+pctBucket+'%</td>'+
+        '<td class="num">'+fmtI(targetMkt)+'</td>'+
+        '<td class="num" style="'+(gapMkt>totalBase*0.005?'color:var(--red)':gapMkt<-totalBase*0.005?'color:var(--teal)':'color:var(--dim)')+'">'+
+          (cat!=='usflow'?(gapMkt>=0?'+':'')+fmtI(gapMkt):'—')+'</td>'+
+        '<td style="font-size:11px;'+sugStyle+'">'+suggestion+'</td>';
+      tbody.appendChild(tr);
+    });
   });
 }
-function renderRebalance613(){
-  buildRb613YrTabs();
-  const d=_calcRebalance('rb613');
-  _renderRebalanceUI('rb613',d);
 
-  // 與 433 差異對比卡
-  const d433=_calcRebalance('rb');
-  const diffCard=document.getElementById('rb613-diff-card');
-  if(diffCard){
-    const diffCore=d.gapCore-d433.gapCore, diffSat=d.gapSat-d433.gapSat, diffCash=d.gapCash-d433.gapCash;
-    diffCard.innerHTML=`
-      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.04em">vs 433 配置差異</div>
-      <div style="font-size:11px;font-family:'DM Mono',monospace;display:flex;flex-direction:column;gap:4px">
-        <span style="color:var(--core-c)">核心桶 ${diffCore>=0?'+':''}${fmtI(diffCore)}</span>
-        <span style="color:var(--sat-c)">衛星桶 ${diffSat>=0?'+':''}${fmtI(diffSat)}</span>
-        <span style="color:var(--cash-c)">現金桶 ${diffCash>=0?'+':''}${fmtI(diffCash)}</span>
-        <span style="font-size:10px;color:var(--dim);margin-top:4px">613 核心多配 ${fmtI(Math.abs(diffCore))}，衛星少配 ${fmtI(Math.abs(diffSat))}</span>
-      </div>`;
-  }
+function renderRebalance613(){
+  // 613 模式 = 直接呼叫 renderRebalance（已切換比例）
+  setRbMode('613', document.getElementById('rb-mode-613'));
 }
+
 
 function setScenario(scen,btn){
   curScen=scen;
@@ -2117,6 +2900,9 @@ document.addEventListener('change',e=>{
     saveCatCache();
     renderHoldings();
     renderOverview(curScen);
+    // 桶別變更 → 同步再平衡
+    if(document.getElementById('tab-rebalance')?.classList.contains('active')) renderRebalance();
+    if(document.getElementById('tab-rebalance613')?.classList.contains('active')) renderRebalance613();
     return;
   }
   // 年化報酬率修改
@@ -2197,22 +2983,22 @@ document.addEventListener('click',e=>{
 function initDebtInputs(){
   const loanEl=document.getElementById('debt-pledge-loan');
   const rateEl=document.getElementById('debt-pledge-rate');
-  if(loanEl) loanEl.value=debtCache.pledgeLoan;
-  if(rateEl) rateEl.value=debtCache.pledgeRate;
+  if(loanEl) loanEl.value=((debtCache.pledgeLoan||PLEDGE_DATA.loan)/10000).toFixed(0); // 萬
+  if(rateEl) rateEl.value=debtCache.pledgeRate||PLEDGE_DATA.rate;
   updateDebtPledgeSummary();
 }
 
 function onDebtPledgeChange(){
-  const loan=parseFloat(document.getElementById('debt-pledge-loan')?.value)||0;
-  const rate=parseFloat(document.getElementById('debt-pledge-rate')?.value)||0;
-  debtCache.pledgeLoan=loan;
+  const loanM=parseFloat(document.getElementById('debt-pledge-loan')?.value)||0; // 萬
+  const rate  =parseFloat(document.getElementById('debt-pledge-rate')?.value)||0;
+  debtCache.pledgeLoan=loanM*10000; // 存元
   debtCache.pledgeRate=rate;
   saveDebtCache();
   updateDebtPledgeSummary();
-  // 若質押頁已開啟，同步借款欄位
+  // 同步質押頁借款欄位（萬單位）
   const plLoan=document.getElementById('pl-loan');
   const plRate=document.getElementById('pl-rate');
-  if(plLoan) plLoan.value=loan;
+  if(plLoan) plLoan.value=loanM;   // 萬
   if(plRate) plRate.value=rate;
   calcPledge();
 }
@@ -2237,7 +3023,782 @@ try{ const s=localStorage.getItem(CAT_KEY); if(s) Object.assign(catCache,JSON.pa
 function saveCatCache(){try{localStorage.setItem(CAT_KEY,JSON.stringify(catCache));}catch(e){}}
 function getHoldingCat(ticker,defaultCat){ return catCache[ticker]!==undefined?catCache[ticker]:defaultCat; }
 
+
+// ════════════════════════════════════
+// 🎯 分頁7：退休金試算
+// ════════════════════════════════════
+function calcRetire(){
+  const age       = parseInt(document.getElementById('rt-age')?.value)       || 45;
+  const retireAge = parseInt(document.getElementById('rt-retire-age')?.value) || 55;
+  const inflation = parseFloat(document.getElementById('rt-inflation')?.value) || 3;
+  const monthly   = parseFloat(document.getElementById('rt-monthly')?.value)   || 8;
+  const pension   = parseFloat(document.getElementById('rt-pension')?.value)   || 3;
+  const emergency = parseFloat(document.getElementById('rt-emergency')?.value) || 144;
+  const reserveYr = parseFloat(document.getElementById('rt-reserve-yr')?.value)|| 3;
+  const current   = parseFloat(document.getElementById('rt-current')?.value)   || 4296;
+  const yearlyAdd = parseFloat(document.getElementById('rt-yearly-add')?.value)|| 60;
+  const beta      = parseFloat(document.getElementById('rt-beta')?.value)      || 1.2;
+  const multiplier= parseFloat(document.getElementById('rt-multiplier')?.value)|| 50;
+
+  const yrs = Math.max(1, retireAge - age);
+  // QQQ 基礎年化 9.49%，Beta 線性調整
+  const baseRate = 0.0949;
+  const adjRate  = baseRate * beta;
+
+  // 退休年月生活費（通膨調整）
+  const retireLiving = monthly * Math.pow(1 + inflation/100, yrs);
+  // 年淨提領
+  const netDraw = Math.max(0, (retireLiving - pension) * 12);
+  // 保留生活費
+  const reserveAmt = retireLiving * 12 * reserveYr;
+  // 目標應有總資產
+  const targetAsset = netDraw * multiplier + emergency + reserveAmt;
+
+  // 逐年複利試算
+  let projected = current;
+  const growthPath = [];
+  for(let y = 1; y <= yrs; y++){
+    projected = projected * (1 + adjRate) + yearlyAdd;
+    growthPath.push({ yr: age + y, val: projected });
+  }
+
+  const ratePct = Math.min(200, projected / targetAsset * 100);
+  const gap     = projected - targetAsset;
+
+  const el  = id => document.getElementById(id);
+  const fmM = v  => 'NT$' + Math.round(v).toLocaleString() + ' 萬';
+
+  if(el('rt-r-retire-living')) el('rt-r-retire-living').textContent = retireLiving.toFixed(1) + ' 萬/月';
+  if(el('rt-r-annual-draw'))   el('rt-r-annual-draw').textContent   = netDraw.toFixed(1) + ' 萬/年';
+  if(el('rt-r-target'))        el('rt-r-target').textContent        = fmM(targetAsset);
+  if(el('rt-r-projected'))     el('rt-r-projected').textContent     = fmM(projected);
+
+  if(el('rt-r-rate-pct')){
+    el('rt-r-rate-pct').textContent  = ratePct.toFixed(1) + '%';
+    el('rt-r-rate-pct').style.color  = ratePct >= 100 ? 'var(--green)' : ratePct >= 70 ? 'var(--amber)' : 'var(--red)';
+  }
+  if(el('rt-progress-bar')){
+    const pBar = el('rt-progress-bar');
+    pBar.style.width      = Math.min(100, ratePct) + '%';
+    pBar.style.background = ratePct >= 100
+      ? 'linear-gradient(90deg,var(--green),var(--teal))'
+      : ratePct >= 70
+        ? 'linear-gradient(90deg,var(--amber),var(--green))'
+        : 'linear-gradient(90deg,var(--red),var(--amber))';
+  }
+  if(el('rt-r-gap')){
+    el('rt-r-gap').textContent = gap >= 0
+      ? '✓ 超過目標 ' + fmM(gap) + '，預計 ' + retireAge + ' 歲可退休'
+      : '✗ 距目標尚差 ' + fmM(-gap) + '，建議延後退休或增加投入';
+    el('rt-r-gap').style.color = gap >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+  saveRetireSettings();
+  if(el('rt-growth-table')){
+    el('rt-growth-table').innerHTML = growthPath.map(r =>
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 6px;border-radius:4px;background:' +
+      (r.val >= targetAsset ? 'rgba(74,222,154,.07)' : 'transparent') + '">' +
+      '<span style="font-size:10px;color:var(--dim)">' + r.yr + ' 年（' + (r.yr - age > 0 ? '+' + (r.yr - age) : '現在') + ' 年）</span>' +
+      '<span style="font-size:11px;color:' + (r.val >= targetAsset ? 'var(--green)' : 'var(--text)') + '">' +
+      fmM(r.val) + (r.val >= targetAsset ? ' ✓' : '') + '</span></div>'
+    ).join('');
+  }
+}
+
+// ════════════════════════════════════
+// 📊 分頁8：資產配置回測
+// ════════════════════════════════════
+const BT_CASES = [
+  {label:'A.1', qqq:100,qld:0, cash:0, pledge:false,rebal:0,draw:0, cagr:9.49, mult:10.33,cat:'有收入不提領'},
+  {label:'A.2', qqq:80, qld:10,cash:10,pledge:false,rebal:2,draw:0, cagr:10.43,mult:12.85,cat:'有收入不提領'},
+  {label:'A.3', qqq:60, qld:20,cash:20,pledge:false,rebal:2,draw:0, cagr:11.19,mult:15.36,cat:'有收入不提領'},
+  {label:'A.4', qqq:90, qld:10,cash:0, pledge:false,rebal:0,draw:0, cagr:11.06,mult:14.89,cat:'有收入不提領'},
+  {label:'A.5', qqq:70, qld:20,cash:10,pledge:false,rebal:2,draw:0, cagr:11.18,mult:15.31,cat:'有收入不提領'},
+  {label:'A.6', qqq:80, qld:20,cash:0, pledge:false,rebal:0,draw:0, cagr:12.22,mult:19.45,cat:'有收入不提領'},
+  {label:'B.1', qqq:60, qld:20,cash:20,pledge:false,rebal:0,draw:2, cagr:11.78,mult:16.83,cat:'退休無收入',bankrupt:true},
+  {label:'B.2', qqq:60, qld:20,cash:20,pledge:false,rebal:1,draw:2, cagr:8.47, mult:7.38, cat:'退休無收入'},
+  {label:'B.3', qqq:60, qld:20,cash:20,pledge:false,rebal:2,draw:2, cagr:9.94, mult:10.74,cat:'退休無收入'},
+  {label:'B.4', qqq:40, qld:30,cash:30,pledge:false,rebal:0,draw:2, cagr:12.59,mult:20.46,cat:'退休無收入',bankrupt:true},
+  {label:'B.5', qqq:40, qld:30,cash:30,pledge:false,rebal:1,draw:2, cagr:7.64, mult:5.93, cat:'退休無收入'},
+  {label:'B.6', qqq:40, qld:30,cash:30,pledge:false,rebal:2,draw:2, cagr:10.79,mult:13.26,cat:'退休無收入'},
+  {label:'C.1', qqq:100,qld:0, cash:0, pledge:true, rebal:0,draw:2, cagr:9.38, mult:9.34, cat:'退休質押'},
+  {label:'C.2', qqq:80, qld:10,cash:10,pledge:true, rebal:0,draw:2, cagr:10.70,mult:12.96,cat:'退休質押'},
+  {label:'C.5', qqq:60, qld:20,cash:20,pledge:true, rebal:0,draw:2, cagr:11.71,mult:16.59,cat:'退休質押'},
+  {label:'C.7', qqq:60, qld:20,cash:20,pledge:true, rebal:2,draw:2, cagr:11.12,mult:14.36,cat:'退休質押'},
+  {label:'C.10',qqq:40, qld:30,cash:30,pledge:true, rebal:2,draw:2, cagr:11.79,mult:16.88,cat:'退休質押'},
+  {label:'4-1★',qqq:40, qld:30,cash:30,pledge:true, rebal:2,draw:2, cagr:11.70,mult:16.52,cat:'CLEC 案例'},
+  {label:'5-1', qqq:60, qld:20,cash:20,pledge:true, rebal:2,draw:2, cagr:11.01,mult:14.00,cat:'CLEC 案例'},
+  {label:'X.1', qqq:100,qld:0, cash:0, pledge:false,rebal:0,draw:2, cagr:7.19, mult:5.24, cat:'保守型'},
+  {label:'X.2', qqq:80, qld:0, cash:20,pledge:false,rebal:3,draw:2, cagr:9.55, mult:9.73, cat:'保守型'},
+  {label:'X.3', qqq:60, qld:0, cash:40,pledge:false,rebal:3,draw:2, cagr:9.24, mult:8.99, cat:'保守型'},
+];
+const CAT_COLOR = {
+  '有收入不提領':'var(--blue)',
+  '退休無收入':'var(--amber)',
+  '退休質押':'var(--purple)',
+  'CLEC 案例':'var(--green)',
+  '保守型':'var(--teal)',
+};
+
+function initBacktest(){
+  renderBtCasesTable();
+  calcBacktest();
+}
+
+function updateBtSliders(){
+  const qq = parseInt(document.getElementById('bt-qqq')?.value) || 0;
+  const ql = parseInt(document.getElementById('bt-qld')?.value) || 0;
+  const ca = parseInt(document.getElementById('bt-cash')?.value)|| 0;
+  const el = id => document.getElementById(id);
+  if(el('bt-qqq-lbl'))  el('bt-qqq-lbl').textContent  = qq + '%';
+  if(el('bt-qld-lbl'))  el('bt-qld-lbl').textContent  = ql + '%';
+  if(el('bt-cash-lbl')) el('bt-cash-lbl').textContent = ca + '%';
+  const beta = ((qq*1 + ql*2) / 100).toFixed(2);
+  if(el('bt-beta-val'))  el('bt-beta-val').textContent  = beta;
+  if(el('bt-total-pct')) el('bt-total-pct').textContent = (qq+ql+ca) + '%';
+}
+
+function calcBacktest(){
+  updateBtSliders();
+  const qq  = parseInt(document.getElementById('bt-qqq')?.value)      || 0;
+  const ql  = parseInt(document.getElementById('bt-qld')?.value)      || 0;
+  const ca  = parseInt(document.getElementById('bt-cash')?.value)     || 0;
+  const isPledge = document.getElementById('bt-pledge')?.checked      || false;
+  const draw     = parseFloat(document.getElementById('bt-drawrate')?.value) || 0;
+  const beta     = (qq*1 + ql*2) / 100;
+
+  // 找最接近的案例
+  let best = null, bestDist = 9999;
+  BT_CASES.forEach(c => {
+    const cb   = (c.qqq*1 + c.qld*2) / 100;
+    const dist = Math.abs(cb - beta)*2 + (c.pledge === isPledge ? 0 : 0.8) + Math.abs(c.draw - draw)*0.3;
+    if(dist < bestDist){ bestDist = dist; best = c; }
+  });
+
+  const el = id => document.getElementById(id);
+  saveBacktestSettings();
+  if(best){
+    if(el('bt-r-cagr')) { el('bt-r-cagr').textContent = best.cagr.toFixed(2) + '%'; el('bt-r-cagr').style.color = best.cagr >= 11 ? 'var(--green)' : best.cagr >= 9 ? 'var(--blue)' : 'var(--amber)'; }
+    if(el('bt-r-mult')) { el('bt-r-mult').textContent = best.mult.toFixed(2) + 'x'; }
+    if(el('bt-r-match')){ el('bt-r-match').textContent = best.label; }
+  }
+  // 高亮表格
+  document.querySelectorAll('#bt-cases-tbody tr[data-label]').forEach(tr => {
+    tr.style.background = (best && tr.dataset.label === best.label) ? 'rgba(245,200,66,.1)' : '';
+  });
+}
+
+function renderBtCasesTable(){
+  const tbody = document.getElementById('bt-cases-tbody');
+  if(!tbody) return;
+  const rebalTxt = n => n === 0 ? '無' : n === 1 ? '聰明' : n === 2 ? '無腦' : '原型現金';
+  let lastCat = '';
+  tbody.innerHTML = BT_CASES.map(c => {
+    const beta  = ((c.qqq + c.qld*2) / 100).toFixed(2);
+    const color = CAT_COLOR[c.cat] || 'var(--muted)';
+    let catRow  = '';
+    if(c.cat !== lastCat){
+      lastCat = c.cat;
+      catRow  = '<tr style="background:var(--surface)"><td colspan="10" style="font-size:10px;color:' + color + ';font-family:monospace;padding:5px 11px;letter-spacing:.04em">' + c.cat + '</td></tr>';
+    }
+    const _onclick = 'applyBtCase('+c.qqq+','+c.qld+','+c.cash+','+c.pledge+','+c.draw+')';
+    return catRow + '<tr data-label="' + c.label + '" style="cursor:pointer;user-select:none;transition:.12s" onclick="'+_onclick+'"' + (c.bankrupt ? ' title="注意：歷史回測中出現暴倉"' : '') + '>' +
+      '<td style="font-family:monospace;color:' + (c.label.includes('★') ? 'var(--green)' : 'var(--text)') + '">' + c.label + (c.bankrupt ? ' ⚠' : '') + '</td>' +
+      '<td style="font-size:10px;color:' + color + '">' + c.cat + '</td>' +
+      '<td class="num">' + c.qqq + '%</td><td class="num">' + c.qld + '%</td><td class="num">' + c.cash + '%</td>' +
+      '<td class="num">' + (c.pledge ? '<span style="color:var(--amber)">是</span>' : '否') + '</td>' +
+      '<td class="num">' + rebalTxt(c.rebal) + '</td>' +
+      '<td class="num" style="color:' + (c.cagr >= 11 ? 'var(--green)' : c.cagr >= 9 ? 'var(--blue)' : 'var(--muted)') + '">' + c.cagr.toFixed(2) + '%</td>' +
+      '<td class="num">' + c.mult.toFixed(2) + 'x</td>' +
+      '<td class="num" style="color:var(--amber)">' + beta + '</td></tr>';
+  }).join('');
+}
+
+function applyBtCase(qqq, qld, cash, pledge, draw){
+  const set = (id, v) => { const e = document.getElementById(id); if(e) e.value = v; };
+  set('bt-qqq', qqq); set('bt-qld', qld); set('bt-cash', cash); set('bt-drawrate', draw);
+  const cb = document.getElementById('bt-pledge');
+  if(cb) cb.checked = pledge;
+  updateBtSliders();
+  calcBacktest();
+}
+
+// ════════════════════════════════════
+// 📉 分頁9：QQQ 歷史（xlsx 真實資料）
+// ════════════════════════════════════
+const QQQ_DATA = [{"year": 1999, "event": "科技泡沫起漲", "dif": 79.3, "close": 91.38, "qqq_open": 48.3, "qld_dif": 223.1}, {"year": 2000, "event": "網路泡沫崩盤", "dif": -36.1, "close": 58.38, "qqq_open": 54.38, "qld_dif": -69.7}, {"year": 2001, "event": "911事件", "dif": -33.4, "close": 38.91, "qqq_open": 27.23, "qld_dif": -29.9}, {"year": 2002, "event": "網路泡沫谷底", "dif": -37.4, "close": 24.37, "qqq_open": 19.76, "qld_dif": -46.0}, {"year": 2003, "event": "", "dif": 49.6, "close": 36.46, "qqq_open": 23.32, "qld_dif": 113.9}, {"year": 2004, "event": "", "dif": 9.5, "close": 39.92, "qqq_open": 32.0, "qld_dif": 21.1}, {"year": 2005, "event": "", "dif": 1.2, "close": 40.41, "qqq_open": 34.35, "qld_dif": 20.2}, {"year": 2006, "event": "", "dif": 6.8, "close": 43.16, "qqq_open": 35.54, "qld_dif": 2.6}, {"year": 2007, "event": "", "dif": 18.7, "close": 51.22, "qqq_open": 40.55, "qld_dif": 23.5}, {"year": 2008, "event": "金融海嘯", "dif": -41.9, "close": 29.74, "qqq_open": 25.05, "qld_dif": -60.6}, {"year": 2009, "event": "QE救市", "dif": 53.8, "close": 45.75, "qqq_open": 25.63, "qld_dif": 170.1}, {"year": 2010, "event": "", "dif": 19.0, "close": 54.46, "qqq_open": 41.55, "qld_dif": 46.8}, {"year": 2011, "event": "", "dif": 2.5, "close": 55.83, "qqq_open": 49.93, "qld_dif": -7.3}, {"year": 2012, "event": "", "dif": 16.7, "close": 65.13, "qqq_open": 56.56, "qld_dif": 6.5}, {"year": 2013, "event": "", "dif": 35.1, "close": 87.96, "qqq_open": 65.96, "qld_dif": 70.2}, {"year": 2014, "event": "", "dif": 17.4, "close": 103.25, "qqq_open": 83.28, "qld_dif": 31.1}, {"year": 2015, "event": "", "dif": 8.3, "close": 111.86, "qqq_open": 84.74, "qld_dif": -0.2}, {"year": 2016, "event": "", "dif": 5.9, "close": 118.48, "qqq_open": 94.84, "qld_dif": 34.5}, {"year": 2017, "event": "", "dif": 31.5, "close": 155.76, "qqq_open": 118.89, "qld_dif": 43.4}, {"year": 2018, "event": "", "dif": -1.0, "close": 154.26, "qqq_open": 143.46, "qld_dif": -22.9}, {"year": 2019, "event": "", "dif": 37.8, "close": 212.61, "qqq_open": 149.49, "qld_dif": 48.2}, {"year": 2020, "event": "COVID-19", "dif": 47.6, "close": 313.74, "qqq_open": 164.93, "qld_dif": 104.6}, {"year": 2021, "event": "", "dif": 26.8, "close": 397.85, "qqq_open": 297.45, "qld_dif": 56.5}, {"year": 2022, "event": "FED暴力升息", "dif": -33.1, "close": 266.28, "qqq_open": 254.26, "qld_dif": -46.5}, {"year": 2023, "event": "AI主題反彈", "dif": 53.8, "close": 409.52, "qqq_open": 260.34, "qld_dif": 78.9}, {"year": 2024, "event": "AI持續強勢", "dif": 24.8, "close": 511.23, "qqq_open": 395.34, "qld_dif": 25.8},
+{"year": 2025, "event": "AI+降息預期", "dif": 25.6, "close": 528.77, "qqq_open": 503.0, "qld_dif": 51.2}];
+
+function renderQQQTab(){
+  // 柱狀圖
+  const chartEl  = document.getElementById('qqq-chart');
+  const labelEl  = document.getElementById('qqq-chart-labels');
+  if(chartEl){
+    const maxAbs = Math.max(...QQQ_DATA.map(d => Math.abs(d.dif || 0)));
+    chartEl.innerHTML = QQQ_DATA.map(d => {
+      const h   = Math.round(Math.abs(d.dif || 0) / maxAbs * 110);
+      const pos = (d.dif || 0) >= 0;
+      const tip = d.year + ': ' + (pos ? '+' : '') + (d.dif || 0) + '%' + (d.event ? ' (' + d.event + ')' : '');
+      return '<div title="' + tip + '" style="flex:1;min-width:20px;height:' + h + 'px;background:' +
+             (pos ? 'var(--green)' : 'var(--red)') +
+             ';border-radius:2px 2px 0 0;opacity:.8;cursor:pointer;align-self:flex-end;transition:.2s" ' +
+             '></div>';
+    }).join('');
+  }
+  if(labelEl){
+    labelEl.innerHTML = QQQ_DATA.map(d =>
+      '<div style="flex:1;min-width:20px;font-size:9px;color:var(--dim);text-align:center;font-family:monospace">' +
+      String(d.year).slice(2) + '</div>'
+    ).join('');
+  }
+  // 資料表
+  const tbody = document.getElementById('qqq-tbody');
+  if(tbody){
+    tbody.innerHTML = QQQ_DATA.map(d => {
+      const pos  = (d.dif || 0) >= 0;
+      const qpos = (d.qld_dif || 0) >= 0;
+      return '<tr>' +
+        '<td style="font-family:monospace;color:var(--muted)">' + d.year + '</td>' +
+        '<td class="num">$' + (d.close || '—') + '</td>' +
+        '<td class="num" style="color:' + (pos ? 'var(--green)' : 'var(--red)') + ';font-weight:' + (Math.abs(d.dif||0)>30?'500':'400') + '">' +
+          (pos ? '+' : '') + (d.dif || 0) + '%</td>' +
+        '<td class="num" style="color:' + (qpos ? 'var(--purple)' : 'var(--red)') + '">' +
+          (d.qld_dif != null ? (qpos ? '+' : '') + d.qld_dif + '%' : '—') + '</td>' +
+        '<td><span style="font-size:10px;color:var(--dim)' + (d.event ? ';padding:1px 5px;background:var(--surface2);border-radius:3px' : '') + '">' + (d.event || '') + '</span></td>' +
+      '</tr>';
+    }).join('');
+  }
+}
+
+// ── switchTab 擴充 ──
+const _origSwitchTab = switchTab;
+// switchTab 已在下方重新定義，無需覆蓋
+
+
+// ════════════════════════════════════
+// 💾 新分頁設定的儲存/還原
+// ════════════════════════════════════
+const RT_KEY = 'clec_retire_v1';
+const BT_KEY = 'clec_backtest_v1';
+
+// 退休試算：儲存
+function saveRetireSettings(){
+  const ids = ['rt-age','rt-retire-age','rt-inflation','rt-monthly','rt-pension',
+                'rt-emergency','rt-reserve-yr','rt-current','rt-yearly-add','rt-beta','rt-multiplier'];
+  const data = {};
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) data[id] = el.value;
+  });
+  try{ localStorage.setItem(RT_KEY, JSON.stringify(data)); }catch(e){}
+}
+
+// 退休試算：還原
+function loadRetireSettings(data){
+  if(!data) return;
+  Object.keys(data).forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = data[id];
+  });
+}
+
+// 配置回測：儲存
+function saveBacktestSettings(){
+  const data = {
+    qqq:      document.getElementById('bt-qqq')?.value,
+    qld:      document.getElementById('bt-qld')?.value,
+    cash:     document.getElementById('bt-cash')?.value,
+    pledge:   document.getElementById('bt-pledge')?.checked,
+    drawrate: document.getElementById('bt-drawrate')?.value,
+  };
+  try{ localStorage.setItem(BT_KEY, JSON.stringify(data)); }catch(e){}
+}
+
+// 配置回測：還原
+function loadBacktestSettings(data){
+  if(!data) return;
+  const set = (id, v) => { const el=document.getElementById(id); if(el) el.value=v; };
+  if(data.qqq      != null) set('bt-qqq',      data.qqq);
+  if(data.qld      != null) set('bt-qld',      data.qld);
+  if(data.cash     != null) set('bt-cash',     data.cash);
+  if(data.drawrate != null) set('bt-drawrate', data.drawrate);
+  if(data.pledge   != null){
+    const cb = document.getElementById('bt-pledge');
+    if(cb) cb.checked = data.pledge;
+  }
+}
+
+// 頁面載入時還原新分頁設定
+(()=>{
+  try{
+    const rt = localStorage.getItem(RT_KEY);
+    if(rt) loadRetireSettings(JSON.parse(rt));
+  }catch(e){}
+  try{
+    const bt = localStorage.getItem(BT_KEY);
+    if(bt) loadBacktestSettings(JSON.parse(bt));
+  }catch(e){}
+})();
+
+
+
+// ════════════════════════════════════════════════
+// ⚡ 即時股價自動抓取 v4
+// 使用 Anthropic Claude API（內嵌）查詢股價
+// 解決 file:// 協議下 fetch 被瀏覽器封鎖的問題
+// ════════════════════════════════════════════════
+
+const TPEX_TICKERS = ['00675L','00631L','00670L','00865B'];
+
+async function fetchAllPrices(fromPanel = false){
+  const icon  = document.getElementById('auto-fetch-icon');
+  const btnH  = document.getElementById('btn-auto-fetch');
+  const btnP  = document.querySelector('[onclick="fetchAllPrices(true)"]');
+
+  const setStatus = (msg, color='var(--muted)') => {
+    ['fetch-status','price-update-status'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){ el.textContent=msg; el.style.color=color; }
+    });
+  };
+
+  if(icon) icon.textContent='⏳';
+  if(btnH) btnH.disabled=true;
+  if(btnP) btnP.disabled=true;
+  setStatus('⏳ 呼叫 Claude API 查詢股價…');
+
+  // 組合查詢清單
+  const twList = TW_TICKERS.join(',');
+  const usList = US_TICKERS.join(',');
+  const prompt = `請查詢以下股票的最新收盤價（台股NT$，美股USD），僅回傳 JSON，格式：
+{"prices":{"00662":102.5,"2330":850,...,"QQQM":480,...}}
+不要加說明文字，不要 markdown。
+台股代碼：${twList}
+美股代碼：${usList}`;
+
+  try{
+    // 只封鎖 file:// 協議（本機直接開啟），http/https 都允許
+    if(location.protocol === 'file:'){
+      setStatus('⚠️ 請用 http://localhost:8080 開啟，不要直接點 .html 檔案','var(--amber)');
+      if(icon) icon.textContent='⚡';
+      if(btnH) btnH.disabled=false;
+      if(btnP) btnP.disabled=false;
+      return;
+    }
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    if(!resp.ok){
+      const err=await resp.text();
+      throw new Error('API '+resp.status+': '+err.slice(0,100));
+    }
+
+    const data = await resp.json();
+    // 找 text 回應
+    const textBlock = data.content?.find(b=>b.type==='text');
+    if(!textBlock) throw new Error('No text in response');
+
+    // 解析 JSON（容錯：移除 markdown 包裝）
+    let raw = textBlock.text.trim();
+    raw = raw.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
+    const parsed = JSON.parse(raw);
+    const priceMap = parsed.prices || parsed;
+
+    let ok=0, fail=0;
+    Object.entries(priceMap).forEach(([ticker,price])=>{
+      const p = parseFloat(price);
+      if(!isNaN(p) && p>0){
+        const isUS = US_TICKERS.includes(ticker);
+        priceCache[ticker] = isUS ? Math.round(p*FX*100)/100 : p;
+        ok++;
+      } else { fail++; }
+    });
+
+    // 儲存
+    try{ localStorage.setItem(PRICE_KEY, JSON.stringify(priceCache)); }catch(e){}
+    const now = new Date().toLocaleString('zh-TW');
+    try{ localStorage.setItem('clec_price_updated', now); }catch(e){}
+    const el2=document.getElementById('price-last-update');
+    if(el2) el2.textContent='最後更新：'+now;
+
+    recalcHoldings();
+    renderOverview(curScen||'base');
+    renderHoldings();
+    renderCashflow();
+    if(fromPanel) openPricePanel();
+
+    const msg = fail===0
+      ? `✓ 已更新 ${ok} 支股票（${now}）`
+      : `✓ ${ok} 支成功 ✗ ${fail} 支失敗`;
+    setStatus(msg, fail===0?'var(--green)':'var(--amber)');
+    console.log('[fetchAllPrices done]',{ok,fail,priceMap});
+
+  }catch(err){
+    console.error('[fetchAllPrices error]', err);
+    setStatus('✗ 失敗：'+err.message+'（請確認網路連線）','var(--red)');
+  }
+
+  if(icon) icon.textContent='⚡';
+  if(btnH) btnH.disabled=false;
+  if(btnP) btnP.disabled=false;
+}
+
+
+
+
+function togglePastePanel(){
+  const p = document.getElementById('paste-panel');
+  if(p) p.style.display = p.style.display==='none' ? 'block' : 'none';
+}
+
+function applyPriceJSON(){
+  const raw = document.getElementById('price-json-input')?.value?.trim();
+  const statusEl = document.getElementById('paste-status');
+  const setS = (msg,color) => { if(statusEl){ statusEl.textContent=msg; statusEl.style.color=color; } };
+  if(!raw){ setS('請先貼上 JSON','var(--red)'); return; }
+  try{
+    let parsed = JSON.parse(raw.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim());
+    // 支援 {"prices":{...}} 或直接 {"00662":102,...}
+    const priceMap = parsed.prices || parsed;
+    let ok=0, skip=0;
+    Object.entries(priceMap).forEach(([ticker, price])=>{
+      const p = parseFloat(price);
+      if(!isNaN(p) && p > 0){
+        const isUS = US_TICKERS.includes(ticker);
+        priceCache[ticker] = isUS ? Math.round(p * FX * 100)/100 : p;
+        ok++;
+      } else skip++;
+    });
+    try{ localStorage.setItem(PRICE_KEY, JSON.stringify(priceCache)); }catch(e){}
+    const now = new Date().toLocaleString('zh-TW');
+    try{ localStorage.setItem('clec_price_updated', now); }catch(e){}
+    const el2 = document.getElementById('price-last-update');
+    if(el2) el2.textContent = '最後更新：' + now;
+    recalcHoldings();
+    renderOverview(curScen||'base');
+    renderHoldings();
+    renderCashflow();
+    openPricePanel();
+    setS('✓ 已套用 '+ok+' 支股價', 'var(--green)');
+    // 同步顯示到 fetch-status
+    const fs = document.getElementById('fetch-status');
+    if(fs){ fs.textContent='✓ 已套用 '+ok+' 支股價（'+now+'）'; fs.style.color='var(--green)'; }
+    const pu = document.getElementById('price-update-status');
+    if(pu){ pu.textContent='✓ 已套用 '+ok+' 支股價（'+now+'）'; pu.style.color='var(--green)'; }
+  }catch(err){
+    setS('JSON 格式錯誤：'+err.message, 'var(--red)');
+  }
+}
+
+
+// ══════════════════════════════════════════
+// 💡 負債動態計算（問題6 + 問題3 + 問題4）
+// ══════════════════════════════════════════
+function calcMonthlyPayment(bal10k, rateAnnual, yrs, type){
+  const bal = bal10k * 10000;
+  const r = rateAnnual / 100 / 12;
+  const n = yrs * 12;
+  if(type === 'io') return Math.round(bal * r);
+  if(r === 0) return Math.round(bal / n);
+  return Math.round(bal * (r * Math.pow(1+r,n)) / (Math.pow(1+r,n) - 1));
+}
+
+function getDebtInputs(){
+  const g = id => parseFloat(document.getElementById(id)?.value) || 0;
+  const gStr = id => document.getElementById(id)?.value || 'amort';
+  return {
+    m1: { bal: g('di-m1-bal'), rate: g('di-m1-rate'), yrs: g('di-m1-yrs'), type: gStr('di-m1-type') },
+    m2: { bal: g('di-m2-bal'), rate: g('di-m2-rate'), yrs: g('di-m2-yrs'), type: gStr('di-m2-type') },
+    m3: { bal: g('di-m3-bal'), rate: g('di-m3-rate'), yrs: g('di-m3-yrs'), type: gStr('di-m3-type') },
+  };
+}
+
+function onDebtInputChange(){
+  const d = getDebtInputs();
+  // 更新各卡片顯示
+  ['m1','m2','m3'].forEach(k => {
+    const v = d[k];
+    const valEl = document.getElementById(`di-${k}-val`);
+    const subEl = document.getElementById(`di-${k}-sub`);
+    if(valEl) valEl.textContent = `NT$${v.bal.toLocaleString()}萬`;
+    if(subEl){
+      const mp = calcMonthlyPayment(v.bal, v.rate, v.yrs, v.type);
+      const typeLabel = v.type==='io' ? '只付息' : '等額攤還';
+      subEl.textContent = `月付 NT$${mp.toLocaleString()}（${typeLabel}）`;
+    }
+  });
+
+  // 存入 debtCache（供其他分頁讀取）
+  Object.assign(debtCache, { m1: d.m1, m2: d.m2, m3: d.m3 });
+  saveDebtCache();
+
+  // 重新計算 debtTotal 並更新總覽、年度彙總
+  recalcDebtTotals();
+  renderCashflow();
+  renderOverview(curScen||'base');
+  // 同步質押頁負債現況
+  if(document.getElementById('tab-pledge')?.classList.contains('active')) initPledge();
+}
+
+// 動態 debtTotal（優先用 debtCache 裡的 m1/m2/m3）
+function debtTotalDynamic(y){
+  const d = debtCache;
+  let total = 0;
+
+  // m1：等額或只付息
+  if(d.m1){
+    const { bal, rate, yrs, type } = d.m1;
+    const r = rate/100/12; const n = yrs*12; const p = bal*10000;
+    if(type === 'io'){
+      total += p; // 只付息本金不變
+    } else {
+      const mp = r>0 ? p*(r*(1+r)**n)/((1+r)**n-1) : p/n;
+      const mo = y*12;
+      total += Math.max(0, Math.round(p*(1+r)**mo - mp*((1+r)**mo-1)/(r||1e-10)));
+    }
+  } else { total += debtTotal_m1(y); }
+
+  // m2：只付息（餘額不變）
+  if(d.m2){ total += d.m2.bal * 10000; }
+  else { total += 4000000; }
+
+  // m3：等額
+  if(d.m3){
+    const { bal, rate, yrs, type } = d.m3;
+    const r = rate/100/12; const n = yrs*12; const p = bal*10000;
+    if(type === 'io'){
+      total += p;
+    } else {
+      const mp = r>0 ? p*(r*(1+r)**n)/((1+r)**n-1) : p/n;
+      const mo = y*12;
+      total += Math.max(0, Math.round(p*(1+r)**mo - mp*((1+r)**mo-1)/(r||1e-10)));
+    }
+  } else { total += debtTotal_m3(y); }
+
+  // 質押（從 debtCache 讀）
+  total += (debtCache.pledgeLoan || 1500000);
+  return Math.round(total);
+}
+
+// 保留原始 m1/m3 計算（做備用）
+function debtTotal_m1(y){
+  const r=0.023/12,n=26*12,p=13000000,mo=y*12;
+  const mp=p*(r*(1+r)**n)/((1+r)**n-1);
+  return Math.max(0,Math.round(p*(1+r)**mo-mp*((1+r)**mo-1)/r));
+}
+function debtTotal_m3(y){
+  const r=0.024/12,n=6*12,p=3200000,mo=y*12;
+  const mp=p*(r*(1+r)**n)/((1+r)**n-1);
+  return Math.max(0,Math.round(p*(1+r)**mo-mp*((1+r)**mo-1)/r));
+}
+
+function recalcDebtTotals(){
+  DEBTS = Array.from({length:OVERVIEW_YEARS+1},(_,y)=>debtTotalDynamic(y));
+}
+
+// 頁面初始化時讀取 debtCache 裡的 m1/m2/m3 並還原輸入欄
+function initDebtInputs(){
+  const d = debtCache;
+  if(!d.m1 && !d.m2 && !d.m3) return; // 使用預設值
+  const set = (id, v) => { const el=document.getElementById(id); if(el) el.value=v; };
+  if(d.m1){ set('di-m1-bal',d.m1.bal); set('di-m1-rate',d.m1.rate); set('di-m1-yrs',d.m1.yrs); set('di-m1-type',d.m1.type); }
+  if(d.m2){ set('di-m2-bal',d.m2.bal); set('di-m2-rate',d.m2.rate); set('di-m2-yrs',d.m2.yrs); set('di-m2-type',d.m2.type); }
+  if(d.m3){ set('di-m3-bal',d.m3.bal); set('di-m3-rate',d.m3.rate); set('di-m3-yrs',d.m3.yrs); set('di-m3-type',d.m3.type); }
+  onDebtInputChange(); // 刷新顯示
+}
+
+const ETF662_DATA = [
+  {year:2007,close:52.98,open:null,dif:0.0,hasDif:false,event:"上市首年(12/21上市)"},
+  {year:2008,close:22.9,open:53.0,dif:-56.8,hasDif:true,event:"金融海嘯"},
+  {year:2009,close:42.08,open:22.35,dif:88.3,hasDif:true,event:"QE救市"},
+  {year:2010,close:48.6,open:42.55,dif:14.2,hasDif:true,event:"復甦"},
+  {year:2011,close:41.6,open:49.55,dif:-16.0,hasDif:true,event:"歐債危機"},
+  {year:2012,close:52.9,open:41.5,dif:27.5,hasDif:true,event:""},
+  {year:2013,close:72.5,open:53.1,dif:36.5,hasDif:true,event:""},
+  {year:2014,close:87.05,open:73.8,dif:18.0,hasDif:true,event:""},
+  {year:2015,close:76.8,open:88.5,dif:-13.2,hasDif:true,event:""},
+  {year:2016,close:82.9,open:74.5,dif:11.3,hasDif:true,event:""},
+  {year:2017,close:103.5,open:83.3,dif:24.2,hasDif:true,event:""},
+  {year:2018,close:87.9,open:105.0,dif:-16.3,hasDif:true,event:"升息縮表"},
+  {year:2019,close:132.0,open:87.3,dif:51.2,hasDif:true,event:""},
+  {year:2020,close:155.0,open:134.0,dif:15.7,hasDif:true,event:"COVID反彈"},
+  {year:2021,close:200.0,open:155.5,dif:28.6,hasDif:true,event:"科技大漲"},
+  {year:2022,close:133.0,open:202.0,dif:-34.2,hasDif:true,event:"FED暴力升息"},
+  {year:2023,close:190.0,open:131.5,dif:44.5,hasDif:true,event:"AI主題反彈"},
+  {year:2024,close:234.5,open:192.0,dif:22.1,hasDif:true,event:"AI持續強勢"},
+  {year:2025,close:295.0,open:232.5,dif:26.9,hasDif:true,event:"AI+降息預期"}
+];
+
+// ── 問題2：00662 歷史渲染 ──
+function renderETF662Tab(){
+  const chartEl  = document.getElementById('etf662-chart');
+  const labelEl  = document.getElementById('etf662-labels');
+  const tbody    = document.getElementById('etf662-tbody');
+  if(!chartEl) return;
+
+  const data = ETF662_DATA.filter(d => d.hasDif);
+  const maxAbs = Math.max(...data.map(d => Math.abs(d.dif)));
+
+  chartEl.innerHTML = ETF662_DATA.map(d => {
+    if(!d.hasDif) return '<div style="flex:1;min-width:22px"></div>';
+    const h   = Math.round(Math.abs(d.dif) / maxAbs * 110);
+    const pos = d.dif >= 0;
+    const tip = d.year + ': ' + (pos?'+':'') + d.dif + '%' + (d.event ? ' ('+d.event+')' : '');
+    return '<div title="' + tip + '" style="flex:1;min-width:22px;height:' + h + 'px;background:' +
+           (pos ? 'var(--green)' : 'var(--red)') +
+           ';border-radius:2px 2px 0 0;opacity:.8;cursor:pointer;align-self:flex-end;transition:.15s"></div>';
+  }).join('');
+
+  if(labelEl){
+    labelEl.innerHTML = ETF662_DATA.map(d =>
+      '<div style="flex:1;min-width:22px;font-size:9px;color:var(--dim);text-align:center;font-family:monospace">' +
+      String(d.year).slice(2) + '</div>'
+    ).join('');
+  }
+
+  if(tbody){
+    tbody.innerHTML = ETF662_DATA.map(d => {
+      const pos = d.dif >= 0;
+      return '<tr>' +
+        '<td style="font-family:monospace;color:var(--muted)">' + d.year + '</td>' +
+        '<td class="num">NT$' + d.close + '</td>' +
+        '<td class="num" style="color:var(--dim);font-size:10px">' + (d.open ? 'NT$'+d.open : '—') + '</td>' +
+        '<td class="num" style="color:' + (d.hasDif ? (pos?'var(--green)':'var(--red)') : 'var(--dim)') + ';font-weight:' + (Math.abs(d.dif)>30?'500':'400') + '">' +
+          (d.hasDif ? (pos?'+':'') + d.dif + '%' : '—') + '</td>' +
+        '<td><span style="font-size:10px;color:var(--dim)' + (d.event?';padding:1px 5px;background:var(--surface2);border-radius:3px':'') + '">' + d.event + '</span></td>' +
+      '</tr>';
+    }).join('');
+  }
+}
+
+// ── 問題5：新增資金分配面板 ──
+function toggleAllocPanel(){
+  const p = document.getElementById('rb-alloc-panel');
+  if(p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── _renderRebalanceUI 的分配同步 ──
+// 讀取手動分配值並顯示總計
+function updateAllocSum(allocCore, allocSat, allocCash, newFunds){
+  const sumEl = document.getElementById('rb-alloc-sum');
+  if(!sumEl) return;
+  const g = id => (parseFloat(document.getElementById(id)?.value)||0) * 10000;
+  const manCore = g('rb-alloc-core');
+  const manSat  = g('rb-alloc-sat');
+  const manCash = g('rb-alloc-cash');
+  const manTotal = manCore + manSat + manCash;
+  const diff = newFunds - manTotal;
+  const fmtI = v => 'NT$' + Math.round(v/10000) + '萬';
+  sumEl.innerHTML = '分配合計 ' + fmtI(manTotal) + ' / 新增資金 ' + fmtI(newFunds) +
+    (Math.abs(diff) > 1000 ?
+      ' <span style="color:var(--red)">尚有 ' + fmtI(Math.abs(diff)) + (diff>0?' 未分配':' 超額') + '</span>' :
+      ' <span style="color:var(--green)">✓ 分配完畢</span>');
+}
+
+
+// ══════════════════════════════════════════
+// 💰 再平衡：新增資金 + 手動分配連動
+// ══════════════════════════════════════════
+function onNewFundsChange(){
+  renderRebalance();
+  const panel = document.getElementById('rb-alloc-panel');
+  if(!panel || panel.style.display==='none') return;
+  const d = _calcRebalance('rb');
+  const g = id => parseFloat(document.getElementById(id)?.value)||0;
+  if(g('rb-alloc-core')===0 && g('rb-alloc-sat')===0 && g('rb-alloc-cash')===0){
+    const set = (id,v) => { const el=document.getElementById(id); if(el) el.value=v>0?Math.round(v/10000):0; };
+    set('rb-alloc-core', d.allocCore);
+    set('rb-alloc-sat',  d.allocSat);
+    set('rb-alloc-cash', d.allocCash);
+    updateAllocSum(d.allocCore, d.allocSat, d.allocCash, d.newFunds);
+  }
+}
+
+function resetAllocInputs(){
+  ['rb-alloc-core','rb-alloc-sat','rb-alloc-cash'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value=0;
+  });
+  renderRebalance();
+}
+
+
+// ══════════════════════════════════════════
+// 📊 負債逐年精算：動態渲染（隨 OVERVIEW_YEARS 切換）
+// ══════════════════════════════════════════
+function renderDebtTable(){
+  const years = OVERVIEW_YEARS;
+  const headEl = document.getElementById('debt-dyn-head');
+  const bodyEl = document.getElementById('debt-dyn-body');
+  if(!headEl || !bodyEl) return;
+
+  // 取得負債輸入（優先用 debtCache）
+  const dc = debtCache;
+  const m1 = dc.m1 || {bal:1300, rate:2.3, yrs:26, type:'amort'};
+  const m2 = dc.m2 || {bal:400,  rate:2.95,yrs:4,  type:'io'};
+  const m3 = dc.m3 || {bal:320,  rate:2.4, yrs:6,  type:'amort'};
+  const pledge = dc.pledgeLoan || 1500000;
+
+  // 計算各年餘額
+  function balAmort(p0, rAnn, n, y){
+    const p=p0*10000, r=rAnn/100/12, mo=y*12, nt=n*12;
+    if(r===0) return Math.max(0, p - p/nt*mo);
+    const mp=p*(r*(1+r)**nt)/((1+r)**nt-1);
+    return Math.max(0, Math.round(p*(1+r)**mo - mp*((1+r)**mo-1)/r));
+  }
+
+  // 表頭：顯示里程碑年份（避免太多欄）
+  // 選年份：0,5,10,15,20,25,30（最多7欄）+ 負債最小的年
+  const colYrs = [];
+  for(let y=0; y<=years; y++){
+    if(y===0||y===5||y===10||y===15||y===20||y===25||y===30||y===years) {
+      if(!colYrs.includes(y) && y<=years) colYrs.push(y);
+    }
+  }
+  colYrs.sort((a,b)=>a-b);
+
+  headEl.innerHTML = '<tr><th>負債項目</th>' +
+    colYrs.map(y=>`<th class="yr-head" style="${y===years?'background:rgba(74,222,154,.06)':''}">${2026+y}${y===years?' ★':''}</th>`).join('') +
+    '<th>備註</th></tr>';
+
+  // 計算各年數據
+  const rows = [
+    { label:'分期房貸', fn: y => m1.type==='io' ? m1.bal*10000 : balAmort(m1.bal,m1.rate,m1.yrs,y),
+      note: ()=>`${m1.type==='amort'?'等額攤還':'只付息'} ${m1.rate}% ${m1.yrs}年 月付NT$${calcMonthlyPayment(m1.bal,m1.rate,m1.yrs,m1.type).toLocaleString()}` },
+    { label:'理財房貸', fn: y => m2.type==='io' ? m2.bal*10000 : balAmort(m2.bal,m2.rate,m2.yrs,y),
+      note: ()=>`${m2.type==='amort'?'等額攤還':'只付息'} ${m2.rate}% 月付NT$${calcMonthlyPayment(m2.bal,m2.rate,m2.yrs,m2.type).toLocaleString()}` },
+    { label:'信貸',     fn: y => m3.type==='io' ? m3.bal*10000 : balAmort(m3.bal,m3.rate,m3.yrs,y),
+      note: ()=>`${m3.type==='amort'?'等額攤還':'只付息'} ${m3.rate}% ${m3.yrs}年 月付NT$${calcMonthlyPayment(m3.bal,m3.rate,m3.yrs,m3.type).toLocaleString()}` },
+    { label:'元大質押', fn: y => pledge, note: ()=>'只付息，維持質押' },
+  ];
+
+  bodyEl.innerHTML = rows.map(row => {
+    const cells = colYrs.map(y => {
+      const v = row.fn(y);
+      const cls = v<=0 ? 'num zero' : 'num';
+      return `<td class="${cls}" style="${y===years?'background:rgba(74,222,154,.06)':''}">${v<=0?'還清':'NT$'+(v/10000).toFixed(0)+'萬'}</td>`;
+    }).join('');
+    return `<tr><td>${row.label}</td>${cells}<td class="sug">${row.note()}</td></tr>`;
+  }).join('') +
+  // 合計行
+  (() => {
+    const totCells = colYrs.map(y => {
+      const tot = rows.reduce((s,r)=>s+r.fn(y),0);
+      return `<td class="num total-debt" style="${y===years?'background:rgba(74,222,154,.06)':''}">${(tot/10000).toFixed(0)}萬</td>`;
+    }).join('');
+    return `<tr class="subtotal"><td style="color:var(--text)">合計負債</td>${totCells}<td></td></tr>`;
+  })();
+}
+
 // 初始化
+initDebtInputs();
 renderOverview('base');
 renderHoldings();
 renderCashflow();
@@ -2268,4 +3829,4 @@ initDebtInputs();
 })();
 </script>
 </body>
-</html>
+</html> 
