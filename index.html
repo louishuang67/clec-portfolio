@@ -3371,12 +3371,34 @@ function loadBacktestSettings(data){
 
 
 // ════════════════════════════════════════════════
-// ⚡ 即時股價自動抓取 v4
-// 使用 Anthropic Claude API（內嵌）查詢股價
-// 解決 file:// 協議下 fetch 被瀏覽器封鎖的問題
+// ⚡ 即時股價自動抓取 v5
+// 使用 Yahoo Finance API（免費，無需 Key）
+// CORS Proxy 雙備援：corsproxy.io → allorigins
 // ════════════════════════════════════════════════
 
 const TPEX_TICKERS = ['00675L','00631L','00670L','00865B'];
+
+async function fetchWithProxy(url) {
+  const proxies = [
+    u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+    u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+  ];
+  let lastErr;
+  for (const makeUrl of proxies) {
+    try {
+      const resp = await fetch(makeUrl(url), { signal: AbortSignal.timeout(10000) });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const text = await resp.text();
+      // allorigins 把結果包在 { contents: "..." }
+      try {
+        const j = JSON.parse(text);
+        if (j.contents !== undefined) return JSON.parse(j.contents);
+        return j;
+      } catch { return JSON.parse(text); }
+    } catch(e) { lastErr = e; }
+  }
+  throw lastErr;
+}
 
 async function fetchAllPrices(fromPanel = false){
   const icon  = document.getElementById('auto-fetch-icon');
@@ -3393,63 +3415,34 @@ async function fetchAllPrices(fromPanel = false){
   if(icon) icon.textContent='⏳';
   if(btnH) btnH.disabled=true;
   if(btnP) btnP.disabled=true;
-  setStatus('⏳ 呼叫 Claude API 查詢股價…');
-
-  // 組合查詢清單
-  const twList = TW_TICKERS.join(',');
-  const usList = US_TICKERS.join(',');
-  const prompt = `請查詢以下股票的最新收盤價（台股NT$，美股USD），僅回傳 JSON，格式：
-{"prices":{"00662":102.5,"2330":850,...,"QQQM":480,...}}
-不要加說明文字，不要 markdown。
-台股代碼：${twList}
-美股代碼：${usList}`;
+  setStatus('⏳ 連線 Yahoo Finance 查詢股價…');
 
   try{
-    // 只封鎖 file:// 協議（本機直接開啟），http/https 都允許
-    if(location.protocol === 'file:'){
-      setStatus('⚠️ 請用 http://localhost:8080 開啟，不要直接點 .html 檔案','var(--amber)');
-      if(icon) icon.textContent='⚡';
-      if(btnH) btnH.disabled=false;
-      if(btnP) btnP.disabled=false;
-      return;
-    }
+    // 台股加 .TW 後綴，美股直接使用
+    const allSymbols = [
+      ...TW_TICKERS.map(t => t + '.TW'),
+      ...US_TICKERS
+    ];
 
-    const resp = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        tools:[{type:'web_search_20250305',name:'web_search'}],
-        messages:[{role:'user',content:prompt}]
-      })
-    });
+    const yahooUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${allSymbols.join(',')}`;
+    const data = await fetchWithProxy(yahooUrl);
 
-    if(!resp.ok){
-      const err=await resp.text();
-      throw new Error('API '+resp.status+': '+err.slice(0,100));
-    }
-
-    const data = await resp.json();
-    // 找 text 回應
-    const textBlock = data.content?.find(b=>b.type==='text');
-    if(!textBlock) throw new Error('No text in response');
-
-    // 解析 JSON（容錯：移除 markdown 包裝）
-    let raw = textBlock.text.trim();
-    raw = raw.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
-    const parsed = JSON.parse(raw);
-    const priceMap = parsed.prices || parsed;
+    const quotes = data?.quoteResponse?.result || [];
+    if(quotes.length === 0) throw new Error('Yahoo Finance 未回傳報價，請稍後再試');
 
     let ok=0, fail=0;
-    Object.entries(priceMap).forEach(([ticker,price])=>{
-      const p = parseFloat(price);
-      if(!isNaN(p) && p>0){
-        const isUS = US_TICKERS.includes(ticker);
-        priceCache[ticker] = isUS ? Math.round(p*FX*100)/100 : p;
-        ok++;
-      } else { fail++; }
+    quotes.forEach(q => {
+      const price = q.regularMarketPrice;
+      if(!price || isNaN(price)){ fail++; return; }
+      // 還原原始代碼（移除 .TW 後綴）
+      const ticker = q.symbol.endsWith('.TW') ? q.symbol.slice(0,-3) : q.symbol;
+      const isUS = US_TICKERS.includes(ticker);
+      priceCache[ticker] = isUS ? Math.round(price * FX * 100) / 100 : price;
+      ok++;
     });
+
+    // 計算未取得的代碼數
+    fail = (TW_TICKERS.length + US_TICKERS.length) - ok;
 
     // 儲存
     try{ localStorage.setItem(PRICE_KEY, JSON.stringify(priceCache)); }catch(e){}
@@ -3468,11 +3461,11 @@ async function fetchAllPrices(fromPanel = false){
       ? `✓ 已更新 ${ok} 支股票（${now}）`
       : `✓ ${ok} 支成功 ✗ ${fail} 支失敗`;
     setStatus(msg, fail===0?'var(--green)':'var(--amber)');
-    console.log('[fetchAllPrices done]',{ok,fail,priceMap});
+    console.log('[fetchAllPrices done]',{ok,fail});
 
   }catch(err){
     console.error('[fetchAllPrices error]', err);
-    setStatus('✗ 失敗：'+err.message+'（請確認網路連線）','var(--red)');
+    setStatus('✗ 失敗：'+err.message,'var(--red)');
   }
 
   if(icon) icon.textContent='⚡';
