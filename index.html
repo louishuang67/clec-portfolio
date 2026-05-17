@@ -3371,47 +3371,12 @@ function loadBacktestSettings(data){
 
 
 // ════════════════════════════════════════════════
-// ⚡ 即時股價自動抓取 v8
-// 台股：TWSE OpenAPI（openapi.twse.com.tw，官方開放 CORS）
-// 美股：Yahoo Finance v8 直連（若 CORS 封鎖則顯示部分成功）
+// ⚡ 即時股價自動抓取 v9
+// 讀取同網域的 prices.json（由 GitHub Actions 每日更新）
+// 完全不需要 CORS，100% 可靠
 // ════════════════════════════════════════════════
 
 const TPEX_TICKERS = ['00675L','00631L','00670L','00865B'];
-
-// ── 台股：TWSE OpenAPI（官方開發者 API，CORS enabled）──
-async function fetchTwPrices() {
-  const resp = await fetch(
-    'https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_AVG_ALL',
-    { signal: AbortSignal.timeout(15000) }
-  );
-  if (!resp.ok) throw new Error('TWSE OpenAPI HTTP ' + resp.status);
-  const all = await resp.json();
-  const set  = new Set(TW_TICKERS);
-  const prices = {};
-  all.forEach(item => {
-    if (!set.has(item.Code)) return;
-    const price = parseFloat(item.ClosingPrice);
-    if (price > 0) prices[item.Code] = price;
-  });
-  return prices;
-}
-
-// ── 美股：Yahoo Finance v8 直連（不走 proxy，CORS 可能擋）──
-async function fetchOneUsPrice(ticker) {
-  try {
-    const resp = await fetch(
-      `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`,
-      { signal: AbortSignal.timeout(10000) }
-    );
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const d = await resp.json();
-    const price = d?.chart?.result?.[0]?.meta?.regularMarketPrice;
-    if (!price || isNaN(price)) throw new Error('no price');
-    return { ticker, price, ok: true };
-  } catch(e) {
-    return { ticker, price: null, ok: false };
-  }
-}
 
 async function fetchAllPrices(fromPanel = false){
   const icon  = document.getElementById('auto-fetch-icon');
@@ -3428,39 +3393,36 @@ async function fetchAllPrices(fromPanel = false){
   if(icon) icon.textContent='⏳';
   if(btnH) btnH.disabled=true;
   if(btnP) btnP.disabled=true;
-  setStatus('⏳ 查詢股價中…');
-
-  let ok = 0, fail = 0;
+  setStatus('⏳ 載入股價資料…');
 
   try {
-    // 台股 + 美股 同時發出
-    const [twPrices, usResults] = await Promise.all([
-      fetchTwPrices(),
-      Promise.all(US_TICKERS.map(fetchOneUsPrice))
-    ]);
+    // 讀同網域的 prices.json（GitHub Actions 每日自動更新）
+    const resp = await fetch('./prices.json?t=' + Date.now(),
+      { signal: AbortSignal.timeout(10000) }
+    );
+    if (!resp.ok) throw new Error('prices.json 尚未產生，請等 GitHub Actions 執行完畢');
+    const data = await resp.json();
+    const priceMap = data.prices || {};
+    const updatedAt = data.updated || '';
 
-    // 寫入台股
-    TW_TICKERS.forEach(t => {
-      if (twPrices[t]) { priceCache[t] = twPrices[t]; ok++; }
-      else fail++;
-    });
-
-    // 寫入美股
-    usResults.forEach(({ ticker, price, ok: isOk }) => {
-      if (isOk && price > 0) {
-        priceCache[ticker] = Math.round(price * FX * 100) / 100;
+    let ok = 0, fail = 0;
+    [...TW_TICKERS, ...US_TICKERS].forEach(ticker => {
+      const raw = priceMap[ticker];
+      if (raw && !isNaN(raw) && raw > 0) {
+        const isUS = US_TICKERS.includes(ticker);
+        priceCache[ticker] = isUS ? Math.round(raw * FX * 100) / 100 : raw;
         ok++;
       } else { fail++; }
     });
 
-    if (ok === 0) throw new Error('未取得任何報價，請稍後再試');
+    if (ok === 0) throw new Error('prices.json 內無有效資料');
 
     // 儲存
     try{ localStorage.setItem(PRICE_KEY, JSON.stringify(priceCache)); }catch(e){}
     const now = new Date().toLocaleString('zh-TW');
     try{ localStorage.setItem('clec_price_updated', now); }catch(e){}
     const el2 = document.getElementById('price-last-update');
-    if (el2) el2.textContent = '最後更新：' + now;
+    if (el2) el2.textContent = `最後更新：${now}（資料日期：${updatedAt}）`;
 
     recalcHoldings();
     renderOverview(curScen||'base');
@@ -3468,18 +3430,14 @@ async function fetchAllPrices(fromPanel = false){
     renderCashflow();
     if (fromPanel) openPricePanel();
 
-    const usFail = usResults.filter(r => !r.ok).map(r => r.ticker).join(', ');
     const msg = fail === 0
-      ? `✓ 已更新 ${ok} 支股票（${now}）`
-      : usFail
-        ? `✓ 台股 ${Object.keys(twPrices).length} 支 OK，美股 ${usFail} 需手動更新`
-        : `✓ ${ok} 支成功 ✗ ${fail} 支失敗`;
+      ? `✓ 已更新 ${ok} 支股票（${updatedAt}）`
+      : `✓ ${ok} 支成功 ✗ ${fail} 支無資料`;
     setStatus(msg, fail === 0 ? 'var(--green)' : 'var(--amber)');
-    console.log('[fetchAllPrices done]', { ok, fail, twPrices, usResults });
 
   } catch(err) {
     console.error('[fetchAllPrices error]', err);
-    setStatus('✗ 失敗：' + err.message, 'var(--red)');
+    setStatus('✗ ' + err.message, 'var(--red)');
   }
 
   if(icon) icon.textContent='⚡';
