@@ -24,9 +24,9 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-seri
 .header-left h1{font-family:'Fraunces',serif;font-weight:700;font-size:23px;color:var(--text);letter-spacing:-.3px}
 .header-left .sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
 .kpi-row{display:flex;gap:8px;flex-wrap:wrap}
-.kpi{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:8px 14px;text-align:right;min-width:114px}
+.kpi{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px 18px;text-align:right;min-width:130px}
 .kpi-label{font-size:10px;color:var(--muted);letter-spacing:.05em;margin-bottom:1px}
-.kpi-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:500}
+.kpi-val{font-family:'DM Mono',monospace;font-size:17px;font-weight:500}
 .kpi-sub{font-size:10px;color:var(--dim);margin-top:1px}
 /* tabs */
 .tab-nav{display:flex;padding:0 28px;border-bottom:1px solid var(--border);background:var(--bg)}
@@ -156,6 +156,21 @@ tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-we
 .debt-table td.num.zero{color:var(--green)}
 .total-debt{color:var(--red)!important}
 .note-bar{padding:9px 13px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;font-size:11px;color:var(--dim);line-height:1.7;margin-top:6px}
+/* 方向一 btn 主次視覺 */
+#btn-auto-fetch{box-shadow:0 0 14px rgba(96,165,248,0.45);font-weight:700}
+#btn-update-price{opacity:0.8}
+/* 方向一 fetch-status badge */
+#fetch-status{background:rgba(96,165,248,0.1);border:1px solid rgba(96,165,248,0.25);border-radius:6px;padding:2px 10px}
+/* 方向三 tab-nav 滾動 */
+.tab-nav{overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;flex-wrap:nowrap!important}
+.tab-nav::-webkit-scrollbar{display:none}
+/* 方向三 active tab 底色高亮 */
+.tab-btn.active{color:#fff;background:rgba(96,165,248,0.18);border-bottom:2px solid var(--blue);border-radius:6px 6px 0 0}
+/* 方向三 tab hover */
+.tab-btn:hover:not(.active){background:rgba(255,255,255,0.06);border-radius:6px 6px 0 0}
+/* 方向四 全站表格斑馬紋 */
+table tbody tr:nth-child(even){background:rgba(255,255,255,0.025)}
+table tbody tr:hover{background:rgba(96,165,248,0.08)}
 </style>
 </head>
 <body>
@@ -195,10 +210,10 @@ tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-we
     <div class="sub"><span id="header-sub">逐年市值預測 ／ CLEC精神版</span></div>
   </div>
   <div class="kpi-row">
-    <div class="kpi"><div class="kpi-label">2026 起始資產</div><div class="kpi-val" style="color:var(--blue)" id="kpi-start">NT$4,296萬</div><div class="kpi-sub">現況</div></div>
-    <div class="kpi"><div class="kpi-label" id="kpi-yr-label">終點 總資產</div><div class="kpi-val" style="color:var(--green)" id="kpi-2031">—</div><div class="kpi-sub" id="kpi-growth">計算中</div></div>
-    <div class="kpi"><div class="kpi-label" id="kpi-net-label">終點 淨資產</div><div class="kpi-val" style="color:var(--teal)" id="kpi-net">—</div><div class="kpi-sub" id="kpi-net-sub">負債計算中</div></div>
-    <div class="kpi"><div class="kpi-label">年度現金流</div><div class="kpi-val" style="color:var(--amber)">NT$60.4萬</div><div class="kpi-sub">月均 NT$5,034</div></div>
+    <div class="kpi" style="border-top:2px solid var(--blue)"><div class="kpi-label">2026 起始資產</div><div class="kpi-val" style="color:var(--blue)" id="kpi-start">NT$4,296萬</div><div class="kpi-sub">現況</div></div>
+    <div class="kpi" style="border-top:2px solid var(--green)"><div class="kpi-label" id="kpi-yr-label">終點 總資產</div><div class="kpi-val" style="color:var(--green)" id="kpi-2031">—</div><div class="kpi-sub" id="kpi-growth">計算中</div></div>
+    <div class="kpi" style="border-top:2px solid var(--teal)"><div class="kpi-label" id="kpi-net-label">終點 淨資產</div><div class="kpi-val" style="color:var(--teal)" id="kpi-net">—</div><div class="kpi-sub" id="kpi-net-sub">負債計算中</div></div>
+    <div class="kpi" style="border-top:2px solid var(--amber)"><div class="kpi-label">年度現金流</div><div class="kpi-val" style="color:var(--amber)">NT$60.4萬</div><div class="kpi-sub">月均 NT$5,034</div></div>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap">
     <button onclick="fetchAllPrices()" id="btn-auto-fetch"
@@ -210,10 +225,10 @@ tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-we
       <span style="font-size:13px">✎</span> 更新股價 / 配息
     </button>
     <button onclick="exportAllData()"
-      style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(74,222,154,.4);background:rgba(74,222,154,.08);color:var(--green);cursor:pointer;display:flex;align-items:center;gap:5px">
+      style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(74,222,154,.4);background:rgba(74,222,154,.08);color:var(--green);cursor:pointer;display:flex;align-items:center;gap:5px;opacity:0.8">
       ↓ 匯出備份
     </button>
-    <label style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(245,200,66,.4);background:rgba(245,200,66,.08);color:var(--amber);cursor:pointer;display:flex;align-items:center;gap:5px">
+    <label style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(245,200,66,.4);background:rgba(245,200,66,.08);color:var(--amber);cursor:pointer;display:flex;align-items:center;gap:5px;opacity:0.8">
       ↑ 匯入還原
       <input type="file" accept=".json" onchange="importAllData(this)" style="display:none"/>
     </label>
@@ -328,6 +343,12 @@ tr.subtotal td{background:var(--surface);font-family:'DM Mono',monospace;font-we
   </div>
 
   <div class="scen-kpi-row" id="scenKpis"></div>
+
+  <div style="margin:20px 0 8px;display:flex;align-items:center;gap:8px">
+    <span style="width:3px;height:16px;background:var(--blue);border-radius:2px;display:inline-block"></span>
+    <span style="font-size:13px;font-weight:500;color:var(--text)">資產成長走勢</span>
+  </div>
+  <canvas id="growth-chart" height="110" style="width:100%;border-radius:10px;background:var(--surface);padding:12px;box-sizing:border-box"></canvas>
 
   <!-- 每3年變化總表 -->
   <div class="sec-title" style="margin-bottom:6px;margin-top:10px">各桶逐期變化（每3年）</div>
@@ -1373,7 +1394,7 @@ function renderOverview(scen){
   document.getElementById('scen-note').textContent='目前：'+sc.label+'情境（'+sc.note+'）';
 
   const kr=document.getElementById('scenKpis');kr.innerHTML='';
-  [
+  const arr=[
     {l:'2026 現況',v:grand[0],c:'var(--blue)'},
     {l:(2026+Math.min(5,OVERVIEW_YEARS))+'年（+'+Math.min(5,OVERVIEW_YEARS)+'年）',
      v:grand[Math.min(5,OVERVIEW_YEARS)],c:'var(--amber)',
@@ -1383,9 +1404,18 @@ function renderOverview(scen){
     {l:(2026+OVERVIEW_YEARS)+'年終點',
      v:grand[OVERVIEW_YEARS],c:'var(--green)',
      s:'淨資產 NT$'+Math.round((grand[OVERVIEW_YEARS]-DEBTS[OVERVIEW_YEARS])/10000)+'萬'}
-  ].forEach(k=>{
+  ];
+  arr.forEach((k, idx)=>{
     const d=document.createElement('div');d.className='skpi';
-    d.innerHTML=`<div class="skpi-lbl">${k.l}</div><div class="skpi-val" style="color:${k.c}">${fmtI(k.v)}</div>${k.s?`<div class="skpi-sub">${k.s}</div>`:''}`;
+    const isLast=(idx===3);
+    if(isLast){
+      d.style.background='linear-gradient(135deg, rgba(74,222,154,0.12), rgba(45,212,191,0.08))';
+      d.style.borderColor='rgba(74,222,154,0.4)';
+      d.style.boxShadow='0 0 20px rgba(74,222,154,0.15)';
+    }
+    const growth=idx===0?null:((k.v/arr[0].v-1)*100).toFixed(0);
+    const badge=growth?`<div style="margin-top:6px;display:inline-block;background:rgba(74,222,154,0.15);color:var(--green);font-size:10px;padding:1px 7px;border-radius:10px;font-family:'DM Mono',monospace">↗ +${growth}%</div>`:'';
+    d.innerHTML=`<div class="skpi-lbl">${k.l}</div><div class="skpi-val" style="color:${k.c}">${fmtI(k.v)}</div>${k.s?`<div class="skpi-sub">${k.s}</div>`:''} ${badge}`;
     kr.appendChild(d);
   });
 
@@ -1400,9 +1430,10 @@ function renderOverview(scen){
     +ptCols.map(y=>'<th style="text-align:right">'+(2026+y)+'</th>').join('')
     +'<th style="text-align:right">'+OVERVIEW_YEARS+'年總增長</th></tr></thead>'
     +'<tbody>'
-    +['core','sat','cash','usflow'].map(cat=>{
+    +['core','sat','cash','usflow'].map((cat,rowIdx)=>{
        const binfo=BKL[cat],vals=ct[cat];
-       return '<tr><td><span class="bk '+binfo.cls+'">'+binfo.label+'</span></td>'
+       const rowBg=rowIdx%2===0?'':'background:rgba(255,255,255,0.025);';
+       return '<tr style="'+rowBg+'"><td><span class="bk '+binfo.cls+'">'+binfo.label+'</span></td>'
          +ptCols.map((y,i)=>{
             const v=vals[y]||0;
             const prev=i>0?(vals[ptCols[i-1]]||0):0;
@@ -1484,6 +1515,108 @@ function renderOverview(scen){
     }).join('')
     +'<td class="num" style="color:var(--green);font-size:13px;font-weight:500">'+(grand[0]>0?(grand[OVERVIEW_YEARS]/grand[0]).toFixed(2):'—')+'×</td>';
   ob.appendChild(gtr);
+
+  // ── 折線圖 ──
+  (function drawGrowthChart() {
+    const canvas = document.getElementById('growth-chart');
+    if (!canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.offsetWidth || 800;
+    const H = 110;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const years = grand.length;
+    const padL = 52, padR = 16, padT = 16, padB = 28;
+    const w = W - padL - padR;
+    const h = H - padT - padB;
+
+    const maxV = Math.max(...grand);
+    const minV = Math.min(...grand.map((v,i) => v - (DEBTS[i]||0)));
+    const range = maxV - minV || 1;
+
+    const xOf = i => padL + (i / (years - 1)) * w;
+    const yOf = v => padT + h - ((v - minV) / range) * h;
+
+    // 格線
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    [0, 0.25, 0.5, 0.75, 1].forEach(t => {
+      const y = padT + h * (1 - t);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + w, y); ctx.stroke();
+      const label = 'NT$' + Math.round((minV + range * t) / 10000) + '萬';
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.font = '9px DM Mono, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(label, padL - 4, y + 3);
+    });
+
+    // 總資產面積
+    ctx.beginPath();
+    grand.forEach((v, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)));
+    ctx.lineTo(xOf(years - 1), padT + h);
+    ctx.lineTo(xOf(0), padT + h);
+    ctx.closePath();
+    const gradA = ctx.createLinearGradient(0, padT, 0, padT + h);
+    gradA.addColorStop(0, 'rgba(96,165,248,0.25)');
+    gradA.addColorStop(1, 'rgba(96,165,248,0.02)');
+    ctx.fillStyle = gradA;
+    ctx.fill();
+
+    // 總資產折線
+    ctx.beginPath();
+    grand.forEach((v, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)));
+    ctx.strokeStyle = '#60a5f8';
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    // 淨資產折線
+    ctx.beginPath();
+    grand.forEach((v, i) => {
+      const net = v - (DEBTS[i] || 0);
+      i === 0 ? ctx.moveTo(xOf(i), yOf(net)) : ctx.lineTo(xOf(i), yOf(net));
+    });
+    ctx.strokeStyle = '#2dd4bf';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // X 軸年份
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.font = '9px DM Mono, monospace';
+    ctx.textAlign = 'center';
+    grand.forEach((_, i) => {
+      if (i % 1 === 0) ctx.fillText(2026 + i, xOf(i), padT + h + 14);
+    });
+
+    // 終點圓點
+    const lastX = xOf(years - 1), lastY = yOf(grand[years - 1]);
+    ctx.beginPath();
+    ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#4ade9a';
+    ctx.fill();
+    ctx.strokeStyle = '#0f1117';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // 圖例
+    const legendY = padT + h + 24;
+    [['  總資產', '#60a5f8', false], ['  淨資產', '#2dd4bf', true]].forEach(([label, color, dash], i) => {
+      const lx = padL + i * 90;
+      ctx.strokeStyle = color; ctx.lineWidth = 2;
+      if (dash) ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(lx, legendY); ctx.lineTo(lx + 18, legendY); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.font = '9px DM Mono, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(label, lx + 22, legendY + 3);
+    });
+  })();
 }
 
 // ── 年度切換狀態 ──
@@ -3825,7 +3958,7 @@ renderCashflow();
 
 <script>
 (function(){
-  const HASH = '9b4c7a2e8f1d3056';
+  const HASH = '00000000312ead43';
   function simpleHash(s){
     let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}
     return Math.abs(h).toString(16).padStart(16,'0').slice(0,16);
