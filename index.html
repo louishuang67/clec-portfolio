@@ -3923,20 +3923,23 @@ function renderDebtTable(){
   })();
 }
 
-// 初始化
+// 初始化：只執行輕量前置，heavy render 延遲到 unlock 後再執行
 initDebtInputs();
-renderOverview('base');
-renderHoldings();
-renderCashflow();
-// 顯示股價最後更新時間
-(()=>{
+
+// 主要渲染延遲到密碼解鎖後才執行（避免隱藏元素造成 layout 阻塞）
+window._appReady = false;
+window._doInitRender = function(){
+  if(window._appReady) return;
+  window._appReady = true;
+  renderOverview('base');
+  renderHoldings();
+  renderCashflow();
+  // 顯示股價最後更新時間
   try{
     const t=localStorage.getItem('clec_price_updated');
     if(t){ const el=document.getElementById('price-last-update'); if(el){el.textContent='最後更新：'+t;} }
   }catch(e){}
-})();
-// 顯示初始儲存狀態
-(()=>{
+  // 顯示初始儲存狀態
   const el=document.getElementById('save-status');
   if(!el)return;
   try{
@@ -3950,8 +3953,8 @@ renderCashflow();
       el.textContent='已載入2025預設數據';
       el.style.color='var(--dim)';
     }
-  } catch(e){}
-})();
+  }catch(e){}
+};
 </script>
 
 </div><!-- end #main-content -->
@@ -3966,6 +3969,8 @@ renderCashflow();
   function unlock(){
     document.getElementById('lock-screen').style.display='none';
     document.getElementById('main-content').style.display='block';
+    // 延遲 render：等 DOM 可見後再執行 heavy JS
+    if(window._doInitRender) setTimeout(window._doInitRender, 0);
   }
   // 檢查 sessionStorage（同一個瀏覽器視窗不用重複輸入）
   if(sessionStorage.getItem('clec_auth')==='ok') unlock();
