@@ -148,6 +148,13 @@ function organizeGoogleDrive() {
   moveByPatterns(allFiles, ['Laker_TF', 'tf_advance_lab'], WORK, log);
 
   // ══════════════════════════════════════════════════════════
+  // Step 15b：最後散落
+  // ══════════════════════════════════════════════════════════
+  moveByPatterns(allFiles, ['泰國行程', '泰國'], TRAVEL, log);
+  moveByPatterns(allFiles, ['20372588'], BANKING, log);
+  moveByPatterns(allFiles, ['自行驗屋'], getOrCreateFolder('雜七雜八'), log);
+
+  // ══════════════════════════════════════════════════════════
   // Step 16：封存無法辨識的舊雜項 → 99_封存備份
   // ══════════════════════════════════════════════════════════
   moveByPatterns(allFiles, [
