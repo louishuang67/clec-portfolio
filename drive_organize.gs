@@ -17,14 +17,18 @@ function organizeGoogleDrive() {
   const WORK    = getOrCreateFolder('02_IC佈局與專案管理 (Work_Layout)');
   const INVEST  = getOrCreateFolder('04_投資理財研究 (Investment)');
   const TRAVEL  = getOrCreateFolder('05_旅遊規劃 (Travel)');
+  const BANKING = getOrCreateFolder('06_銀行財務文件 (Banking)');
   const ARCHIVE = getOrCreateFolder('99_封存備份 (Archive)');
   const PHOTOS  = getOrCreateFolder('照片');
   const LEARN   = getOrCreateFolder('學習');
+  const HEALTH  = getOrCreateFolder('體檢報告');
 
   // ── 讀取根目錄所有檔案（排除資料夾）─────────────────────
   const allFiles = [];
-  const iter = root.getFiles();
+  const rootId = root.getId();
+  const iter = DriveApp.searchFiles(`'${rootId}' in parents and trashed = false`);
   while (iter.hasNext()) allFiles.push(iter.next());
+  Logger.log(`根目錄共找到 ${allFiles.length} 個檔案`);
 
   // ══════════════════════════════════════════════════════════
   // Step 1：清除重複副本（保留最新 1 份，移入對應資料夾）
@@ -96,7 +100,65 @@ function organizeGoogleDrive() {
   // ══════════════════════════════════════════════════════════
   // Step 8：移動封存規劃備忘 doc → 99_封存備份
   // ══════════════════════════════════════════════════════════
-  moveByPatterns(allFiles, ['99_封存備份 (Archive)'], ARCHIVE, log);
+  moveByPatterns(allFiles, ['99_封存備份 (Archive)', 'Drive 整理腳本'], ARCHIVE, log);
+
+  // ══════════════════════════════════════════════════════════
+  // Step 9：移動銀行 / 財務對帳文件 → 06_銀行財務文件
+  // ══════════════════════════════════════════════════════════
+  moveByPatterns(allFiles, [
+    '電子對帳單', '銀行對帳單', '對帳單',
+    'Estatement', 'PaymentSlip',
+    '永豐銀行', 'CTBC_card',
+    '退稅', 'FB_',
+  ], BANKING, log);
+
+  // ══════════════════════════════════════════════════════════
+  // Step 10：移動投資理財（舊有散落）→ 04_投資理財研究
+  // ══════════════════════════════════════════════════════════
+  moveByPatterns(allFiles, [
+    '再平衡試算', '泰北', '陳大雄', '史上最懶股票',
+    '萬萬稅', 'VENUSD', '理財聖經', '股票質押',
+    '鐵飯碗概念股', '父母私塾', '0505-TODY',
+    '你可以負擔多少', '資產配置',
+  ], INVEST, log);
+
+  // ══════════════════════════════════════════════════════════
+  // Step 11：移動旅遊捷徑 → 05_旅遊規劃
+  // ══════════════════════════════════════════════════════════
+  moveByPatterns(allFiles, ['日本行程表'], TRAVEL, log);
+
+  // ══════════════════════════════════════════════════════════
+  // Step 12：移動健康 / 體檢相關 → 體檢報告
+  // ══════════════════════════════════════════════════════════
+  moveByPatterns(allFiles, ['健康管理儀表板'], HEALTH, log);
+
+  // ══════════════════════════════════════════════════════════
+  // Step 13：移動圖片 → 照片
+  // ══════════════════════════════════════════════════════════
+  moveByPatterns(allFiles, ['IMG_4593', 'BHV1205'], PHOTOS, log);
+
+  // ══════════════════════════════════════════════════════════
+  // Step 14：移動學習 → 學習
+  // ══════════════════════════════════════════════════════════
+  moveByPatterns(allFiles, ['日語基本語彙', '學雜費', '指考錄取分數', '201 黃士宸'], LEARN, log);
+
+  // ══════════════════════════════════════════════════════════
+  // Step 15：移動工作文件 → 02_IC佈局與專案管理
+  // ══════════════════════════════════════════════════════════
+  moveByPatterns(allFiles, ['Laker_TF', 'tf_advance_lab'], WORK, log);
+
+  // ══════════════════════════════════════════════════════════
+  // Step 16：封存無法辨識的舊雜項 → 99_封存備份
+  // ══════════════════════════════════════════════════════════
+  moveByPatterns(allFiles, [
+    'DisplayFile', 'ShowPng', 'doPDF 9.3',
+    'c9bf902ef760f88a27d0d33f047ee757',
+    'https:/drive.google.com',
+    'https:/www.cathay',
+    '毛治國', '同一關係人', 'AEA00C9E',
+    '租賃附件', 'Explore example',
+    '无标题', '無標題',
+  ], ARCHIVE, log);
 
   // ══════════════════════════════════════════════════════════
   // 輸出執行報告，存入封存資料夾
