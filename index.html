@@ -2090,7 +2090,7 @@ function renderHoldings(){
         <td>
           <div class="beta-wrap">
             <div class="beta-bar-bg"><div class="beta-bar-fill" style="width:${bp}%;background:${bc}"></div></div>
-            <span class="beta-val">${beta.toFixed(1)}</span>
+            <span class="beta-val">${Math.round(beta*10)/10}</span>
           </div>
         </td>
         <td style="text-align:center;padding:5px 8px">
