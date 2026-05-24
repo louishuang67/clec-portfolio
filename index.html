@@ -221,9 +221,9 @@ table tbody tr:hover{background:rgba(96,165,248,0.08)}
       style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(74,222,154,.4);background:rgba(74,222,154,.08);color:var(--green);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px">
       <span id="auto-fetch-icon">⚡</span> 一鍵更新股價
     </button>
-    <button id="btn-update-price" onclick="openPricePanel()"
-      style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(96,165,248,.4);background:rgba(96,165,248,.08);color:var(--blue);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px">
-      <span style="font-size:13px">✎</span> 更新股價 / 配息
+    <button id="btn-update-div" onclick="triggerLoadDividends()"
+      style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(245,200,66,.4);background:rgba(245,200,66,.08);color:var(--amber);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px">
+      <span id="div-fetch-icon">📋</span> 一鍵更新當年最新配息/配股
     </button>
     <button onclick="exportAllData()"
       style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(74,222,154,.4);background:rgba(74,222,154,.08);color:var(--green);cursor:pointer;display:flex;align-items:center;gap:5px;opacity:0.8">
@@ -3792,8 +3792,9 @@ async function loadDividends(force = false) {
     } catch(e) {}
 
     // 更新顯示
+    const updatedStr = data.updated || remoteVer;
     const el = document.getElementById('div-last-update');
-    if (el) el.textContent = '配息：' + (data.updated || remoteVer);
+    if (el) el.textContent = '配息：' + updatedStr;
 
     // 重新渲染
     if (window._appReady) {
@@ -3802,8 +3803,45 @@ async function loadDividends(force = false) {
     }
 
     console.log(`[loadDividends] 已套用 ${count} 支配息（版本 ${remoteVer}）`);
+    return { ok: true, count, version: remoteVer, updated: updatedStr };
   } catch(e) {
     console.warn('[loadDividends]', e.message);
+    return { ok: false, error: e.message };
+  }
+}
+
+// 按鈕觸發版本（含 loading 動畫 + 結果提示）
+async function triggerLoadDividends() {
+  const btn  = document.getElementById('btn-update-div');
+  const icon = document.getElementById('div-fetch-icon');
+  const statusEl = document.getElementById('div-last-update');
+
+  if (btn)  btn.disabled = true;
+  if (icon) icon.textContent = '⏳';
+  if (statusEl) statusEl.textContent = '讀取中…';
+
+  const result = await loadDividends(true);  // force=true 強制覆蓋
+
+  if (icon) icon.textContent = '📋';
+  if (btn)  btn.disabled = false;
+
+  if (result?.ok) {
+    if (statusEl) {
+      statusEl.textContent = `✓ 已更新 ${result.count} 支（${result.updated}）`;
+      statusEl.style.color = 'var(--green)';
+      setTimeout(() => {
+        if (statusEl) {
+          statusEl.textContent = '配息：' + result.updated;
+          statusEl.style.color = 'var(--dim)';
+        }
+      }, 4000);
+    }
+  } else {
+    if (statusEl) {
+      statusEl.textContent = '✗ 讀取失敗，請稍後再試';
+      statusEl.style.color = '#f87171';
+      setTimeout(() => { if(statusEl){ statusEl.textContent=''; statusEl.style.color='var(--dim)'; } }, 4000);
+    }
   }
 }
 
