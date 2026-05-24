@@ -1609,6 +1609,18 @@ function renderOverview(scen){
     ctx.stroke();
     ctx.setLineDash([]);
 
+    // 負債虛線
+    ctx.beginPath();
+    DEBTS.slice(0, years).forEach((d, i) => {
+      const v = d || 0;
+      i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v));
+    });
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
     // X 軸年份
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
     ctx.font = '9px monospace';
@@ -1629,10 +1641,14 @@ function renderOverview(scen){
 
     // 圖例
     const legendY = padT + h + 24;
-    [['  總資產', '#60a5f8', false], ['  淨資產', '#2dd4bf', true]].forEach(([label, color, dash], i) => {
-      const lx = padL + i * 90;
-      ctx.strokeStyle = color; ctx.lineWidth = 2;
-      if (dash) ctx.setLineDash([4, 3]);
+    [
+      ['  總資產', '#60a5f8', false],
+      ['  淨資產', '#2dd4bf', [4,3]],
+      ['  負債',   '#f87171', [6,3]]
+    ].forEach(([label, color, dash], i) => {
+      const lx = padL + i * 82;
+      ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+      if (dash) ctx.setLineDash(dash);
       ctx.beginPath(); ctx.moveTo(lx, legendY); ctx.lineTo(lx + 18, legendY); ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = 'rgba(255,255,255,0.5)';
