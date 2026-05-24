@@ -1,4 +1,4 @@
-name: Update Stock Prices
+name: Update Stock Prices & Dividends
 
 on:
   schedule:
@@ -65,10 +65,114 @@ jobs:
           print(f'\n共 {len(prices)} 支，已寫入 prices.json')
           PYEOF
 
-      - name: Commit prices.json
+      - name: Fetch dividends (TWSE + Yahoo)
+        run: |
+          python3 << 'PYEOF'
+          import urllib.request, json, time, datetime, os
+
+          DIV_TICKERS_TW = ['2330','1231','006208','00692','00830','2382','2881','2884','2890','00865B']
+          DIV_TICKERS_US = ['QQQI','QQQM','VTI','QQXL']
+
+          # ── 讀取現有 dividends.json（保留人工覆核值）──
+          existing = {}
+          try:
+            with open('dividends.json', 'r', encoding='utf-8') as f:
+              existing = json.load(f)
+          except:
+            pass
+          divs = dict(existing.get('dividends', {}))
+
+          updated_count = 0
+
+          # ── 台股配息：TWSE OpenAPI t187ap03_L ──
+          # 欄位：年度, 股票代號, 現金股利合計(元), 股票股利合計(元)
+          try:
+            url = 'https://openapi.twse.com.tw/v1/opendata/t187ap03_L'
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=30) as r:
+              rows = json.loads(r.read())
+
+            # 找最新年度各 ticker 的配息
+            latest = {}   # ticker -> {year, div, stock}
+            for row in rows:
+              code = row.get('股票代號','').strip()
+              if code not in DIV_TICKERS_TW:
+                continue
+              try:
+                yr = int(str(row.get('年度','0')).replace('年','').strip() or 0)
+                # 現金股利：可能欄位名不同，依序嘗試
+                cash = 0.0
+                for key in ['現金股利合計(元)','現金股利','現金股利合計','CashEarningDividend']:
+                  v = row.get(key,'')
+                  if v not in ('','--','-','N/A'):
+                    try: cash = float(str(v).replace(',','')); break
+                    except: pass
+                # 股票股利
+                stk = 0.0
+                for key in ['股票股利合計(元)','股票股利','股票股利合計','StockEarningDividend']:
+                  v = row.get(key,'')
+                  if v not in ('','--','-','N/A'):
+                    try: stk = float(str(v).replace(',','')); break
+                    except: pass
+
+                if cash == 0.0 and stk == 0.0:
+                  continue
+
+                if code not in latest or yr > latest[code]['year']:
+                  latest[code] = {'year': yr, 'div': cash, 'stock': stk}
+              except Exception as ex:
+                print(f'  解析 {code} 失敗: {ex}')
+                continue
+
+            for code, info in latest.items():
+              new_div   = str(round(info['div'],  3)).rstrip('0').rstrip('.')
+              new_stock = str(round(info['stock'], 3)).rstrip('0').rstrip('.') if info['stock'] > 0 else ''
+              divs[code] = {'div': new_div, 'stock': new_stock}
+              print(f'  {code}: 現金={new_div} 配股={new_stock or "—"} (年度{info["year"]})')
+              updated_count += 1
+
+            print(f'台股配息更新 {updated_count} 支')
+          except Exception as e:
+            print(f'台股配息 TWSE API 失敗: {e}（保留既有資料）')
+
+          # ── 美股配息：Yahoo Finance dividendRate ──
+          for ticker in DIV_TICKERS_US:
+            try:
+              url = f'https://query2.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=1d'
+              req = urllib.request.Request(url, headers={
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36'
+              })
+              with urllib.request.urlopen(req, timeout=10) as r:
+                d = json.loads(r.read())
+              meta = d['chart']['result'][0]['meta']
+              # dividendRate = 年化配息 USD/股
+              rate = meta.get('dividendRate') or meta.get('trailingAnnualDividendRate')
+              if rate and rate > 0:
+                divs[ticker] = {'div': str(round(rate, 4)), 'stock': ''}
+                print(f'  {ticker}: 年化配息=${rate}')
+                updated_count += 1
+              time.sleep(0.3)
+            except Exception as e:
+              print(f'  {ticker} 配息失敗: {e}')
+
+          # ── 寫出 dividends.json ──
+          today = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
+          output = {
+            'version':    today,
+            'year_index': existing.get('year_index', 0),
+            'note':       'div=每股現金配息(NT$或USD), stock=每股配股金額(元)；台股來源 TWSE t187ap03_L，美股來源 Yahoo Finance',
+            'dividends':  divs,
+            'updated':    datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+          }
+          with open('dividends.json', 'w', encoding='utf-8') as f:
+            json.dump(output, f, ensure_ascii=False, indent=2)
+          print(f'\n共更新 {updated_count} 支配息，已寫入 dividends.json')
+          PYEOF
+
+      - name: Commit prices.json & dividends.json
         run: |
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add prices.json
-          git diff --staged --quiet || git commit -m "chore: update stock prices $(date +%Y-%m-%d)"
+          git add prices.json dividends.json
+          git diff --staged --quiet || git commit -m "chore: update prices & dividends $(date +%Y-%m-%d)"
           git push

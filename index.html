@@ -235,6 +235,7 @@ table tbody tr:hover{background:rgba(96,165,248,0.08)}
     </label>
     <span id="price-update-status" style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace"></span>
     <span id="price-last-update" style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace"></span>
+    <span id="div-last-update" style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace;margin-left:8px"></span>
   </div>
 </div>
 
@@ -3745,6 +3746,66 @@ async function fetchAllPrices(fromPanel = false){
   if(btnP) btnP.disabled=false;
 }
 
+// ════════════════════════════════════════════════
+// 📋 自動讀取配息 dividends.json
+// 版本比對：只有 dividends.json 比 localStorage 新才更新
+// ════════════════════════════════════════════════
+const DIV_VERSION_KEY = 'clec_div_version';
+const DIV_UPDATED_KEY = 'clec_div_updated';
+
+async function loadDividends(force = false) {
+  try {
+    const resp = await fetch('./dividends.json?t=' + Date.now(),
+      { signal: AbortSignal.timeout(10000) }
+    );
+    if (!resp.ok) return;
+    const data = await resp.json();
+
+    const remoteVer  = data.version  || '';
+    const storedVer  = localStorage.getItem(DIV_VERSION_KEY) || '';
+    const yrIdx      = data.year_index ?? 0;
+    const remote     = data.dividends || {};
+
+    // 版本相同且非強制 → 不覆寫
+    if (!force && remoteVer && remoteVer <= storedVer) {
+      const cached = localStorage.getItem(DIV_UPDATED_KEY);
+      const el = document.getElementById('div-last-update');
+      if (el && cached) el.textContent = '配息：' + cached;
+      return;
+    }
+
+    // 套用遠端配息到對應年度（yrIdx=0 = 2025）
+    let count = 0;
+    Object.entries(remote).forEach(([ticker, dd]) => {
+      if (!dividendData[ticker]) dividendData[ticker] = {};
+      if (!dividendData[ticker][yrIdx]) dividendData[ticker][yrIdx] = {div:'', stock:''};
+      if (dd.div  !== undefined) dividendData[ticker][yrIdx].div   = String(dd.div);
+      if (dd.stock !== undefined) dividendData[ticker][yrIdx].stock = String(dd.stock);
+      count++;
+    });
+
+    // 存回 localStorage
+    try {
+      localStorage.setItem(STORAGE_KEY,    JSON.stringify(dividendData));
+      localStorage.setItem(DIV_VERSION_KEY, remoteVer);
+      localStorage.setItem(DIV_UPDATED_KEY, data.updated || remoteVer);
+    } catch(e) {}
+
+    // 更新顯示
+    const el = document.getElementById('div-last-update');
+    if (el) el.textContent = '配息：' + (data.updated || remoteVer);
+
+    // 重新渲染
+    if (window._appReady) {
+      renderHoldings();
+      renderCashflow();
+    }
+
+    console.log(`[loadDividends] 已套用 ${count} 支配息（版本 ${remoteVer}）`);
+  } catch(e) {
+    console.warn('[loadDividends]', e.message);
+  }
+}
 
 
 
@@ -4111,6 +4172,13 @@ window._doInitRender = function(){
   try{
     const t=localStorage.getItem('clec_price_updated');
     if(t){ const el=document.getElementById('price-last-update'); if(el){el.textContent='最後更新：'+t;} }
+  }catch(e){}
+  // 自動讀取配息（非同步，背景執行，不阻塞 render）
+  if(typeof loadDividends==='function') loadDividends();
+  // 顯示配息最後更新時間（快取）
+  try{
+    const dv=localStorage.getItem(DIV_UPDATED_KEY);
+    if(dv){ const el=document.getElementById('div-last-update'); if(el){el.textContent='配息：'+dv;} }
   }catch(e){}
   // 顯示初始儲存狀態
   const el=document.getElementById('save-status');
