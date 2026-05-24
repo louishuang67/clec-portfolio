@@ -2010,9 +2010,10 @@ function renderHoldings(){
 
       // 配息配股資料
       const dd=getDivData(ticker,curYrIdx);
-      const divRaw=dd.div!==''&&!isNaN(parseFloat(dd.div))?parseFloat(dd.div):null;
-      // ETF（00開頭）與美股一律無配股
-      const isNoStockDiv = ticker.startsWith('00') || US_TICKERS.includes(ticker) || ticker==='BRK-B';
+      // 正2槓桿ETF（00675L/00631L/00670L）一律不配息，ETF/美股一律不配股
+      const isNoDivTicker  = ticker.endsWith('L'); // 正2 ETF
+      const isNoStockDiv   = ticker.startsWith('00') || US_TICKERS.includes(ticker) || ticker==='BRK-B';
+      const divRaw=(!isNoDivTicker && dd.div!==''&&!isNaN(parseFloat(dd.div)))?parseFloat(dd.div):null;
       const stockRatio=(!isNoStockDiv && dd.stock!==''&&!isNaN(parseFloat(dd.stock)))?parseFloat(dd.stock):null;
       // 配股市值公式：每股配股元數 ÷ 面值10元 × 股數 × 估算股價
 
@@ -2112,15 +2113,18 @@ function renderHoldings(){
           ${deltaHtml}
         </td>
         <td style="text-align:center;padding:5px 10px">
-          <div style="font-size:9px;color:var(--dim);margin-bottom:2px;font-family:monospace">${divUnit}</div>
-          <input class="div-input${divRaw!==null?' filled':''}"
-            id="div-${ticker}-${curYrIdx}" type="number" min="0" step="${ticker==='美金定存'?'1000':['QQQI','QQQM','VTI','QQXL'].includes(ticker)?'0.01':'0.01'}"
-            value="${divRaw!==null?divRaw:''}" placeholder="${ticker==='美金定存'?'213418':'0.00'}"
-            data-ticker="${ticker}" data-yridx="${curYrIdx}"
-            title="${divHint}"/>
-          <div style="font-size:10px;margin-top:2px;min-height:14px;font-family:monospace;color:${divTotal!==null?'var(--green)':'var(--dim)'}">
-            ${divTotalLabel}
-          </div>
+          ${isNoDivTicker
+            ? `<div style="color:var(--border2);font-size:13px" title="正2槓桿ETF不配息">—</div>`
+            : `<div style="font-size:9px;color:var(--dim);margin-bottom:2px;font-family:monospace">${divUnit}</div>
+               <input class="div-input${divRaw!==null?' filled':''}"
+                 id="div-${ticker}-${curYrIdx}" type="number" min="0" step="${ticker==='美金定存'?'1000':['QQQI','QQQM','VTI','QQXL'].includes(ticker)?'0.01':'0.01'}"
+                 value="${divRaw!==null?divRaw:''}" placeholder="${ticker==='美金定存'?'213418':'0.00'}"
+                 data-ticker="${ticker}" data-yridx="${curYrIdx}"
+                 title="${divHint}"/>
+               <div style="font-size:10px;margin-top:2px;min-height:14px;font-family:monospace;color:${divTotal!==null?'var(--green)':'var(--dim)'}">
+                 ${divTotalLabel}
+               </div>`
+          }
         </td>
         ${isNoStockDiv
           ? `<td style="text-align:center;padding:5px 10px;color:var(--border2);font-size:13px" title="ETF／美股不配股">—</td>`
@@ -2247,8 +2251,9 @@ function renderCashflow(){
     const pricePerShare=curSh>0?mktVal/curSh:price; // ← 用有效股數
     const dd=getDivData(ticker,curYrIdx);
     const def=CF_DEFAULTS[ticker];
+    const _isNoDivTicker = ticker.endsWith('L'); // 正2槓桿ETF不配息
 
-    if(dd.div!==''&&!isNaN(parseFloat(dd.div))){
+    if(!_isNoDivTicker && dd.div!==''&&!isNaN(parseFloat(dd.div))){
       let divAmt=0;
       const dv=parseFloat(dd.div);
       if(ticker==='美金定存'){
