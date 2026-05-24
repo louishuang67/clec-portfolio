@@ -2011,7 +2011,9 @@ function renderHoldings(){
       // 配息配股資料
       const dd=getDivData(ticker,curYrIdx);
       const divRaw=dd.div!==''&&!isNaN(parseFloat(dd.div))?parseFloat(dd.div):null;
-      const stockRatio=dd.stock!==''&&!isNaN(parseFloat(dd.stock))?parseFloat(dd.stock):null;
+      // ETF（00開頭）與美股一律無配股
+      const isNoStockDiv = ticker.startsWith('00') || US_TICKERS.includes(ticker) || ticker==='BRK-B';
+      const stockRatio=(!isNoStockDiv && dd.stock!==''&&!isNaN(parseFloat(dd.stock)))?parseFloat(dd.stock):null;
       // 配股市值公式：每股配股元數 ÷ 面值10元 × 股數 × 估算股價
 
       // 計算現金配息總額（NT$）
@@ -2120,22 +2122,25 @@ function renderHoldings(){
             ${divTotalLabel}
           </div>
         </td>
-        <td style="text-align:center;padding:5px 10px">
-          <input class="stock-input${stockRatio!==null?' filled':''}"
-            id="stock-${ticker}-${curYrIdx}" type="number" min="0" step="0.001"
-            value="${stockRatio!==null?stockRatio:''}" placeholder="0.00"
-            data-ticker="${ticker}" data-yridx="${curYrIdx}"
-            title="填每股配股金額（元），如1231配1.0元填1.0，2890配0.2元填0.2，Enter確認"/>
-          <div style="font-size:10px;margin-top:2px;min-height:14px;font-family:monospace;color:${stockMktVal!==null?'var(--amber)':'var(--dim)'}">
-            ${stockMktVal!==null?'≈NT$'+(stockMktVal/10000).toFixed(2)+'萬':''}
-          </div>
-        </td>
+        ${isNoStockDiv
+          ? `<td style="text-align:center;padding:5px 10px;color:var(--border2);font-size:13px" title="ETF／美股不配股">—</td>`
+          : `<td style="text-align:center;padding:5px 10px">
+              <input class="stock-input${stockRatio!==null?' filled':''}"
+                id="stock-${ticker}-${curYrIdx}" type="number" min="0" step="0.01"
+                value="${stockRatio!==null?stockRatio:''}" placeholder="0.00"
+                data-ticker="${ticker}" data-yridx="${curYrIdx}"
+                title="填每股配股金額（元），如1231配1.0元填1.0，2890配0.2元填0.2，Enter確認"/>
+              <div style="font-size:10px;margin-top:2px;min-height:14px;font-family:monospace;color:${stockMktVal!==null?'var(--amber)':'var(--dim)'}">
+                ${stockMktVal!==null?'≈NT$'+(stockMktVal/10000).toFixed(2)+'萬':''}
+              </div>
+            </td>`
+        }
         <td class="num" style="color:${divTotal!==null?'var(--green)':'var(--dim)'}">
           <div>${divTotal!==null?'NT$'+(divTotal/10000).toFixed(2)+'萬':'—'}</div>
           ${divTotal!==null?`<div style="font-size:10px;color:var(--dim);margin-top:1px">月均 NT$${(divTotal/12).toLocaleString('zh-TW',{maximumFractionDigits:0})}</div>`:''}
         </td>
         <td class="num" style="color:${stockMktVal!==null?'var(--amber)':'var(--dim)'}">
-          ${stockMktVal!==null?'≈NT$'+(stockMktVal/10000).toFixed(2)+'萬':'—'}
+          ${isNoStockDiv?'—':stockMktVal!==null?'≈NT$'+(stockMktVal/10000).toFixed(2)+'萬':'—'}
         </td>
         <td class="sug"><span class="tag ${ti.cls}">${ti.txt}</span> ${sug}</td>`;
       tbody.appendChild(tr);
