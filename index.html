@@ -1064,7 +1064,7 @@ function openPricePanel(){
         <div style="font-size:9px;color:var(--dim);margin-top:1px">${curSh.toLocaleString()} 股</div>
       </td>
       <td style="padding:7px 10px;text-align:center">
-        <input id="price-inp-${ticker}" type="number" min="0" step="${isUS?'0.01':'0.1'}"
+        <input id="price-inp-${ticker}" type="number" min="0" step="0.01"
           placeholder="${displayP}"
           style="width:90px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--amber);font-family:monospace;font-size:12px;text-align:center;padding:3px 5px;outline:none"
           title="${isUS?'USD，自動×31.45換算NT$':'NT$收盤價'}"
@@ -2055,7 +2055,7 @@ function renderHoldings(){
         if(_isUS){
           priceLabel='$'+(curPrice/FX).toFixed(2);
         } else {
-          priceLabel='NT$'+(curPrice>=100?Math.round(curPrice).toLocaleString('zh-TW'):curPrice.toFixed(2));
+          priceLabel='NT$'+curPrice.toFixed(2);
         }
       }
 
