@@ -351,6 +351,19 @@ table tbody tr:hover{background:rgba(96,165,248,0.08)}
   </div>
   <canvas id="growth-chart" height="110" style="width:100%;border-radius:10px;background:var(--surface);padding:12px;box-sizing:border-box"></canvas>
 
+  <!-- ── Monte Carlo 機率模擬 ── -->
+  <div style="margin:20px 0 6px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="width:3px;height:16px;background:var(--purple);border-radius:2px;display:inline-block"></span>
+      <span style="font-size:13px;font-weight:500;color:var(--text)">Monte Carlo 機率模擬</span>
+      <span style="font-size:10px;color:var(--dim);background:rgba(139,92,246,0.15);padding:1px 7px;border-radius:8px;font-family:'DM Mono',monospace">1,000 次</span>
+    </div>
+    <div id="mc-prob-chip" style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace"></div>
+  </div>
+  <canvas id="mc-chart" height="120" style="width:100%;border-radius:10px;background:var(--surface);padding:12px;box-sizing:border-box"></canvas>
+  <div id="mc-stats" style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px"></div>
+  <div class="note-bar" style="margin-bottom:20px;font-size:10px">🎲 核心±15%、衛星±25%、現金±2%、美股±18% 年化波動率｜<span style="color:#a78bfa">━</span> P50 中位數｜色帶為 P25–P75（深）/ P10–P90（淺）｜<span style="color:rgba(251,191,36,0.8)">- -</span> 基本情境確定值｜非投資建議</div>
+
   <!-- 每3年變化總表 -->
   <div class="sec-title" style="margin-bottom:6px;margin-top:10px">各桶逐期變化（每3年）</div>
   <div style="overflow-x:auto;margin-bottom:20px">
@@ -1301,23 +1314,25 @@ let curScen='base';
 const userRates={};
 
 const holdings=[
-  ["core","00662",  114000,102.68,1.0,  0,      0.12,"hold","CLEC核心標的，持續累積，崩盤加碼首選"],
-  ["core","006208",  8000,176.55,0.85,27600,    0.10,"hold","台50穩定配息，每年6月/11月除息"],
-  ["core","00692",  18000, 67.05,0.80,33840,    0.10,"hold","公司治理ETF，分散個股風險"],
-  ["core","00830",   7000, 56.30,0.95,63000,    0.10,"hold","費城半導體，高殖利率9%，1月除息"],
-  ["core","2330",    3000,2000.0,1.10,72000,    0.12,"hold","台積電季配4次，AI受惠核心持股"],
-  ["core","1231",   20000, 91.10,0.50,32000,    0.06,"hold","防禦性配息股，低Beta穩定現金流"],
-  ["core","2382",    2000,321.50,1.20,31200,    0.12,"hold","廣達AI伺服器受惠，年配$15.6"],
-  ["sat", "00757",  50000,107.60,1.20,    0,    0.15,"hold","FANG+追蹤，科技巨頭曝險"],
-  ["sat", "00675L",  8700,185.60,2.00,    0,    0.20,"add", "主力正2，正2衛星核心，崩盤加碼首選"],
-  ["sat", "00631L", 22000, 23.47,2.00,    0,    0.20,"hold","台50正2，流動性最佳，續持"],
-  ["sat", "00670L",  9000,143.65,2.00,    0,    0.20,"hold","NASDAQ正2，與00675L互補"],
+  // [類別, ticker, 股數, 成本價, Beta, 年配息NT$, 基礎報酬率, 標籤, 備註]
+  // Beta & 配息 最後更新：2026-05（修正版）
+  ["core","00662",  114000,102.68,1.05,  0,     0.12,"hold","CLEC核心標的，持續累積，崩盤加碼首選"],
+  ["core","006208",  8000,176.55,0.90,35496,    0.10,"hold","台50穩定配息，半年配6/11月，2025全年4.437元"],
+  ["core","00692",  18000, 67.05,0.85,33840,    0.10,"hold","公司治理ETF，2025全年1.88元（H1:0.628+H2:1.252）"],
+  ["core","00830",   7000, 56.30,1.30,63000,    0.10,"hold","費城半導體，高殖利率9%，1月除息，2026/1/20史上最高"],
+  ["core","2330",    3000,2000.0,1.10,72000,    0.12,"hold","台積電季配4次，2025年化約24元，AI受惠核心持股"],
+  ["core","1231",   20000, 91.10,0.50,30000,    0.06,"hold","防禦性配息股，低Beta穩定現金流，2025現金1.5元+配股1.0元"],
+  ["core","2382",    2000,321.50,1.20,31200,    0.12,"hold","廣達AI伺服器受惠，年配15.6元，EPS 19.45史上最高"],
+  ["sat", "00757",  50000,107.60,1.40,    0,    0.15,"hold","FANG+追蹤，科技巨頭曝險，不配息"],
+  ["sat", "00675L",  8700,185.60,1.90,    0,    0.20,"add", "主力正2，正2衛星核心，崩盤加碼首選"],
+  ["sat", "00631L", 22000, 23.47,1.90,    0,    0.20,"hold","台50正2，流動性最佳，續持"],
+  ["sat", "00670L",  9000,143.65,1.90,    0,    0.20,"hold","NASDAQ正2，與00675L互補"],
   ["cash","美金定存",   1,7114028,0.00,213418,  0.03,"hold","美金3%定存，現金流最大貢獻者"],
-  ["cash","00865B",  1000, 46.58,0.10, 2000,    0.02,"hold","債券ETF，現金桶穩定器"],
-  ["cash","2890",   23000, 22.40,0.70,20930,    0.05,"hold","永豐金，配息穩健，金融股壓艙石"],
-  ["cash","2884",   13000, 28.75,0.70,19500,    0.05,"hold","玉山金，數位金融布局受惠"],
-  ["cash","2881",    4715, 90.90,0.80,20039,    0.06,"hold","富邦金，綜合金融龍頭"],
-  ["usflow","QQQI",   244, 52*FX,0.90,Math.round(244*7.48*FX),0.12,"add","月配ETF核心，目標3,068股月配6萬"],
+  ["cash","00865B",  1000, 46.58,0.10, 2000,    0.02,"hold","債券ETF，月配持續中，現金桶穩定器"],
+  ["cash","2890",   23000, 22.40,0.65,25300,    0.05,"hold","永豐金，2025現金1.1元+配股0.2元，合計1.3元史上最高"],
+  ["cash","2884",   13000, 28.75,0.65,18200,    0.05,"hold","玉山金，2025配息1.4元，終止18年配股慣例"],
+  ["cash","2881",    4715, 90.90,0.65,21218,    0.06,"hold","富邦金，2025配息4.5元史上最高，殖利率~5%"],
+  ["usflow","QQQI",   244, 52*FX,0.55,Math.round(244*7.48*FX),0.12,"add","月配ETF核心，目標3,068股月配6萬"],
   ["usflow","QQQM",    25,254*FX,1.00,Math.round(25*1.00*FX), 0.13,"hold","NASDAQ100低費用版，核心美股持倉"],
   ["usflow","VTI",     48,252*FX,1.00,Math.round(48*4.00*FX), 0.10,"hold","全美市場ETF，分散個股風險"],
   ["usflow","BRK-B",   26,530*FX,0.80,0,                      0.10,"hold","波克夏，不配息複利機器，防禦型核心"],
@@ -1517,6 +1532,10 @@ function renderOverview(scen){
     +'<td class="num" style="color:var(--green);font-size:13px;font-weight:500">'+(grand[0]>0?(grand[OVERVIEW_YEARS]/grand[0]).toFixed(2):'—')+'×</td>';
   ob.appendChild(gtr);
 
+  // ── Monte Carlo（debounced，避免 slider 拖曳時頻繁重算）──
+  if (window._mcTimer) clearTimeout(window._mcTimer);
+  window._mcTimer = setTimeout(() => drawMCChart(scen), 350);
+
   // ── 折線圖（延遲繪製，避免 web-font 阻塞 CDP paint）──
   const _grand = grand.slice(), _debts = DEBTS.slice();
   setTimeout(function drawGrowthChart() {
@@ -1623,26 +1642,175 @@ function renderOverview(scen){
   }, 200);
 }
 
+// ══════════════════════════════════════════════════════
+// ── Monte Carlo 機率模擬 ──────────────────────────────
+// ══════════════════════════════════════════════════════
+function runMonteCarlo(scen) {
+  const N = 1000, Y = OVERVIEW_YEARS;
+  const sc = SCENARIOS[scen];
+  // 年化波動率（sigma）
+  const VOL = { core:0.15, sat:0.25, cash:0.02, usflow:0.18 };
+  const MU  = { core:sc.core, sat:sc.sat, cash:0.03, usflow:0.12 };
+
+  const { ct, grand } = calcAllTotals(scen);
+  const init = {};
+  ['core','sat','cash','usflow'].forEach(c => init[c] = ct[c][0]);
+
+  // Box-Muller 常態亂數
+  function randn() {
+    let u, v;
+    do { u = Math.random(); } while (!u);
+    do { v = Math.random(); } while (!v);
+    return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
+  }
+
+  // yVals[y] = 各模擬在第 y 年的「總資產（含負債）」陣列
+  const yVals = Array.from({length: Y+1}, () => []);
+
+  for (let i = 0; i < N; i++) {
+    const vals = {...init};
+    let tot = Object.values(vals).reduce((s,v)=>s+v, 0);
+    yVals[0].push(tot);
+    for (let y = 1; y <= Y; y++) {
+      ['core','sat','cash','usflow'].forEach(c => {
+        vals[c] *= (1 + MU[c] + VOL[c] * randn());
+      });
+      yVals[y].push(Object.values(vals).reduce((s,v)=>s+v, 0));
+    }
+  }
+  yVals.forEach(arr => arr.sort((a,b)=>a-b));
+
+  function pct(y, p) { return yVals[y][Math.floor(N * p / 100)]; }
+
+  // 終點淨資產（扣負債）
+  const debt = DEBTS[Y] || 0;
+  const finals = yVals[Y].map(v => v - debt).sort((a,b)=>a-b);
+  const base = grand[Y];
+  const exceedBase = finals.filter(v => v >= base - debt).length / N * 100;
+
+  return { pct, finals, exceedBase, base, det: grand };
+}
+
+function drawMCChart(scen) {
+  const canvas = document.getElementById('mc-chart');
+  if (!canvas || canvas.offsetWidth === 0) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth;
+  const H = 120;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const Y = OVERVIEW_YEARS;
+  const mc = runMonteCarlo(scen);
+
+  // Y 軸範圍：P5 ~ P95
+  const allMin = mc.pct(0, 5), allMax = mc.pct(Y, 95);
+  const minV = allMin * 0.93, maxV = allMax * 1.07;
+
+  const PAD = {l:54, r:14, t:10, b:22};
+  const cw = W - PAD.l - PAD.r, ch = H - PAD.t - PAD.b;
+  function xp(y) { return PAD.l + (y/Y)*cw; }
+  function yp(v) { return PAD.t + ch - ((v-minV)/(maxV-minV))*ch; }
+
+  // 格線
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let i=0; i<=4; i++) {
+    const yy = PAD.t + ch*(i/4);
+    ctx.beginPath(); ctx.moveTo(PAD.l, yy); ctx.lineTo(W-PAD.r, yy); ctx.stroke();
+  }
+
+  // 色帶工具
+  function band(pLo, pHi, fillStyle) {
+    ctx.beginPath();
+    for (let y=0; y<=Y; y++) { const fn=y===0?'moveTo':'lineTo'; ctx[fn](xp(y), yp(mc.pct(y,pHi))); }
+    for (let y=Y; y>=0; y--) ctx.lineTo(xp(y), yp(mc.pct(y,pLo)));
+    ctx.closePath();
+    ctx.fillStyle = fillStyle;
+    ctx.fill();
+  }
+
+  band(10, 90, 'rgba(139,92,246,0.10)');  // P10-P90 淡紫
+  band(25, 75, 'rgba(139,92,246,0.22)');  // P25-P75 深紫
+
+  // 基本情境確定值（amber 虛線）
+  ctx.setLineDash([4,3]); ctx.strokeStyle='rgba(251,191,36,0.65)'; ctx.lineWidth=1.5;
+  ctx.beginPath();
+  mc.det.forEach((v,y)=>{ if(y>Y) return; ctx[y===0?'moveTo':'lineTo'](xp(y), yp(v)); });
+  ctx.stroke(); ctx.setLineDash([]);
+
+  // P50 中位數（紫色實線）
+  ctx.strokeStyle='#a78bfa'; ctx.lineWidth=2;
+  ctx.beginPath();
+  for (let y=0; y<=Y; y++) ctx[y===0?'moveTo':'lineTo'](xp(y), yp(mc.pct(y,50)));
+  ctx.stroke();
+
+  // Y 軸標籤
+  ctx.fillStyle='rgba(255,255,255,0.32)'; ctx.font='9px monospace'; ctx.textAlign='right';
+  for (let i=0; i<=4; i++) {
+    const v = minV + (maxV-minV)*(1-i/4);
+    ctx.fillText(Math.round(v/10000)+'萬', PAD.l-4, PAD.t+ch*(i/4)+3);
+  }
+
+  // X 軸年份
+  ctx.textAlign='center'; ctx.fillStyle='rgba(255,255,255,0.32)';
+  const step = Y<=10 ? 1 : Y<=20 ? 2 : 5;
+  for (let y=0; y<=Y; y+=step) ctx.fillText(2026+y, xp(y), H-PAD.b+13);
+  if ((Y % step) !== 0) ctx.fillText(2026+Y, xp(Y), H-PAD.b+13);
+
+  // ── 統計 chips ──
+  const debt = DEBTS[Y]||0;
+  const statsEl = document.getElementById('mc-stats');
+  if (statsEl) {
+    const chips = [
+      { lbl:'P10  悲觀', v: mc.finals[Math.floor(0.10*mc.finals.length)], c:'#f87171' },
+      { lbl:'P25  偏低', v: mc.finals[Math.floor(0.25*mc.finals.length)], c:'var(--amber)' },
+      { lbl:'P50  中位', v: mc.finals[Math.floor(0.50*mc.finals.length)], c:'#a78bfa' },
+      { lbl:'P75  偏高', v: mc.finals[Math.floor(0.75*mc.finals.length)], c:'var(--blue)' },
+      { lbl:'P90  樂觀', v: mc.finals[Math.floor(0.90*mc.finals.length)], c:'var(--green)' },
+    ];
+    statsEl.innerHTML = chips.map(c =>
+      `<div style="flex:1;min-width:72px;background:var(--surface2);border-radius:8px;padding:6px 8px;text-align:center;border:1px solid var(--border)">
+        <div style="font-size:9px;color:var(--dim);margin-bottom:2px;font-family:'DM Mono',monospace">${c.lbl}</div>
+        <div style="font-size:12px;font-family:'DM Mono',monospace;color:${c.c};font-weight:500">${fmtI(c.v)}</div>
+      </div>`
+    ).join('');
+  }
+
+  // 機率文字
+  const probEl = document.getElementById('mc-prob-chip');
+  if (probEl) {
+    const pStr = mc.exceedBase.toFixed(0);
+    const col  = mc.exceedBase>=60?'var(--green)':mc.exceedBase>=40?'var(--amber)':'#f87171';
+    probEl.innerHTML = `超越基本情境機率：<span style="color:${col};font-weight:600">${pStr}%</span>`;
+  }
+}
+// ── Monte Carlo END ──────────────────────────────────
+
 // ── 年度切換狀態 ──
 let curYrIdx=0;
 // OVERVIEW_YEARS 已移至頂部
 // dividendData[ticker][yrIdx] = {div:'', stock:''}
 // ── 2025 實際配息預設值（來源：各公司公告）──
 // div = 每股現金配息 NT$，stock = 配股比例（股/股）
+// 最後更新：2026-05（修正版，來源：各公司公告）
 const DEFAULTS_2025 = {
-  '2330':    {div:'24.00', stock:''},   // 台積電季配×4=$24
-  '1231':    {div:'1.60',  stock:''},   // 聯華食
-  '00692':   {div:'1.88',  stock:''},   // 富邦公司治理
-  '006208':  {div:'3.45',  stock:''},   // 富邦台50
-  '00830':   {div:'9.00',  stock:''},   // 費城半導體
-  '2382':    {div:'15.60', stock:''},   // 廣達
-  '2881':    {div:'4.25',  stock:''},   // 富邦金
-  '2884':    {div:'1.50',  stock:''},   // 玉山金
-  '2890':    {div:'0.91',  stock:''},   // 永豐金
-  '00865B':  {div:'2.00',  stock:''},   // 債券ETF
-  'QQQI':    {div:'7.48',  stock:''},   // QQQI USD/股（TTM）× 244股 × 31.45
+  '2330':    {div:'24.00', stock:''},   // 台積電季配×4（Q3 2025=6元×4≈24元）；Q1 2026=7元
+  '1231':    {div:'1.50',  stock:'1.0'},// 聯華食 現金1.5元+配股1.0元（2026/3/10公告）
+  '00692':   {div:'1.88',  stock:''},   // 富邦公司治理 全年1.88元（H1:0.628+H2:1.252）
+  '006208':  {div:'4.437', stock:''},   // 富邦台50 全年4.437元（H1:0.989+H2:3.448）
+  '00830':   {div:'9.00',  stock:''},   // 費城半導體 9.00元（2026/1/20除息，史上最高）
+  '2382':    {div:'15.60', stock:''},   // 廣達 15.6元（2026/2/26公告，EPS 19.45史上最高）
+  '2881':    {div:'4.50',  stock:''},   // 富邦金 4.5元（史上最高，殖利率~5%）
+  '2884':    {div:'1.40',  stock:''},   // 玉山金 1.4元（終止18年配股慣例）
+  '2890':    {div:'1.10',  stock:'0.2'},// 永豐金 現金1.1元+配股0.2元（合計1.3元，史上最高）
+  '00865B':  {div:'2.00',  stock:''},   // 債券ETF 月配持續（年化估2.00元）
+  'QQQI':    {div:'7.48',  stock:''},   // QQQI USD/股（TTM，月配~$0.63–0.66）× 244股 × 31.45
   'QQQM':    {div:'1.00',  stock:''},   // QQQM USD/股 × 25股 × 31.45
-  'VTI':     {div:'4.00',  stock:''},   // VTI USD/股 × 48股 × 31.45
+  'VTI':     {div:'4.00',  stock:''},   // VTI USD/股（季配~$3.5–4/年）× 48股 × 31.45
   'QQXL':    {div:'2.40',  stock:''},   // QQXL USD/股估 × 56股 × 31.45
   '美金定存':  {div:'213418', stock:''}, // 年總利息 NT$（shares=1，直接填總金額）
 };
