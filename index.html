@@ -433,7 +433,7 @@ table tbody tr:hover{background:rgba(96,165,248,0.08)}
           <th rowspan="2" style="text-align:center;min-width:92px">年化報酬率<br><span style="font-size:9px;color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0">可手動修改</span></th>
           <th id="col-yr-val" class="yr-head" style="min-width:96px">2026年 市值</th>
           <th class="yr-head" style="min-width:108px">現金配息／股<br><span style="font-size:9px;color:var(--green);font-weight:400">NT$ 實際填入</span></th>
-          <th class="yr-head" style="min-width:108px">配股比例<br><span style="font-size:9px;color:var(--amber);font-weight:400">股/股（如 0.05）</span></th>
+          <th class="yr-head" style="min-width:108px">每股配股(元)<br><span style="font-size:9px;color:var(--amber);font-weight:400">股數×(元÷10)×股價</span></th>
           <th class="yr-head" style="min-width:104px">現金配息合計</th>
           <th class="yr-head" style="min-width:104px">配股換算市值</th>
           <th rowspan="2" style="min-width:148px">建議操作</th>
@@ -449,7 +449,7 @@ table tbody tr:hover{background:rgba(96,165,248,0.08)}
       <tbody id="tableBody"></tbody>
     </table>
   </div>
-  <div class="note-bar">⚠️ 市值為複利估算值，非實際股價。配息／配股為人工填入欄位，填入後按 Enter 或點其他地方確認，即時更新頂部現金流總表。配股換算公式：股數 × 配股比例 × 該年估算股價。年化報酬率可逐支修改。</div>
+  <div class="note-bar">⚠️ 市值為複利估算值，非實際股價。配息／配股為人工填入欄位，填入後按 Enter 確認，即時更新頂部現金流總表。<br>📌 <b>每股配股(元)</b> 欄填台灣公告格式（如1231配1.0元→填<code>1.0</code>，2890配0.2元→填<code>0.2</code>）；換算公式：股數 × (配股元÷10) × 估算股價。年化報酬率可逐支修改。</div>
 </div>
 
 <!-- ═══ TAB 3：現金流 & 負債 ═══ -->
@@ -2011,6 +2011,7 @@ function renderHoldings(){
       const dd=getDivData(ticker,curYrIdx);
       const divRaw=dd.div!==''&&!isNaN(parseFloat(dd.div))?parseFloat(dd.div):null;
       const stockRatio=dd.stock!==''&&!isNaN(parseFloat(dd.stock))?parseFloat(dd.stock):null;
+      // 配股市值公式：每股配股元數 ÷ 面值10元 × 股數 × 估算股價
 
       // 計算現金配息總額（NT$）
       let divTotal=null;
@@ -2024,7 +2025,7 @@ function renderHoldings(){
         }
       }
 
-      const stockMktVal=stockRatio!==null?stockRatio*curShares*pricePerShare:null;
+      const stockMktVal=stockRatio!==null?(stockRatio/10)*curShares*pricePerShare:null;
       if(divTotal!==null)catDivSum+=divTotal;
       if(stockMktVal!==null)catStockSum+=stockMktVal;
 
@@ -2121,9 +2122,9 @@ function renderHoldings(){
         <td style="text-align:center;padding:5px 10px">
           <input class="stock-input${stockRatio!==null?' filled':''}"
             id="stock-${ticker}-${curYrIdx}" type="number" min="0" step="0.001"
-            value="${stockRatio!==null?stockRatio:''}" placeholder="0.000"
+            value="${stockRatio!==null?stockRatio:''}" placeholder="0.00"
             data-ticker="${ticker}" data-yridx="${curYrIdx}"
-            title="填配股比例（如每股配0.05股填0.05），Enter確認"/>
+            title="填每股配股金額（元），如1231配1.0元填1.0，2890配0.2元填0.2，Enter確認"/>
           <div style="font-size:10px;margin-top:2px;min-height:14px;font-family:monospace;color:${stockMktVal!==null?'var(--amber)':'var(--dim)'}">
             ${stockMktVal!==null?'≈NT$'+(stockMktVal/10000).toFixed(2)+'萬':''}
           </div>
@@ -2275,7 +2276,7 @@ function renderCashflow(){
 
     // 配股（換算市值）
     if(dd.stock!==''&&!isNaN(parseFloat(dd.stock))){
-      const stockMkt=parseFloat(dd.stock)*curSh*pricePerShare; // ← curSh
+      const stockMkt=(parseFloat(dd.stock)/10)*curSh*pricePerShare; // 每股配股元÷面值10×股數×股價
       if(stockMkt>0){
         hasRealData=true;
         items.push({
