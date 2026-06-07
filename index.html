@@ -352,18 +352,52 @@ table tbody tr:hover{background:rgba(96,165,248,0.08)}
   </div>
   <canvas id="growth-chart" height="110" style="width:100%;border-radius:10px;background:var(--surface);padding:12px;box-sizing:border-box"></canvas>
 
-  <!-- ── Monte Carlo 機率模擬 ── -->
+  <!-- ── Monte Carlo 5000次互動模擬 ── -->
   <div style="margin:20px 0 6px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
     <div style="display:flex;align-items:center;gap:8px">
       <span style="width:3px;height:16px;background:var(--purple);border-radius:2px;display:inline-block"></span>
       <span style="font-size:13px;font-weight:500;color:var(--text)">Monte Carlo 機率模擬</span>
-      <span style="font-size:10px;color:var(--dim);background:rgba(139,92,246,0.15);padding:1px 7px;border-radius:8px;font-family:'DM Mono',monospace">1,000 次</span>
+      <span style="font-size:10px;color:var(--dim);background:rgba(139,92,246,0.15);padding:1px 7px;border-radius:8px;font-family:'DM Mono',monospace">5,000 次</span>
+      <a href="monte-carlo.html" target="_blank" style="font-size:10px;color:var(--blue);text-decoration:none;padding:1px 7px;border:1px solid rgba(96,165,248,.3);border-radius:6px;font-family:'DM Mono',monospace">↗ 完整分析</a>
     </div>
     <div id="mc-prob-chip" style="font-size:11px;color:var(--dim);font-family:'DM Mono',monospace"></div>
   </div>
-  <canvas id="mc-chart" height="120" style="width:100%;border-radius:10px;background:var(--surface);padding:12px;box-sizing:border-box"></canvas>
-  <div id="mc-stats" style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px"></div>
-  <div class="note-bar" style="margin-bottom:20px;font-size:10px">🎲 核心±15%、衛星±25%、現金±2%、美股±18% 年化波動率｜<span style="color:#a78bfa">━</span> P50 中位數｜色帶為 P25–P75（深）/ P10–P90（淺）｜<span style="color:rgba(251,191,36,0.8)">- -</span> 基本情境確定值｜非投資建議</div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:140px">
+      <span style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace;white-space:nowrap">μ=<span id="mc-mu-out" style="color:var(--green)">11%</span></span>
+      <input type="range" id="mc-mu" min="6" max="18" value="11" step="1" style="flex:1;accent-color:var(--green)" oninput="document.getElementById('mc-mu-out').textContent=this.value+'%'">
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:140px">
+      <span style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace;white-space:nowrap">σ=<span id="mc-sigma-out" style="color:var(--amber)">18%</span></span>
+      <input type="range" id="mc-sigma" min="10" max="35" value="18" step="1" style="flex:1;accent-color:var(--amber)" oninput="document.getElementById('mc-sigma-out').textContent=this.value+'%'">
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:140px">
+      <span style="font-size:10px;color:var(--dim);font-family:'DM Mono',monospace;white-space:nowrap">退休=<span id="mc-retire-out" style="color:var(--red)">2028</span></span>
+      <input type="range" id="mc-retire" min="2026" max="2032" value="2028" step="1" style="flex:1;accent-color:var(--red)" oninput="document.getElementById('mc-retire-out').textContent=this.value">
+    </div>
+    <button id="mc-run-btn" onclick="runMCSimulation()" style="font-family:'DM Mono',monospace;font-size:10px;padding:5px 12px;border-radius:6px;border:1px solid rgba(139,92,246,.4);background:rgba(139,92,246,.1);color:var(--purple);cursor:pointer;white-space:nowrap">▶ 模擬</button>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;font-size:10px">
+    <span style="color:var(--green);background:rgba(74,222,154,.08);padding:1px 7px;border-radius:10px">▲ 退休前 +3.8萬/月</span>
+    <span style="color:var(--red);background:rgba(248,113,113,.08);padding:1px 7px;border-radius:10px">▼ 退休年 −14.2萬</span>
+    <span style="color:var(--amber);background:rgba(245,200,66,.08);padding:1px 7px;border-radius:10px">▼ +1~2031 −12.3萬</span>
+    <span style="color:var(--dim);background:var(--surface2);padding:1px 7px;border-radius:10px">▼ 2032+ −8.4萬</span>
+  </div>
+  <div style="position:relative;height:280px;background:var(--surface);border-radius:10px;overflow:hidden;margin-bottom:8px">
+    <canvas id="mc-chart"></canvas>
+  </div>
+  <div id="mc-stats" style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 6px"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+    <div style="background:var(--surface);border-radius:8px;padding:10px;border:1px solid var(--border)">
+      <div style="font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;margin-bottom:5px">2032 資產分布</div>
+      <div style="height:90px"><canvas id="mc-hist-2032"></canvas></div>
+    </div>
+    <div style="background:var(--surface);border-radius:8px;padding:10px;border:1px solid var(--border)">
+      <div style="font-size:9px;color:var(--dim);font-family:'DM Mono',monospace;margin-bottom:5px">2036 資產分布</div>
+      <div style="height:90px"><canvas id="mc-hist-2036"></canvas></div>
+    </div>
+  </div>
+  <div class="note-bar" style="margin-bottom:20px;font-size:10px">🎲 5,000次蒙地卡羅 · 對數常態分布年報酬 · P10/P25/P50/P75/P90扇形帶 · μ/σ/退休年可互動調整｜非投資建議</div>
 
   <!-- 每3年變化總表 -->
   <div class="sec-title" style="margin-bottom:6px;margin-top:10px">各桶逐期變化（每3年）</div>
@@ -480,13 +514,13 @@ table tbody tr:hover{background:rgba(96,165,248,0.08)}
     <!-- 分期房貸（可編輯） -->
     <div class="di" style="border-color:rgba(248,113,113,.25)">
       <div class="di-lbl">分期房貸</div>
-      <div id="di-m1-val" style="font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--red);margin-bottom:4px">NT$1,300萬</div>
+      <div id="di-m1-val" style="font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--red);margin-bottom:4px">NT$1,488萬</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px">
         <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">貸款餘額(萬)</div>
-          <input id="di-m1-bal" type="number" value="1300" min="0" step="10" oninput="onDebtInputChange()"
+          <input id="di-m1-bal" type="number" value="1488" min="0" step="10" oninput="onDebtInputChange()"
             style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--red);font-family:'DM Mono',monospace;font-size:11px;padding:2px 5px;outline:none;text-align:right"/></div>
         <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">利率(%)</div>
-          <input id="di-m1-rate" type="number" value="2.3" min="0" max="20" step="0.01" oninput="onDebtInputChange()"
+          <input id="di-m1-rate" type="number" value="1.56" min="0" max="20" step="0.01" oninput="onDebtInputChange()"
             style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--amber);font-family:'DM Mono',monospace;font-size:11px;padding:2px 5px;outline:none;text-align:right"/></div>
         <div><div style="font-size:9px;color:var(--dim);margin-bottom:1px">剩餘年數</div>
           <input id="di-m1-yrs" type="number" value="26" min="1" max="40" step="1" oninput="onDebtInputChange()"
@@ -496,7 +530,7 @@ table tbody tr:hover{background:rgba(96,165,248,0.08)}
             style="width:100%;background:var(--surface2);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:2px 4px;outline:none">
             <option value="amort">等額攤還</option><option value="io">只付息</option></select></div>
       </div>
-      <div id="di-m1-sub" style="font-size:10px;color:var(--dim)">月付 NT$55,398</div>
+      <div id="di-m1-sub" style="font-size:10px;color:var(--dim)">月付 NT$51,784</div>
     </div>
     <!-- 理財房貸（可編輯） -->
     <div class="di" style="border-color:rgba(248,113,113,.25)">
@@ -804,7 +838,7 @@ table tbody tr:hover{background:rgba(96,165,248,0.08)}
       <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px">
         <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:10px">退休前資產設定</div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">現有投資資產（萬）</span><input id="rt-current" type="number" value="4296" min="0" oninput="calcRetire()" style="width:88px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">現有投資資產（萬）</span><input id="rt-current" type="number" value="6419" min="0" oninput="calcRetire()" style="width:88px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
           <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">每年再投入（萬）</span><input id="rt-yearly-add" type="number" value="60" min="0" oninput="calcRetire()" style="width:88px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
           <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">資產配置 Beta</span><input id="rt-beta" type="number" value="1.2" min="0.5" max="2" step="0.1" oninput="calcRetire()" style="width:72px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--purple);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
           <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--muted)">目標倍數</span><input id="rt-multiplier" type="number" value="50" min="20" max="100" oninput="calcRetire()" style="width:72px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--purple);font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:3px 6px;outline:none"></div>
@@ -985,7 +1019,7 @@ const US_TICKERS = ['QQQI','QQQM','VTI','BRK-B','QQXL'];
 
 // 負債快取（元大質押可由負債頁填改後同步質押頁）
 const DEBT_KEY = 'clec_debt_v1';
-let debtCache = {pledgeLoan:1500000, pledgeRate:2.88};
+let debtCache = {pledgeLoan:2033000, pledgeRate:3.0};
 try{ const s=localStorage.getItem(DEBT_KEY); if(s) Object.assign(debtCache,JSON.parse(s)); }catch(e){}
 function saveDebtCache(){
   try{ localStorage.setItem(DEBT_KEY,JSON.stringify(debtCache)); }catch(e){}
@@ -1001,7 +1035,7 @@ function calcAnnualDebtInterest(){
   else annual += 4000000 * 0.0295;
   if(d.m3 && d.m3.bal) annual += d.m3.bal * 10000 * (d.m3.rate / 100);
   else annual += 3200000 * 0.024;
-  annual += (d.pledgeLoan || 1500000) * ((d.pledgeRate || 2.88) / 100);
+  annual += (d.pledgeLoan || 2033000) * ((d.pledgeRate || 3.0) / 100);
   return Math.round(annual);
 }
 
@@ -1287,13 +1321,13 @@ function importAllData(input){
 // PLEDGE_DATA 動態從 debtCache 讀取 loan/rate
 const PLEDGE_DATA = {
   ticker:  '00662',
-  get loan(){ return debtCache.pledgeLoan||1500000; },
-  get rate(){ return debtCache.pledgeRate||2.88; },
+  get loan(){ return debtCache.pledgeLoan||2033000; },
+  get rate(){ return debtCache.pledgeRate||3.0; },
   ratioLim:60,
   warnRate:130,
   bustRate:120,
 };
-const r1m=0.023/12,_n1=26*12,_p1=13000000;
+const r1m=0.0156/12,_n1=26*12,_p1=14880000;
 const _m1=_p1*(r1m*(1+r1m)**_n1)/((1+r1m)**_n1-1);
 const r3m=0.024/12,_n3=6*12,_p3=3200000;
 const _m3=_p3*(r3m*(1+r3m)**_n3)/((1+r3m)**_n3-1);
@@ -1317,14 +1351,14 @@ const userRates={};
 const holdings=[
   // [類別, ticker, 股數, 成本價, Beta, 年配息NT$, 基礎報酬率, 標籤, 備註]
   // Beta & 配息 最後更新：2026-05（修正版）
-  ["core","00662",  114000,102.68,1.05,  0,     0.15,"hold","CLEC核心標的，持續累積，崩盤加碼首選"],
+  ["core","00662",  120000,102.68,1.05,  0,     0.15,"hold","CLEC核心標的，持續累積，崩盤加碼首選"],
   ["core","006208",  8000,176.55,0.90,35496,    0.10,"hold","台50穩定配息，半年配6/11月，2025全年4.437元"],
   ["core","00692",  18000, 67.05,0.85,33840,    0.09,"hold","公司治理ETF，2025全年1.88元（H1:0.628+H2:1.252）"],
   ["core","00830",   7000, 56.30,1.30,63000,    0.15,"hold","費城半導體，高殖利率9%，1月除息，2026/1/20史上最高"],
   ["core","2330",    3000,2000.0,1.10,72000,    0.15,"hold","台積電季配4次，2025年化約24元，AI受惠核心持股"],
-  ["core","1231",   20000, 91.10,0.50,30000,    0.06,"hold","防禦性配息股，低Beta穩定現金流，2025現金1.5元+配股1.0元"],
+ ["cash","1231",   20000, 91.10,0.50,30000,    0.06,"hold","防穰性配息股，移入現金椖，低 Beta穩定現金流"],
   ["core","2382",    2000,321.50,1.20,31200,    0.15,"hold","廣達AI伺服器受惠，年配15.6元，EPS 19.45史上最高"],
-  ["sat", "00757",  50000,107.60,1.40,    0,    0.20,"hold","FANG+追蹤，科技巨頭曝險，不配息"],
+  ["core","00757",  50000,107.60,1.40,    0,    0.15,"hold","FANG+科技巨頭，移入核心椖長期持有"],
   ["sat", "00675L",  8700,185.60,1.90,    0,    0.20,"add", "主力正2，正2衛星核心，崩盤加碼首選"],
   ["sat", "00631L", 22000, 23.47,1.90,    0,    0.20,"hold","台50正2，流動性最佳，續持"],
   ["sat", "00670L",  9000,143.65,1.90,    0,    0.20,"hold","NASDAQ正2，與00675L互補"],
@@ -1659,152 +1693,188 @@ function renderOverview(scen){
   }, 200);
 }
 
+// ════════════════════════════════════════════════════// ══════════════════════════════════════════════════════
+// ── Monte Carlo 5000次互動模擬 ────────────────────────
 // ══════════════════════════════════════════════════════
-// ── Monte Carlo 機率模擬 ──────────────────────────────
-// ══════════════════════════════════════════════════════
-function runMonteCarlo(scen) {
-  const N = 1000, Y = OVERVIEW_YEARS;
-  const sc = SCENARIOS[scen];
-  // 年化波動率（sigma）
-  const VOL = { core:0.15, sat:0.25, cash:0.02, usflow:0.18 };
-  const MU  = { core:sc.core, sat:sc.sat, cash:0.03, usflow:0.12 };
 
-  const { ct, grand } = calcAllTotals(scen);
-  const init = {};
-  ['core','sat','cash','usflow'].forEach(c => init[c] = ct[c][0]);
+let _mcChartInst = null;
 
-  // Box-Muller 常態亂數
-  function randn() {
-    let u, v;
-    do { u = Math.random(); } while (!u);
-    do { v = Math.random(); } while (!v);
-    return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
+function _mcRandn() {
+  let u, v;
+  do { u = Math.random(); } while(!u);
+  do { v = Math.random(); } while(!v);
+  return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
+}
+
+function _mcPct(arr, p) {
+  const s = [...arr].sort((a,b)=>a-b);
+  return s[Math.min(s.length-1, Math.floor(s.length*p))];
+}
+
+function _mcCashFlows(retireYear) {
+  return Array.from({length: OVERVIEW_YEARS}, (_, i) => {
+    const year = 2026 + i;
+    if (year < retireYear)  return 45.6;
+    if (year === retireYear) return -170.4;
+    if (year < 2030)        return -147.6;
+    return -100.8;
+  });
+}
+
+const _mcVlinePlugin = {
+  id: 'mc_vlines',
+  afterDatasetsDraw(chart) {
+    const {ctx, scales:{x,y}} = chart;
+    if (!x || !y) return;
+    const ry = parseInt(document.getElementById('mc-retire')?.value || 2028);
+    [{val:ry,color:'rgba(248,113,113,0.6)',lbl:ry+'退休'},{val:2032,color:'rgba(245,200,66,0.6)',lbl:'2032信貸清零'}]
+    .forEach(({val,color,lbl}) => {
+      const xp = x.getPixelForValue(val); if(!xp) return;
+      ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.setLineDash([5,3]);
+      ctx.beginPath(); ctx.moveTo(xp,y.top); ctx.lineTo(xp,y.bottom); ctx.stroke();
+      ctx.fillStyle=color; ctx.font='10px monospace'; ctx.textAlign='left';
+      ctx.fillText(lbl, xp+4, y.top+14); ctx.restore();
+    });
+    [{val:10000,lbl:'1億'},{val:20000,lbl:'2億'}].forEach(({val,lbl}) => {
+      const yp = y.getPixelForValue(val);
+      if(!yp || yp<y.top || yp>y.bottom) return;
+      ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.moveTo(x.left,yp); ctx.lineTo(x.right,yp); ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='9px monospace'; ctx.textAlign='right';
+      ctx.fillText(lbl, x.right-4, yp-3); ctx.restore();
+    });
   }
+};
 
-  // yVals[y] = 各模擬在第 y 年的「總資產（含負債）」陣列
-  const yVals = Array.from({length: Y+1}, () => []);
+function runMCSimulation() {
+  const mu      = parseInt(document.getElementById('mc-mu')?.value     || 11) / 100;
+  const sigma   = parseInt(document.getElementById('mc-sigma')?.value  || 18) / 100;
+  const retireY = parseInt(document.getElementById('mc-retire')?.value || 2028);
+  const btn     = document.getElementById('mc-run-btn');
+  const N = 5000, Y = OVERVIEW_YEARS;
+  if(btn) { btn.textContent='計算中...'; btn.disabled=true; }
 
-  for (let i = 0; i < N; i++) {
-    const vals = {...init};
-    let tot = Object.values(vals).reduce((s,v)=>s+v, 0);
-    yVals[0].push(tot);
-    for (let y = 1; y <= Y; y++) {
-      ['core','sat','cash','usflow'].forEach(c => {
-        vals[c] *= (1 + MU[c] + VOL[c] * randn());
-      });
-      yVals[y].push(Object.values(vals).reduce((s,v)=>s+v, 0));
+  setTimeout(() => {
+    try { if(!Chart.registry.plugins.get('mc_vlines')) Chart.register(_mcVlinePlugin); } catch(e){}
+
+    const {grand} = calcAllTotals(curScen || 'base');
+    const start = (grand[0] || 0) / 10000;
+    const logMu = Math.log(1+mu) - 0.5*sigma*sigma;
+    const cf    = _mcCashFlows(retireY);
+    const paths = [];
+
+    for(let i=0;i<N;i++){
+      let v=start; const path=[v];
+      for(let y=0;y<Y;y++){
+        v = Math.max(0, v*Math.exp(logMu+sigma*_mcRandn()) + (cf[y]||0));
+        path.push(v);
+      }
+      paths.push(path);
     }
-  }
-  yVals.forEach(arr => arr.sort((a,b)=>a-b));
 
-  function pct(y, p) { return yVals[y][Math.floor(N * p / 100)]; }
+    const years = Array.from({length:Y+1},(_,i)=>2026+i);
+    const bands = years.map((_,yi) => {
+      const vals = paths.map(p=>p[yi]);
+      return {p10:_mcPct(vals,.10),p25:_mcPct(vals,.25),p50:_mcPct(vals,.50),p75:_mcPct(vals,.75),p90:_mcPct(vals,.90)};
+    });
 
-  // 終點淨資產（扣負債）
-  const debt = DEBTS[Y] || 0;
-  const finals = yVals[Y].map(v => v - debt).sort((a,b)=>a-b);
-  const base = grand[Y];
-  const exceedBase = finals.filter(v => v >= base - debt).length / N * 100;
+    // ── Fan Chart (Chart.js) ──
+    if(_mcChartInst) { _mcChartInst.destroy(); _mcChartInst=null; }
+    const canvas = document.getElementById('mc-chart');
+    if(canvas) {
+      const fmtAx = v => v>=10000?(v/10000).toFixed(0)+'億':Math.round(v)+'萬';
+      _mcChartInst = new Chart(canvas.getContext('2d'), {
+        type:'line',
+        data:{
+          labels:years,
+          datasets:[
+            {label:'P90',data:bands.map(b=>b.p90),borderColor:'rgba(55,138,221,0.5)',borderWidth:1.5,borderDash:[4,3],backgroundColor:'rgba(74,222,154,0.05)',fill:'+1',tension:0.3,pointRadius:0},
+            {label:'P75',data:bands.map(b=>b.p75),borderColor:'transparent',borderWidth:0,backgroundColor:'rgba(74,222,154,0.12)',fill:'+1',tension:0.3,pointRadius:0},
+            {label:'P50 中位',data:bands.map(b=>b.p50),borderColor:'#4ade9a',borderWidth:2.5,backgroundColor:'rgba(74,222,154,0.12)',fill:'+1',tension:0.3,pointRadius:2,pointBackgroundColor:'#4ade9a'},
+            {label:'P25',data:bands.map(b=>b.p25),borderColor:'transparent',borderWidth:0,backgroundColor:'rgba(74,222,154,0.05)',fill:'+1',tension:0.3,pointRadius:0},
+            {label:'P10',data:bands.map(b=>b.p10),borderColor:'rgba(248,113,113,0.55)',borderWidth:1.5,borderDash:[4,3],backgroundColor:'transparent',fill:false,tension:0.3,pointRadius:0},
+          ]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          interaction:{mode:'index',intersect:false},
+          plugins:{
+            legend:{display:false},
+            tooltip:{backgroundColor:'rgba(15,17,23,0.95)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,
+              callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y>=10000?(c.parsed.y/10000).toFixed(2)+'億':Math.round(c.parsed.y)+'萬'}`}},
+            mc_vlines:{}
+          },
+          scales:{
+            x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{size:9},color:'rgba(255,255,255,0.4)'}},
+            y:{grid:{color:'rgba(255,255,255,0.04)'},min:0,ticks:{font:{size:9},color:'rgba(255,255,255,0.4)',callback:fmtAx}}
+          }
+        }
+      });
+    }
 
-  return { pct, finals, exceedBase, base, det: grand };
+    // ── Stats Cards ──
+    const fmtV = v => v>=10000?(v/10000).toFixed(2)+'億':Math.round(v)+'萬';
+    const yi28 = Math.min(2,Y), yi32=Math.min(6,Y), yi36=Math.min(10,Y), yi40=Math.min(14,Y);
+    const v28=paths.map(p=>p[yi28]), v32=paths.map(p=>p[yi32]);
+    const v36=paths.map(p=>p[yi36]), v40=paths.map(p=>p[yi40]);
+    const mins=paths.map(p=>Math.min(...p));
+    const prob1=(v32.filter(v=>v>=10000).length/N*100).toFixed(1)+'%';
+    const prob2=(v36.filter(v=>v>=20000).length/N*100).toFixed(1)+'%';
+    const prob3=(v40.filter(v=>v>=30000).length/N*100).toFixed(1)+'%';
+    const ruin =(mins.filter(v=>v<300).length/N*100).toFixed(1)+'%';
+    const statsEl = document.getElementById('mc-stats');
+    if(statsEl){
+      const chips=[
+        {l:'P50 退休時',v:fmtV(_mcPct(v28,0.5)),c:'#60a5f8'},
+        {l:'P50 2032', v:fmtV(_mcPct(v32,0.5)),c:'#4ade9a'},
+        {l:'P50 2036', v:fmtV(_mcPct(v36,0.5)),c:'#f5c842'},
+        {l:'破1億(2032)',v:prob1,c:'#4ade9a'},
+        {l:'破2億(2036)',v:prob2,c:'#f5c842'},
+        {l:'破3億(2040)',v:prob3,c:'#c084fc'},
+        {l:'破產風險',v:ruin,c:parseFloat(ruin)<5?'#4ade9a':'#f87171'},
+      ];
+      statsEl.innerHTML=chips.map(c=>
+        `<div style="flex:1;min-width:80px;background:var(--surface2);border-radius:8px;padding:6px 8px;text-align:center;border:1px solid var(--border)">
+          <div style="font-size:9px;color:var(--dim);margin-bottom:2px;font-family:'DM Mono',monospace">${c.l}</div>
+          <div style="font-size:12px;font-family:'DM Mono',monospace;color:${c.c};font-weight:500">${c.v}</div>
+        </div>`).join('');
+    }
+
+    // ── Histograms ──
+    const drawHist = (canvasId, vals, color) => {
+      const inst=Chart.getChart(canvasId); if(inst)inst.destroy();
+      const cv=document.getElementById(canvasId); if(!cv)return;
+      const lo=_mcPct(vals,.02),hi=_mcPct(vals,.98);
+      const bins=20,bw=(hi-lo)/bins;
+      const hist=Array.from({length:bins},(_,i)=>({x:lo+(i+0.5)*bw,n:0}));
+      vals.forEach(v=>{const b=Math.min(bins-1,Math.floor((v-lo)/bw));if(b>=0)hist[b].n++;});
+      new Chart(cv.getContext('2d'),{type:'bar',
+        data:{labels:hist.map(h=>fmtV(h.x)),datasets:[{data:hist.map(h=>h.n),backgroundColor:color+'99',borderColor:color,borderWidth:1,borderRadius:2}]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>'資產:'+fmtV(hist[i[0].dataIndex].x),label:i=>'次數:'+i.raw},backgroundColor:'rgba(15,17,23,0.95)',titleColor:color,bodyFont:{size:10}}},
+          scales:{x:{ticks:{maxTicksLimit:5,font:{size:9},color:'rgba(255,255,255,0.3)'},grid:{display:false}},y:{ticks:{display:false},grid:{color:'rgba(255,255,255,0.03)'}}}}});
+    };
+    if(Y>=6) drawHist('mc-hist-2032',v32,'#4ade9a');
+    if(Y>=10) drawHist('mc-hist-2036',v36,'#f5c842');
+
+    const probEl=document.getElementById('mc-prob-chip');
+    if(probEl) probEl.innerHTML=`2032破1億 <span style="color:var(--green);font-weight:600">${prob1}</span> · 破產 <span style="color:${parseFloat(ruin)<5?'var(--green)':'var(--red)'}">${ruin}</span>`;
+    if(btn){ btn.textContent='▶ 模擬'; btn.disabled=false; }
+  }, 20);
 }
 
+// drawMCChart: called by renderOverview, delegates to runMCSimulation
 function drawMCChart(scen) {
-  const canvas = document.getElementById('mc-chart');
-  if (!canvas || canvas.offsetWidth === 0) return;
-  const dpr = window.devicePixelRatio || 1;
-  const W = canvas.offsetWidth;
-  const H = 120;
-  canvas.width  = W * dpr;
-  canvas.height = H * dpr;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  ctx.clearRect(0, 0, W, H);
-
-  const Y = OVERVIEW_YEARS;
-  const mc = runMonteCarlo(scen);
-
-  // Y 軸範圍：P5 ~ P95
-  const allMin = mc.pct(0, 5), allMax = mc.pct(Y, 95);
-  const minV = allMin * 0.93, maxV = allMax * 1.07;
-
-  const PAD = {l:54, r:14, t:10, b:22};
-  const cw = W - PAD.l - PAD.r, ch = H - PAD.t - PAD.b;
-  function xp(y) { return PAD.l + (y/Y)*cw; }
-  function yp(v) { return PAD.t + ch - ((v-minV)/(maxV-minV))*ch; }
-
-  // 格線
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-  ctx.lineWidth = 1;
-  for (let i=0; i<=4; i++) {
-    const yy = PAD.t + ch*(i/4);
-    ctx.beginPath(); ctx.moveTo(PAD.l, yy); ctx.lineTo(W-PAD.r, yy); ctx.stroke();
-  }
-
-  // 色帶工具
-  function band(pLo, pHi, fillStyle) {
-    ctx.beginPath();
-    for (let y=0; y<=Y; y++) { const fn=y===0?'moveTo':'lineTo'; ctx[fn](xp(y), yp(mc.pct(y,pHi))); }
-    for (let y=Y; y>=0; y--) ctx.lineTo(xp(y), yp(mc.pct(y,pLo)));
-    ctx.closePath();
-    ctx.fillStyle = fillStyle;
-    ctx.fill();
-  }
-
-  band(10, 90, 'rgba(139,92,246,0.10)');  // P10-P90 淡紫
-  band(25, 75, 'rgba(139,92,246,0.22)');  // P25-P75 深紫
-
-  // 基本情境確定值（amber 虛線）
-  ctx.setLineDash([4,3]); ctx.strokeStyle='rgba(251,191,36,0.65)'; ctx.lineWidth=1.5;
-  ctx.beginPath();
-  mc.det.forEach((v,y)=>{ if(y>Y) return; ctx[y===0?'moveTo':'lineTo'](xp(y), yp(v)); });
-  ctx.stroke(); ctx.setLineDash([]);
-
-  // P50 中位數（紫色實線）
-  ctx.strokeStyle='#a78bfa'; ctx.lineWidth=2;
-  ctx.beginPath();
-  for (let y=0; y<=Y; y++) ctx[y===0?'moveTo':'lineTo'](xp(y), yp(mc.pct(y,50)));
-  ctx.stroke();
-
-  // Y 軸標籤
-  ctx.fillStyle='rgba(255,255,255,0.32)'; ctx.font='9px monospace'; ctx.textAlign='right';
-  for (let i=0; i<=4; i++) {
-    const v = minV + (maxV-minV)*(1-i/4);
-    ctx.fillText(Math.round(v/10000)+'萬', PAD.l-4, PAD.t+ch*(i/4)+3);
-  }
-
-  // X 軸年份
-  ctx.textAlign='center'; ctx.fillStyle='rgba(255,255,255,0.32)';
-  const step = Y<=10 ? 1 : Y<=20 ? 2 : 5;
-  for (let y=0; y<=Y; y+=step) ctx.fillText(2026+y, xp(y), H-PAD.b+13);
-  if ((Y % step) !== 0) ctx.fillText(2026+Y, xp(Y), H-PAD.b+13);
-
-  // ── 統計 chips ──
-  const debt = DEBTS[Y]||0;
-  const statsEl = document.getElementById('mc-stats');
-  if (statsEl) {
-    const chips = [
-      { lbl:'P10  悲觀', v: mc.finals[Math.floor(0.10*mc.finals.length)], c:'#f87171' },
-      { lbl:'P25  偏低', v: mc.finals[Math.floor(0.25*mc.finals.length)], c:'var(--amber)' },
-      { lbl:'P50  中位', v: mc.finals[Math.floor(0.50*mc.finals.length)], c:'#a78bfa' },
-      { lbl:'P75  偏高', v: mc.finals[Math.floor(0.75*mc.finals.length)], c:'var(--blue)' },
-      { lbl:'P90  樂觀', v: mc.finals[Math.floor(0.90*mc.finals.length)], c:'var(--green)' },
-    ];
-    statsEl.innerHTML = chips.map(c =>
-      `<div style="flex:1;min-width:72px;background:var(--surface2);border-radius:8px;padding:6px 8px;text-align:center;border:1px solid var(--border)">
-        <div style="font-size:9px;color:var(--dim);margin-bottom:2px;font-family:'DM Mono',monospace">${c.lbl}</div>
-        <div style="font-size:12px;font-family:'DM Mono',monospace;color:${c.c};font-weight:500">${fmtI(c.v)}</div>
-      </div>`
-    ).join('');
-  }
-
-  // 機率文字
-  const probEl = document.getElementById('mc-prob-chip');
-  if (probEl) {
-    const pStr = mc.exceedBase.toFixed(0);
-    const col  = mc.exceedBase>=60?'var(--green)':mc.exceedBase>=40?'var(--amber)':'#f87171';
-    probEl.innerHTML = `超越基本情境機率：<span style="color:${col};font-weight:600">${pStr}%</span>`;
+  if (window.Chart) {
+    runMCSimulation();
+  } else {
+    // Chart.js not yet loaded - schedule retry
+    setTimeout(() => { if(window.Chart) runMCSimulation(); }, 500);
   }
 }
+
+function runMonteCarlo(scen) { return null; }
+
 // ── Monte Carlo END ──────────────────────────────────
 
 // ── 年度切換狀態 ──
@@ -4013,7 +4083,7 @@ function debtTotalDynamic(y){
 
 // 保留原始 m1/m3 計算（做備用）
 function debtTotal_m1(y){
-  const r=0.023/12,n=26*12,p=13000000,mo=y*12;
+  const r=0.0156/12,n=26*12,p=14880000,mo=y*12;
   const mp=p*(r*(1+r)**n)/((1+r)**n-1);
   return Math.max(0,Math.round(p*(1+r)**mo-mp*((1+r)**mo-1)/r));
 }
@@ -4163,10 +4233,10 @@ function renderDebtTable(){
 
   // 取得負債輸入（優先用 debtCache）
   const dc = debtCache;
-  const m1 = dc.m1 || {bal:1300, rate:2.3, yrs:26, type:'amort'};
+  const m1 = dc.m1 || {bal:1488, rate:1.56, yrs:26, type:'amort'};
   const m2 = dc.m2 || {bal:400,  rate:2.95,yrs:4,  type:'io'};
   const m3 = dc.m3 || {bal:320,  rate:2.4, yrs:6,  type:'amort'};
-  const pledge = dc.pledgeLoan || 1500000;
+  const pledge = dc.pledgeLoan || 2033000;
 
   // 計算各年餘額
   function balAmort(p0, rAnn, n, y){
@@ -4291,5 +4361,6 @@ window._doInitRender = function(){
   };
 })();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </body>
 </html> 
