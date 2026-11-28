@@ -184,6 +184,32 @@ function organizeGoogleDrive() {
 }
 
 // ══════════════════════════════════════════════════════════════
+// 排程設定（只需執行一次）
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 執行一次即可設定每週日凌晨 1 點自動整理
+ * 步驟：點選函式選單切換到 setupWeeklyTrigger → 執行
+ */
+function setupWeeklyTrigger() {
+  // 刪除同名舊觸發條件，避免重複
+  ScriptApp.getProjectTriggers().forEach(t => {
+    if (t.getHandlerFunction() === 'organizeGoogleDrive') {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+
+  // 建立每週日凌晨 1–2 時觸發
+  ScriptApp.newTrigger('organizeGoogleDrive')
+    .timeBased()
+    .onWeekDay(ScriptApp.WeekDay.SUNDAY)
+    .atHour(1)
+    .create();
+
+  Logger.log('✅ 已設定：每週日凌晨 1 點自動整理 Google Drive');
+}
+
+// ══════════════════════════════════════════════════════════════
 // 工具函式
 // ══════════════════════════════════════════════════════════════
 
